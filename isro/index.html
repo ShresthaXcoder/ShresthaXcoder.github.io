@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ISRO MISSION CONTROL // SHRESTHA.EXE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05060c; --bg2:#0a0c16; --surface:rgba(14,17,30,.66); --surface2:rgba(20,24,40,.9);
+    --border:rgba(0,240,255,.16); --border-soft:rgba(255,255,255,.07);
+    --text:#eaeeff; --dim:#98a0c0;
+    --cyan:#00f0ff; --magenta:#ff2e97; --yellow:#fcee0a; --green:#3df5a0;
+    --mono:'JetBrains Mono',ui-monospace,monospace; --display:'Chakra Petch',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden;line-height:1.6}
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .scan{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,240,255,.028) 0 1px,transparent 1px 3px)}
+  .wrap{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:26px 5vw 70px}
+
+  header{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;
+    border:1px solid var(--border);border-radius:14px;padding:16px 20px;background:var(--surface);backdrop-filter:blur(12px)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{font-family:var(--display);font-weight:700;font-size:1.1rem;letter-spacing:.14em}
+  .logo b{color:var(--cyan)}
+  .badge{font-size:.54rem;letter-spacing:.24em;padding:5px 10px;border-radius:99px;border:1px solid var(--border);color:var(--cyan);background:rgba(0,240,255,.07)}
+  .badge.live{color:#04121a;background:var(--green);border-color:var(--green)}
+  .badge.off{color:var(--yellow);border-color:rgba(252,238,10,.4);background:rgba(252,238,10,.08)}
+  .clock{font-size:.72rem;color:var(--dim);letter-spacing:.14em;text-align:right}
+  .clock b{color:var(--text);font-size:.95rem}
+
+  h2.sec{font-family:var(--display);font-weight:700;font-size:1.35rem;letter-spacing:.06em;margin:34px 0 14px;
+    display:flex;align-items:center;gap:12px}
+  h2.sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+  .hint{font-size:.6rem;letter-spacing:.2em;color:var(--dim);margin-bottom:14px}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+  .stat{border:1px solid var(--border-soft);border-radius:12px;padding:14px 16px;background:var(--surface)}
+  .stat .n{font-family:var(--display);font-weight:700;font-size:1.7rem;color:var(--cyan);line-height:1}
+  .stat .l{font-size:.56rem;letter-spacing:.2em;color:var(--dim);margin-top:6px}
+
+  .launches{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .launch{border:1px solid var(--border-soft);border-radius:14px;padding:18px;background:var(--surface);
+    position:relative;overflow:hidden;transition:border-color .25s,transform .25s}
+  .launch:hover{border-color:var(--border);transform:translateY(-3px)}
+  .launch::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--cyan),var(--magenta))}
+  .lname{font-family:var(--display);font-weight:700;font-size:.98rem;letter-spacing:.03em;margin-bottom:8px}
+  .lmeta{font-size:.6rem;letter-spacing:.14em;color:var(--dim);margin-bottom:14px}
+  .count{display:flex;gap:8px;margin-bottom:12px}
+  .cbox{flex:1;text-align:center;border:1px solid var(--border-soft);border-radius:9px;padding:8px 4px;background:rgba(0,0,0,.3)}
+  .cbox b{display:block;font-family:var(--display);font-size:1.25rem;color:var(--text)}
+  .cbox span{font-size:.5rem;letter-spacing:.16em;color:var(--dim)}
+  .cbox.tick b{color:var(--cyan);text-shadow:0 0 12px rgba(0,240,255,.6)}
+  .status{font-size:.56rem;letter-spacing:.2em;padding:4px 9px;border-radius:99px;display:inline-block;
+    border:1px solid var(--border);color:var(--cyan);background:rgba(0,240,255,.06)}
+
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .fbtn{font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;padding:8px 14px;border-radius:99px;cursor:pointer;
+    border:1px solid var(--border-soft);background:transparent;color:var(--dim);transition:all .2s}
+  .fbtn:hover{color:var(--text);border-color:var(--border)}
+  .fbtn.on{background:rgba(0,240,255,.12);border-color:var(--cyan);color:#fff}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .mcard{border:1px solid var(--border-soft);border-radius:13px;padding:16px;background:var(--surface);
+    transition:border-color .25s,transform .25s var(--ease, ease);position:relative;overflow:hidden}
+  .mcard:hover{border-color:var(--border);transform:translateY(-4px)}
+  .myear{font-family:var(--display);font-size:1.5rem;font-weight:700;color:var(--cyan);line-height:1}
+  .mtitle{font-family:var(--display);font-weight:700;font-size:.95rem;margin:6px 0 4px}
+  .mdesc{font-size:.66rem;color:var(--dim);min-height:38px}
+  .mrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;font-size:.56rem;letter-spacing:.14em;color:var(--dim)}
+  .outcome{padding:3px 9px;border-radius:99px;border:1px solid}
+  .outcome.ok{color:var(--green);border-color:rgba(61,245,160,.4);background:rgba(61,245,160,.08)}
+  .outcome.part{color:var(--yellow);border-color:rgba(252,238,10,.4);background:rgba(252,238,10,.08)}
+  .outcome.dev{color:var(--magenta);border-color:rgba(255,46,151,.4);background:rgba(255,46,151,.08)}
+
+  footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--border-soft);font-size:.56rem;letter-spacing:.14em;color:var(--dim);line-height:2}
+  .rocket{position:fixed;right:22px;bottom:22px;z-index:3;font-size:1.4rem;filter:drop-shadow(0 0 12px rgba(0,240,255,.7));
+    animation:hover 3.4s ease-in-out infinite;pointer-events:none}
+  @keyframes hover{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-14px) rotate(4deg)}}
+  .spin{display:inline-block;width:8px;height:8px;border:1px solid var(--cyan);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="scan"></div>
+<div class="rocket">🚀</div>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <span class="logo">ISRO<b>.MISSION_CONTROL</b></span>
+      <span class="badge" id="srcBadge"><span class="spin"></span> SYNCING</span>
+    </div>
+    <div class="clock">
+      <b id="istClock">--:--:--</b><br>IST · DARBHANGA GROUND STATION
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="sUp">–</div><div class="l">UPCOMING TRACKED</div></div>
+    <div class="stat"><div class="n" id="sHist">–</div><div class="l">MISSIONS IN ARCHIVE</div></div>
+    <div class="stat"><div class="n" id="sNext">–</div><div class="l">NEXT LIFT-OFF</div></div>
+    <div class="stat"><div class="n" id="sVeh">–</div><div class="l">LAUNCH VEHICLES</div></div>
+  </div>
+
+  <h2 class="sec">▸ UPCOMING LAUNCHES</h2>
+  <div class="hint" id="upHint">// LIVE FEED FROM THE SPACE DEVS LAUNCH LIBRARY · TIMES IN IST</div>
+  <div class="launches" id="upcoming"></div>
+
+  <h2 class="sec">▸ MISSION ARCHIVE</h2>
+  <div class="filters" id="filters"></div>
+  <div class="grid" id="history"></div>
+
+  <footer>
+    // DATA: LIVE LAUNCH FEED VIA THE SPACE DEVS LAUNCH LIBRARY 2.0 · ARCHIVE CURATED FROM PUBLIC ISRO MISSION RECORDS<br>
+    // IF THE LIVE FEED IS BLOCKED, THE TRACKER FALLS BACK TO THE ANNOUNCED-MISSION LIST AND SAYS SO<br>
+    // BUILT BY SHRESTHA · DARBHANGA, INDIA
+  </footer>
+</div>
+
+<script>
+/* ================= starfield ================= */
+(function(){
+  var cv = document.getElementById('stars'), cx = cv.getContext('2d'), W = 0, H = 0, st = [];
+  function fit(){
+    W = cv.width = window.innerWidth; H = cv.height = window.innerHeight;
+    st = [];
+    for(var i = 0; i < 170; i++) st.push({x:Math.random()*W, y:Math.random()*H, r:.4+Math.random()*1.3,
+      a:.2+Math.random()*.7, tw:Math.random()*6.28, ts:.001+Math.random()*.002});
+  }
+  fit(); window.addEventListener('resize', fit);
+  (function loop(){
+    cx.clearRect(0,0,W,H);
+    var t = performance.now();
+    for(var i=0;i<st.length;i++){
+      var s = st[i];
+      cx.fillStyle = 'rgba(255,255,255,' + (s.a*(.6+.4*Math.sin(t*s.ts+s.tw))).toFixed(2) + ')';
+      cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, 6.28); cx.fill();
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ================= IST clock ================= */
+(function(){
+  var el = document.getElementById('istClock');
+  function tick(){
+    var d = new Date();
+    var s = d.toLocaleTimeString('en-IN', {timeZone:'Asia/Kolkata', hour12:false});
+    el.textContent = s;
+  }
+  tick(); setInterval(tick, 1000);
+})();
+
+/* ================= archive (curated from public ISRO records) ================= */
+var ARCHIVE = [
+  {y:1980, t:'Rohini RS-1', v:'SLV-3', o:'ok', d:'India becomes a launch-capable nation — first fully indigenous orbital launch.'},
+  {y:2008, t:'Chandrayaan-1', v:'PSLV-C11', o:'ok', d:'India\u2019s first Moon mission. Its Moon Impact Probe confirmed water molecules on the lunar surface.'},
+  {y:2013, t:'Mangalyaan (MOM)', v:'PSLV-C25', o:'ok', d:'Reached Mars orbit on the first attempt, for less than the cost of a Hollywood space film.'},
+  {y:2015, t:'AstroSat', v:'PSLV-C30', o:'ok', d:'India\u2019s first dedicated multi-wavelength space observatory, still watching the sky.'},
+  {y:2019, t:'Chandrayaan-2', v:'GSLV Mk III-M1', o:'part', d:'Orbiter still operating today; the Vikram lander crashed during descent.'},
+  {y:2023, t:'Chandrayaan-3', v:'LVM3-M4', o:'ok', d:'First soft landing near the lunar south pole — India joins the Moon-landing club.'},
+  {y:2023, t:'Aditya-L1', v:'PSLV-C57', o:'ok', d:'Solar observatory parked at Lagrange point L1 to watch the Sun continuously.'},
+  {y:2023, t:'Gaganyaan TV-D1', v:'Test Vehicle', o:'ok', d:'Crew escape system test — the abort sequence that protects astronauts, proven.'},
+  {y:2024, t:'XPoSat', v:'PSLV-C58', o:'ok', d:'X-ray polarimetry satellite studying black holes and neutron stars.'},
+  {y:2024, t:'INSAT-3DS', v:'GSLV-F14', o:'ok', d:'Advanced weather and disaster-warning satellite for the INSAT network.'},
+  {y:2024, t:'SpaDeX', v:'PSLV-C60', o:'ok', d:'Autonomous docking demonstration in orbit — the tech for space stations and sample return.'},
+  {y:2025, t:'NISAR', v:'GSLV-F16', o:'ok', d:'Joint NASA-ISRO radar observatory mapping the whole planet every 12 days.'}
+];
+
+var ANNOUNCED = [
+  {t:'Gaganyaan (crewed)', v:'HLVM3', s:'Human spaceflight \u2014 crewed orbital mission', d:'India\u2019s first crewed flight: three astronauts to low Earth orbit.'},
+  {t:'Chandrayaan-4', v:'TBD', s:'Lunar sample return', d:'Bring Moon rock back to Earth \u2014 a multi-launch, multi-vehicle campaign.'},
+  {t:'Bharatiya Antariksh Station', v:'TBD', s:'Indian space station (planned)', d:'The long-term goal: an Indian orbital station, targeting the 2030s.'}
+];
+
+/* ================= upcoming (live feed, with fallback) ================= */
+var upcomingData = [];
+var nextLaunchAt = null;
+
+function fmtIST(iso){
+  if(!iso) return 'NET TBA';
+  try{
+    return new Date(iso).toLocaleString('en-IN', {timeZone:'Asia/Kolkata',
+      day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true}) + ' IST';
+  }catch(e){ return 'NET TBA'; }
+}
+function setBadge(kind, text){
+  var b = document.getElementById('srcBadge');
+  b.className = 'badge' + (kind === 'live' ? ' live' : kind === 'off' ? ' off' : '');
+  b.innerHTML = text;
+}
+function renderUpcoming(){
+  var box = document.getElementById('upcoming');
+  box.innerHTML = '';
+  if(!upcomingData.length){
+    upcomingData = ANNOUNCED.map(function(m){
+      return {name:m.t, vehicle:m.v, status:m.s, net:null, desc:m.d};
+    });
+    document.getElementById('upHint').textContent = '// ANNOUNCED MISSIONS \u2014 NO FIRM DATE YET (LIVE FEED UNAVAILABLE)';
+  }
+  upcomingData.slice(0, 6).forEach(function(u){
+    var el = document.createElement('div');
+    el.className = 'launch';
+    el.innerHTML =
+      '<div class="lname">' + esc(u.name) + '</div>' +
+      '<div class="lmeta">' + esc(u.vehicle || 'VEHICLE TBA') + ' · ' + esc(u.status || 'SCHEDULED') + '</div>' +
+      (u.net
+        ? '<div class="count" data-net="' + u.net + '">' +
+            '<div class="cbox"><b>--</b><span>DAYS</span></div>' +
+            '<div class="cbox"><b>--</b><span>HRS</span></div>' +
+            '<div class="cbox"><b>--</b><span>MIN</span></div>' +
+            '<div class="cbox"><b>--</b><span>SEC</span></div>' +
+          '</div>'
+        : '<div class="status" style="margin-bottom:12px">LAUNCH DATE: TO BE ANNOUNCED</div>') +
+      '<div class="lmeta" style="margin:0">' + (u.net ? 'NET ' + fmtIST(u.net) : 'DATE: TO BE ANNOUNCED') + '</div>' +
+      (u.desc ? '<div class="mdesc" style="margin-top:10px">' + esc(u.desc) + '</div>' : '');
+    box.appendChild(el);
+  });
+  // stats
+  document.getElementById('sUp').textContent = upcomingData.length;
+  var nxt = upcomingData.filter(function(u){ return u.net; })
+                        .sort(function(a,b){ return new Date(a.net) - new Date(b.net); })[0];
+  nextLaunchAt = nxt ? new Date(nxt.net).getTime() : null;
+  document.getElementById('sNext').textContent = nxt ? fmtIST(nxt.net).split(',')[0] : 'TBA';
+}
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+/* countdown ticker */
+setInterval(function(){
+  var now = Date.now();
+  document.querySelectorAll('.count').forEach(function(c){
+    var net = c.getAttribute('data-net');
+    var boxes = c.querySelectorAll('.cbox');
+    if(!net){ boxes.forEach(function(b){ b.querySelector('b').textContent = '--'; }); return; }
+    var diff = Math.max(0, new Date(net).getTime() - now);
+    var d = Math.floor(diff/86400000), h = Math.floor(diff/3600000)%24,
+        m = Math.floor(diff/60000)%60, s = Math.floor(diff/1000)%60;
+    var vals = [d, h, m, s];
+    boxes.forEach(function(b, i){
+      var bEl = b.querySelector('b');
+      var v = String(vals[i]).padStart(2, '0');
+      if(bEl.textContent !== v){ bEl.textContent = v; b.classList.add('tick'); }
+      else b.classList.remove('tick');
+    });
+  });
+}, 1000);
+
+/* fetch the live feed; fall back quietly */
+(function loadLive(){
+  var urls = [
+    'https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=12&lsp__name=Indian%20Space%20Research%20Organisation&mode=list',
+    'https://ll.thespacedevs.com/2.2.0/launch/upcoming/?limit=12&search=ISRO&mode=list'
+  ];
+  var i = 0;
+  function attempt(){
+    if(i >= urls.length){ fallback(); return; }
+    var url = urls[i++];
+    var ctrl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 9000);
+    fetch(url, {signal: ctrl ? ctrl.signal : undefined})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function(d){
+        clearTimeout(timer);
+        var res = (d && d.results) ? d.results : [];
+        if(!res.length) throw new Error('empty');
+        upcomingData = res.map(function(x){
+          return {
+            name: x.name || 'UNNAMED MISSION',
+            vehicle: (x.rocket && x.rocket.configuration && x.rocket.configuration.full_name) || '',
+            status: (x.status && x.status.abbrev) || '',
+            net: x.net || x.window_start || null,
+            desc: ''
+          };
+        });
+        setBadge('live', 'LIVE FEED');
+        document.getElementById('upHint').textContent = '// LIVE FEED FROM THE SPACE DEVS LAUNCH LIBRARY · TIMES IN IST';
+        renderUpcoming();
+      })
+      .catch(function(){ clearTimeout(timer); attempt(); });
+  }
+  function fallback(){
+    setBadge('off', 'ARCHIVE MODE');
+    document.getElementById('upHint').textContent = '// LIVE FEED BLOCKED \u2014 SHOWING ANNOUNCED MISSIONS INSTEAD';
+    upcomingData = [];
+    renderUpcoming();
+  }
+  attempt();
+})();
+
+/* ================= archive render + filters ================= */
+function renderHistory(filter){
+  var box = document.getElementById('history');
+  box.innerHTML = '';
+  var list = ARCHIVE.filter(function(m){ return !filter || filter === 'ALL' || m.v.indexOf(filter) === 0 || m.v === filter; });
+  list.sort(function(a,b){ return b.y - a.y; });
+  list.forEach(function(m){
+    var el = document.createElement('div');
+    el.className = 'mcard';
+    el.innerHTML =
+      '<div class="myear">' + m.y + '</div>' +
+      '<div class="mtitle">' + esc(m.t) + '</div>' +
+      '<div class="mdesc">' + esc(m.d) + '</div>' +
+      '<div class="mrow"><span>' + esc(m.v) + '</span>' +
+      '<span class="outcome ' + m.o + '">' + (m.o === 'ok' ? 'SUCCESS' : m.o === 'part' ? 'PARTIAL' : 'IN DEV') + '</span></div>';
+    box.appendChild(el);
+  });
+}
+(function(){
+  var veh = ['ALL'];
+  ARCHIVE.forEach(function(m){ var v = m.v.split('-')[0].split(' ')[0]; if(veh.indexOf(v) < 0) veh.push(v); });
+  var f = document.getElementById('filters');
+  veh.forEach(function(v, i){
+    var b = document.createElement('button');
+    b.className = 'fbtn' + (i === 0 ? ' on' : '');
+    b.textContent = v;
+    b.addEventListener('click', function(){
+      f.querySelectorAll('.fbtn').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      renderHistory(v === 'ALL' ? null : v);
+    });
+    f.appendChild(b);
+  });
+  renderHistory(null);
+  document.getElementById('sHist').textContent = ARCHIVE.length;
+  document.getElementById('sVeh').textContent = veh.length - 1;
+})();
+</script>
+</body>
+</html>
