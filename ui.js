@@ -330,7 +330,7 @@ window.__PROJECTS = PROJECTS;
   const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#%$&@*+=';
 
   /* ---------- 1. chapter rail ---------- */
-  const SECS = [['top','Home'],['about','About'],['work','Work'],['skills','Skills'],['journey','Journey'],['contact','Contact']];
+  const SECS = [['top','Home'],['about','About'],['work','Work'],['skills','Skills'],['journey','Journey'],['resume','R&eacute;sum&eacute;'],['contact','Contact']];
   const chaptersEl = $('#chapters');
   if(chaptersEl){
     chaptersEl.innerHTML = SECS.map((s,i)=>'<button data-goto="#'+s[0]+'" data-i="'+i+'"><span>'+s[1]+'</span><i></i></button>').join('');
@@ -912,7 +912,7 @@ window.__PROJECTS = PROJECTS;
       '<div class="toc" id="tocList"></div>';
     navRight.insertBefore(wrap, navRight.firstChild);
     const list = $('#tocList');
-    const SECT = [['top','Home'],['about','About'],['video','Watch'],['work','Work'],['skills','Skills'],['journey','Journey'],['contact','Contact']];
+    const SECT = [['top','Home'],['about','About'],['video','Watch'],['work','Work'],['skills','Skills'],['journey','Journey'],['resume','R&eacute;sum&eacute;'],['contact','Contact']];
     list.innerHTML = SECT.map(function(s,i){ return '<a href="#'+s[0]+'">'+s[1]+'<b>0'+(i+1)+'</b></a>'; }).join('');
     $('#tocBtn').addEventListener('click', function(e){ e.stopPropagation(); wrap.classList.toggle('open'); });
     list.addEventListener('click', function(){ wrap.classList.remove('open'); });
@@ -955,7 +955,7 @@ window.__PROJECTS = PROJECTS;
     if($('#palette').classList.contains('open')) return;
     if(e.key === 'Escape' && photoOn){ setPhoto(false); return; }
     if(e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-    const ids = ['top','about','video','work','skills','journey','contact'];
+    const ids = ['top','about','video','work','skills','journey','resume','contact'];
     let cur = 0;
     ids.forEach(function(id,i){ const el = document.getElementById(id); if(el && el.getBoundingClientRect().top <= innerHeight*0.42) cur = i; });
     const nx = Math.max(0, Math.min(ids.length-1, cur + (e.key==='ArrowDown'?1:-1)));
