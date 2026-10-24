@@ -665,11 +665,8 @@ function build(THREE, PP){
     dragging=false; canvas.style.cursor='grab';
   });
   canvas.style.cursor='grab';
-  canvas.addEventListener('dblclick', function(){
-    const el = document.documentElement;
-    if(!document.fullscreenElement){ (el.requestFullscreen||function(){}).call(el); }
-    else document.exitFullscreen();
-  });
+  // A double tap now shows the world notice (handled in ui.js), so the old
+  // fullscreen shortcut on the canvas is gone. Focus mode owns fullscreen.
   canvas.addEventListener('wheel', function(e){
     e.preventDefault();
     zoomOff = Math.max(-16, Math.min(24, zoomOff + e.deltaY*0.02));

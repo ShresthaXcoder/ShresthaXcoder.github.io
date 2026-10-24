@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <script>
 /* The page is locked to its home address. Anywhere else it stays switched off. */
 (function () {
@@ -415,10 +415,24 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 <div class="tip" id="tooltip"></div>
 <div class="shutter" id="shutter"></div>
 
+<div class="watermark" id="watermark" aria-hidden="true"></div>
+
+<button class="focus-btn" id="focusBtn" aria-label="Focus mode" title="Focus mode">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+</button>
+
+<div class="world-notice" id="worldNotice" role="status" aria-live="polite">
+  <div class="wn-inner">
+    <span class="wn-mark">S</span>
+    <h4>This is Shrestha&rsquo;s world</h4>
+    <p>Screenshots are welcome. Open <b>focus mode</b> and tap <b>Share this view</b> for a clean one with my name on it.</p>
+  </div>
+</div>
+
 <div class="photo-bar" id="photoBar">
-  <button id="pbShoot" class="shoot">Take shot</button>
-  <button id="pbHide">Hide UI</button>
-  <button id="pbExit">Exit photo mode</button>
+  <button id="pbShare" class="shoot">Share this view</button>
+  <button id="pbSave">Save PNG</button>
+  <button id="pbExit">Exit focus</button>
 </div>
 
 

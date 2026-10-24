@@ -812,7 +812,8 @@ window.__PROJECTS = PROJECTS;
       '<button data-t="contrast">High contrast</button>'+
       '<button data-t="cursor">Voxel cursor</button>'+
       '<button data-t="sound">Ambient sound</button>'+
-      '<button data-t="photo">Photo mode</button></div>';
+      '<button data-t="photo">Focus mode</button>'+
+      '<button data-t="watermark">Watermark</button></div>';
     wpBody.appendChild(row);
   }
   let audioCtx = null, audioNodes = null;
@@ -845,40 +846,342 @@ window.__PROJECTS = PROJECTS;
     if(k==='contrast'){ document.body.classList.toggle('hc', on); toast(on?'high contrast':'normal contrast'); }
     if(k==='cursor'){ document.body.classList.toggle('voxcursor', on); toast(on?'voxel cursor':'normal cursor'); }
     if(k==='sound'){ toggleSound(on); toast(on?'ambient on':'ambient off'); }
-    if(k==='photo'){ setPhoto(on); b.classList.toggle('on', on); }
+    if(k==='photo'){ setFocus(on); }
+    if(k==='watermark'){ document.body.classList.toggle('watermark-on', on); toast(on?'watermark on':'watermark off'); }
   });
 
-  /* ---------- 10. photo mode + screenshot ---------- */
-  let photoOn = false;
-  function setPhoto(on){
-    photoOn = on; document.body.classList.toggle('photo', on);
-    const b = togEl && togEl.querySelector('[data-t="photo"]'); if(b) b.classList.toggle('on', on);
-    toast(on ? 'photo mode — press Esc to exit' : 'photo mode off');
+  /* ---------- 10. focus mode, fullscreen, wake lock ---------- */
+  var focusOn = false;
+  var wakeLock = null;
+  var overlayHistory = null;
+
+  function pushOverlay(name) {
+    if (overlayHistory !== null) {
+      return;
+    }
+    overlayHistory = name;
+    try {
+      history.pushState({ overlay: name }, '');
+    } catch (e) {
+      overlayHistory = null;
+    }
   }
-  $('#pbExit') && $('#pbExit').addEventListener('click', function(){ setPhoto(false); });
-  $('#pbHide') && $('#pbHide').addEventListener('click', function(){
-    document.body.classList.toggle('photo-clean');
-    const bar = $('#photoBar'); if(bar) bar.style.opacity = document.body.classList.contains('photo-clean') ? '0' : '1';
+
+  function popOverlay(name) {
+    if (overlayHistory !== name) {
+      return;
+    }
+    overlayHistory = null;
+    try {
+      history.back();
+    } catch (e) {}
+  }
+
+  function askFullscreen() {
+    var el = document.documentElement;
+    if (!el.requestFullscreen) {
+      return;
+    }
+    var result = el.requestFullscreen();
+    if (result && result.catch) {
+      result.catch(function () {});
+    }
+  }
+
+  function dropFullscreen() {
+    if (!document.fullscreenElement || !document.exitFullscreen) {
+      return;
+    }
+    var result = document.exitFullscreen();
+    if (result && result.catch) {
+      result.catch(function () {});
+    }
+  }
+
+  function holdScreenAwake() {
+    if (!navigator.wakeLock || !navigator.wakeLock.request) {
+      return;
+    }
+    navigator.wakeLock.request('screen').then(function (lock) {
+      wakeLock = lock;
+    }).catch(function () {});
+  }
+
+  function releaseScreenAwake() {
+    if (!wakeLock) {
+      return;
+    }
+    try {
+      wakeLock.release();
+    } catch (e) {}
+    wakeLock = null;
+  }
+
+  function setFocus(on) {
+    if (on === focusOn) {
+      return;
+    }
+    focusOn = on;
+    document.body.classList.toggle('photo', on);
+    var toggleButton = togEl && togEl.querySelector('[data-t="photo"]');
+    if (toggleButton) {
+      toggleButton.classList.toggle('on', on);
+    }
+    if (on === true) {
+      askFullscreen();
+      holdScreenAwake();
+      pushOverlay('focus');
+      toast('focus mode on');
+      return;
+    }
+    dropFullscreen();
+    releaseScreenAwake();
+    popOverlay('focus');
+  }
+
+  window.__toggleFocus = function () {
+    setFocus(!focusOn);
+  };
+
+  var focusButton = $('#focusBtn');
+  if (focusButton) {
+    focusButton.addEventListener('click', function () {
+      setFocus(true);
+    });
+  }
+
+  var exitButton = $('#pbExit');
+  if (exitButton) {
+    exitButton.addEventListener('click', function () {
+      setFocus(false);
+    });
+  }
+
+  document.addEventListener('fullscreenchange', function () {
+    if (!document.fullscreenElement && focusOn === true) {
+      setFocus(false);
+    }
   });
-  function shoot(){
-    const sh = $('#shutter'); if(sh){ sh.style.opacity = '0.85'; setTimeout(function(){ sh.style.opacity='0'; }, 140); }
-    setTimeout(function(){
-      try{
-        const s = SC();
-        const cv = s && s.renderer ? s.renderer.domElement : null;
-        if(!cv){ toast('no canvas'); return; }
-        const out = document.createElement('canvas');
-        out.width = cv.width; out.height = cv.height;
-        const g = out.getContext('2d');
-        g.fillStyle = '#0b1522'; g.fillRect(0,0,out.width,out.height);
-        g.drawImage(cv,0,0);
-        const a = document.createElement('a');
-        a.href = out.toDataURL('image/png'); a.download = 'shrestha-voxel-world.png';
-        a.click(); toast('saved screenshot');
-      }catch(e){ toast('screenshot failed'); }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && focusOn === true) {
+      holdScreenAwake();
+    }
+  });
+
+  /* ---------- 10b. share a clean picture of the world ---------- */
+  function buildShareCanvas(done) {
+    var scene = SC();
+    var source = scene && scene.renderer ? scene.renderer.domElement : null;
+    if (!source) {
+      toast('the world is still loading');
+      return;
+    }
+    var out = document.createElement('canvas');
+    out.width = source.width;
+    out.height = source.height;
+    var paint = out.getContext('2d');
+    paint.fillStyle = '#0b1522';
+    paint.fillRect(0, 0, out.width, out.height);
+    paint.drawImage(source, 0, 0);
+
+    var unit = out.width / 1200;
+    var edge = 36 * unit;
+    var strip = 160 * unit;
+
+    var fade = paint.createLinearGradient(0, out.height - strip, 0, out.height);
+    fade.addColorStop(0, 'rgba(6,11,19,0)');
+    fade.addColorStop(1, 'rgba(6,11,19,0.94)');
+    paint.fillStyle = fade;
+    paint.fillRect(0, out.height - strip, out.width, strip);
+
+    paint.textAlign = 'left';
+    paint.fillStyle = '#ffffff';
+    paint.font = '700 ' + (48 * unit) + 'px "Space Grotesk", system-ui, sans-serif';
+    paint.fillText('SHRESTHA', edge, out.height - edge - 40 * unit);
+
+    paint.fillStyle = 'rgba(255,255,255,0.75)';
+    paint.font = '400 ' + (25 * unit) + 'px "Plus Jakarta Sans", system-ui, sans-serif';
+    paint.fillText('Frontend designer & AI builder', edge, out.height - edge - 4 * unit);
+
+    paint.textAlign = 'right';
+    paint.fillStyle = '#6ff5c8';
+    paint.font = '400 ' + (25 * unit) + 'px "Space Mono", monospace';
+    paint.fillText('shresthaxcoder.github.io', out.width - edge, out.height - edge - 4 * unit);
+
+    done(out);
+  }
+
+  function downloadBlob(blob) {
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = url;
+    link.download = 'shrestha-voxel-world.png';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 5000);
+    toast('saved shrestha-voxel-world.png');
+  }
+
+  function flashShutter() {
+    var shutter = $('#shutter');
+    if (!shutter) {
+      return;
+    }
+    shutter.style.opacity = '0.85';
+    setTimeout(function () {
+      shutter.style.opacity = '0';
+    }, 140);
+  }
+
+  function shareView() {
+    flashShutter();
+    setTimeout(function () {
+      buildShareCanvas(function (out) {
+        out.toBlob(function (blob) {
+          if (!blob) {
+            toast('could not build the picture');
+            return;
+          }
+          var file = null;
+          try {
+            file = new File([blob], 'shrestha-voxel-world.png', { type: 'image/png' });
+          } catch (e) {
+            file = null;
+          }
+          if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({ files: [file], title: 'Shrestha — voxel world', text: 'shresthaxcoder.github.io' })
+              .catch(function () {});
+            return;
+          }
+          downloadBlob(blob);
+        }, 'image/png');
+      });
     }, 180);
   }
-  $('#pbShoot') && $('#pbShoot').addEventListener('click', shoot);
+
+  function saveView() {
+    flashShutter();
+    setTimeout(function () {
+      buildShareCanvas(function (out) {
+        out.toBlob(function (blob) {
+          if (!blob) {
+            toast('could not build the picture');
+            return;
+          }
+          downloadBlob(blob);
+        }, 'image/png');
+      });
+    }, 180);
+  }
+
+  var shareButton = $('#pbShare');
+  if (shareButton) {
+    shareButton.addEventListener('click', shareView);
+  }
+
+  var saveButton = $('#pbSave');
+  if (saveButton) {
+    saveButton.addEventListener('click', saveView);
+  }
+
+  /* ---------- 10c. double tap says hello ---------- */
+  var noticeTimer = null;
+
+  function showWorldNotice() {
+    var notice = $('#worldNotice');
+    if (!notice) {
+      return;
+    }
+    notice.classList.add('show');
+    if (noticeTimer) {
+      clearTimeout(noticeTimer);
+    }
+    noticeTimer = setTimeout(function () {
+      notice.classList.remove('show');
+    }, 2600);
+  }
+
+  var lastTapAt = 0;
+  var lastTapX = 0;
+  var lastTapY = 0;
+
+  document.addEventListener('pointerup', function (event) {
+    var onControl = event.target && event.target.closest
+      ? event.target.closest('a, button, input, textarea, .modal, .palette, .keys, .wpanel')
+      : null;
+    if (onControl) {
+      lastTapAt = 0;
+      return;
+    }
+    var now = Date.now();
+    var dx = event.clientX - lastTapX;
+    var dy = event.clientY - lastTapY;
+    var moved = Math.sqrt(dx * dx + dy * dy);
+    if (now - lastTapAt < 320 && moved < 46) {
+      lastTapAt = 0;
+      showWorldNotice();
+      return;
+    }
+    lastTapAt = now;
+    lastTapX = event.clientX;
+    lastTapY = event.clientY;
+  });
+
+  /* ---------- 10d. android back button closes what is open ---------- */
+  var baseOpenModal = openModal;
+  var baseCloseModal = closeModal;
+  openModal = function (id) {
+    baseOpenModal(id);
+    pushOverlay('modal');
+  };
+  closeModal = function () {
+    var wasOpen = overlayHistory === 'modal';
+    baseCloseModal();
+    if (wasOpen) {
+      popOverlay('modal');
+    }
+  };
+
+  var baseOpenPalette = openPalette;
+  var baseClosePalette = closePalette;
+  openPalette = function () {
+    baseOpenPalette();
+    pushOverlay('palette');
+  };
+  closePalette = function () {
+    var wasOpen = overlayHistory === 'palette';
+    baseClosePalette();
+    if (wasOpen) {
+      popOverlay('palette');
+    }
+  };
+
+  window.addEventListener('popstate', function () {
+    var which = overlayHistory;
+    if (which === null) {
+      return;
+    }
+    overlayHistory = null;
+    if (which === 'focus') {
+      setFocus(false);
+    }
+    if (which === 'modal') {
+      baseCloseModal();
+    }
+    if (which === 'palette') {
+      baseClosePalette();
+    }
+    if (which === 'keys') {
+      var sheet = $('#keys');
+      if (sheet) {
+        sheet.classList.remove('open');
+      }
+    }
+  });
 
   /* ---------- 11. fact ticker ---------- */
   const FACTS = [
@@ -953,7 +1256,7 @@ window.__PROJECTS = PROJECTS;
     if(/INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName)) return;
     if(document.getElementById('modal').classList.contains('open')) return;
     if($('#palette').classList.contains('open')) return;
-    if(e.key === 'Escape' && photoOn){ setPhoto(false); return; }
+    if(e.key === 'Escape' && focusOn){ setFocus(false); return; }
     if(e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
     const ids = ['top','about','video','work','skills','journey','resume','contact'];
     let cur = 0;
