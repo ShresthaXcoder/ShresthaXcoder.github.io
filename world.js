@@ -13,7 +13,221 @@ let sceneAPI = null;
   // Glow is done with additive sprites instead.
   sceneAPI = build(THREE, null);
   window.__scene = sceneAPI;
+  buildBoy(THREE);
 })().catch(function(err){ if(window.console) console.warn('3D unavailable:', err && err.message); document.body.classList.add('no3d'); });
+
+/* ==================== THE LITTLE 3D BOY ==================== */
+/* A small second scene that shows a voxel version of me above the About heading. */
+
+function buildBoy(THREE) {
+  var canvas = document.getElementById('boyCanvas');
+  if (!canvas) {
+    return;
+  }
+
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+  } catch (error) {
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(34, 1, 0.1, 200);
+  camera.position.set(0, 11, 35);
+  camera.lookAt(0, 8.5, 0);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb6c9, 1.2));
+  var sun = new THREE.DirectionalLight(0xffffff, 1.5);
+  sun.position.set(9, 20, 14);
+  scene.add(sun);
+  var rim = new THREE.DirectionalLight(0xbcd8ff, 0.6);
+  rim.position.set(-11, 7, -9);
+  scene.add(rim);
+
+  function makeBlocks(list, size) {
+    var geo = new THREE.BoxGeometry(size, size, size);
+    var mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    var mesh = new THREE.InstancedMesh(geo, mat, list.length);
+    var matrix = new THREE.Matrix4();
+    var colour = new THREE.Color();
+    var i = 0;
+    while (i < list.length) {
+      matrix.makeTranslation(list[i].x, list[i].y, list[i].z);
+      mesh.setMatrixAt(i, matrix);
+      colour.set(list[i].color);
+      mesh.setColorAt(i, colour);
+      i = i + 1;
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
+    return mesh;
+  }
+
+  var skin = 0xd39b6a;
+  var hair = 0x241c16;
+  var shirt = 0xff5a3c;
+  var shirtTop = 0xd8492c;
+  var pants = 0x2b3a55;
+  var shoe = 0x1b2430;
+  var eye = 0x171717;
+  var mouth = 0x8a4a3a;
+
+  var cells = {};
+  function put(x, y, z, color) {
+    cells[x + ',' + y + ',' + z] = { x: x, y: y, z: z, color: color };
+  }
+
+  var x;
+  var y;
+  var z;
+
+  // shoes
+  y = 0;
+  for (x = -2; x <= 2; x = x + 1) {
+    if (x === 0) {
+      continue;
+    }
+    for (z = -1; z <= 1; z = z + 1) {
+      put(x, y, z, shoe);
+    }
+  }
+
+  // legs
+  for (y = 1; y <= 4; y = y + 1) {
+    for (x = -2; x <= 2; x = x + 1) {
+      if (x === 0) {
+        continue;
+      }
+      for (z = -1; z <= 1; z = z + 1) {
+        put(x, y, z, pants);
+      }
+    }
+  }
+
+  // shirt
+  for (y = 5; y <= 9; y = y + 1) {
+    var shirtColor = (y === 9) ? shirtTop : shirt;
+    for (x = -2; x <= 2; x = x + 1) {
+      for (z = -1; z <= 1; z = z + 1) {
+        put(x, y, z, shirtColor);
+      }
+    }
+  }
+
+  // left arm, hanging
+  for (y = 5; y <= 9; y = y + 1) {
+    var leftColor = (y >= 8) ? shirt : skin;
+    for (z = -1; z <= 1; z = z + 1) {
+      put(-3, y, z, leftColor);
+    }
+  }
+
+  // neck
+  for (x = -1; x <= 1; x = x + 1) {
+    put(x, 10, 0, skin);
+  }
+
+  // head
+  for (y = 11; y <= 15; y = y + 1) {
+    for (x = -2; x <= 2; x = x + 1) {
+      for (z = -1; z <= 1; z = z + 1) {
+        put(x, y, z, skin);
+      }
+    }
+  }
+
+  // hair on top
+  for (x = -2; x <= 2; x = x + 1) {
+    for (z = -1; z <= 1; z = z + 1) {
+      put(x, 16, z, hair);
+    }
+  }
+
+  // hair down the back
+  for (y = 13; y <= 15; y = y + 1) {
+    for (x = -2; x <= 2; x = x + 1) {
+      put(x, y, -1, hair);
+    }
+  }
+
+  // hair at the sides
+  for (y = 14; y <= 15; y = y + 1) {
+    put(-2, y, 0, hair);
+    put(2, y, 0, hair);
+  }
+
+  // face
+  put(-1, 13, 1, eye);
+  put(1, 13, 1, eye);
+  put(0, 12, 1, mouth);
+
+  var bodyList = [];
+  var key;
+  for (key in cells) {
+    bodyList.push(cells[key]);
+  }
+
+  var boy = new THREE.Group();
+  boy.add(makeBlocks(bodyList, 1));
+  scene.add(boy);
+
+  // right arm, separate so it can wave
+  var armList = [];
+  var armY = 0;
+  while (armY >= -4) {
+    var armColor = (armY >= -1) ? shirt : skin;
+    for (z = -1; z <= 1; z = z + 1) {
+      armList.push({ x: 0, y: armY, z: z, color: armColor });
+    }
+    armY = armY - 1;
+  }
+  var armGroup = new THREE.Group();
+  armGroup.add(makeBlocks(armList, 1));
+  armGroup.position.set(3, 9, 0);
+  boy.add(armGroup);
+
+  boy.position.y = 0;
+
+  function resize() {
+    var box = canvas.parentNode;
+    var width = box ? box.clientWidth : 260;
+    var height = box ? box.clientHeight : 310;
+    if (width < 2 || height < 2) {
+      return;
+    }
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var clock = new THREE.Clock();
+  var onScreen = true;
+
+  if ('IntersectionObserver' in window) {
+    var watcher = new IntersectionObserver(function (entries) {
+      onScreen = entries[0].isIntersecting;
+    }, { threshold: 0.05 });
+    watcher.observe(canvas);
+  }
+
+  function draw() {
+    requestAnimationFrame(draw);
+    if (!onScreen) {
+      return;
+    }
+    var t = clock.getElapsedTime();
+    boy.rotation.y = Math.sin(t * 0.45) * 0.62;
+    boy.position.y = Math.sin(t * 1.6) * 0.22;
+    armGroup.rotation.z = 2.32 + Math.sin(t * 5) * 0.26;
+    armGroup.rotation.x = Math.sin(t * 2.2) * 0.12;
+    renderer.render(scene, camera);
+  }
+  draw();
+}
 
 function build(THREE, PP){
   let composer = null, bloom = null;
