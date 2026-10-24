@@ -25,10 +25,22 @@ function buildBoy(THREE) {
     return;
   }
 
+  function giveUpOnBoy() {
+    var holder = canvas.closest ? canvas.closest('.about-boy') : null;
+    if (holder) {
+      holder.style.display = 'none';
+    }
+  }
+
   var renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
   } catch (error) {
+    giveUpOnBoy();
+    return;
+  }
+  if (!renderer || !renderer.getContext()) {
+    giveUpOnBoy();
     return;
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -210,6 +222,9 @@ function buildBoy(THREE) {
   if ('IntersectionObserver' in window) {
     var watcher = new IntersectionObserver(function (entries) {
       onScreen = entries[0].isIntersecting;
+      if (onScreen) {
+        resize();
+      }
     }, { threshold: 0.05 });
     watcher.observe(canvas);
   }

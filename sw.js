@@ -1,14 +1,11 @@
 // Shrestha portfolio — service worker
 // Keeps the app shell so the page opens offline and can be installed.
 
-var CACHE_NAME = 'shrestha-portfolio-v8';
+var CACHE_NAME = 'shrestha-portfolio-v9';
 
 var CORE_FILES = [
   './',
   './index.html',
-  './style.css',
-  './world.js',
-  './ui.js',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-180.png',
@@ -75,8 +72,34 @@ self.addEventListener('fetch', function (event) {
   }
 
   var url = new URL(request.url);
-  var sameOrigin = url.origin === self.location.origin;
-  var cacheable = sameOrigin || isCdnRequest(url);
+
+  // Files from this site are always taken from the network first, so an update
+  // can never be hidden behind an old cached copy. The cache is the fallback
+  // for when the phone is offline.
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      fetch(request).then(function (response) {
+        if (response && response.status === 200) {
+          var copy = response.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(request, copy);
+          });
+        }
+        return response;
+      }).catch(function () {
+        return caches.match(request).then(function (hit) {
+          if (hit) {
+            return hit;
+          }
+          return caches.match('./index.html');
+        });
+      })
+    );
+    return;
+  }
+
+  // Fonts and three.js barely change, so they stay cache first for speed.
+  var cacheable = isCdnRequest(url);
 
   event.respondWith(
     caches.match(request).then(function (hit) {
