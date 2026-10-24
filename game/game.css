@@ -1,0 +1,357 @@
+/* ==================== VOXEL TOWER DEFENCE — STYLES ==================== */
+
+:root {
+  --bg: #0b1522;
+  --panel: #14243a;
+  --panel-2: #1b2f4a;
+  --line: rgba(255, 255, 255, 0.10);
+  --ink: #eaf2fb;
+  --dim: #93a6bd;
+  --accent: #6ff5c8;
+  --coral: #ff5a3c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: radial-gradient(120% 80% at 50% 0%, #172a44 0%, var(--bg) 62%);
+  color: var(--ink);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+/* ---------- top bar ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.back:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.back svg {
+  width: 15px;
+  height: 15px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-right: auto;
+}
+
+.title span {
+  color: var(--dim);
+  font-weight: 500;
+}
+
+.stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12.5px;
+}
+
+.stat b {
+  font-variant-numeric: tabular-nums;
+  font-size: 14px;
+}
+
+.stat i {
+  font-style: normal;
+  color: var(--dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat.gold b {
+  color: #ffc247;
+}
+
+.stat.lives b {
+  color: #63d67a;
+}
+
+.stat.score b {
+  color: var(--accent);
+}
+
+/* ---------- stage ---------- */
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 240px;
+  margin: 0 12px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #0b1522;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  top: 14px;
+  transform: translateX(-50%) translateY(-12px);
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(11, 21, 34, 0.92);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  white-space: nowrap;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(7, 13, 22, 0.82);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ov-card {
+  max-width: 420px;
+  text-align: center;
+  padding: 30px 28px;
+  border-radius: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45);
+}
+
+.ov-card h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.ov-card p {
+  margin: 12px 0 0;
+  color: var(--dim);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.ov-go {
+  margin-top: 22px;
+  padding: 14px 30px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--accent);
+  color: #06210f;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.ov-go:hover {
+  transform: translateY(-2px);
+  background: #9bffdd;
+}
+
+.ov-hint {
+  font-size: 12.5px !important;
+  color: #6d7f94 !important;
+}
+
+/* ---------- bottom tray ---------- */
+
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 16px;
+  flex-wrap: wrap;
+}
+
+.tray .spacer {
+  flex: 1;
+}
+
+.turret {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.turret:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.turret.on {
+  border-color: var(--accent);
+  background: rgba(111, 245, 200, 0.14);
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--coral);
+}
+
+.turret[data-turret="frost"] .swatch {
+  background: #7fe4f0;
+}
+
+.turret em {
+  font-style: normal;
+  color: #ffc247;
+  font-variant-numeric: tabular-nums;
+}
+
+.go {
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: 0;
+  background: var(--coral);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+}
+
+.go:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.go:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ghost {
+  padding: 10px 15px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dim);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ghost.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .title span {
+    display: none;
+  }
+
+  .stat {
+    padding: 6px 9px;
+    font-size: 11.5px;
+  }
+
+  .stat i {
+    display: none;
+  }
+
+  .tray {
+    gap: 8px;
+  }
+
+  .turret, .go, .ghost {
+    flex: 1;
+    justify-content: center;
+    font-size: 12.5px;
+    padding: 11px 10px;
+  }
+
+  .tray .spacer {
+    display: none;
+  }
+}

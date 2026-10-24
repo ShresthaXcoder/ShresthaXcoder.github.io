@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Voxel Tower Defence &mdash; Shrestha</title>
+<meta name="description" content="A blocky tower defence game built by Shrestha. Place turrets, hold the line." />
+<meta name="theme-color" content="#0b1522" />
+<link rel="icon" type="image/png" href="../icon-192.png" />
+<link rel="apple-touch-icon" href="../icon-180.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="game.css" />
+<script>
+/* The page is locked to its home address, same as the main site. */
+(function () {
+  var allowedHosts = [
+    [115,104,114,101,115,116,104,97,120,99,111,100,101,114,46,103,105,116,104,117,98,46,105,111],
+    [119,119,119,46,115,104,114,101,115,116,104,97,120,99,111,100,101,114,46,103,105,116,104,117,98,46,105,111]
+  ];
+  var here = location.hostname;
+  var matched = false;
+  var hostIndex = 0;
+  while (hostIndex < allowedHosts.length) {
+    var word = '';
+    var codeIndex = 0;
+    while (codeIndex < allowedHosts[hostIndex].length) {
+      word = word + String.fromCharCode(allowedHosts[hostIndex][codeIndex]);
+      codeIndex = codeIndex + 1;
+    }
+    if (word === here) {
+      matched = true;
+    }
+    hostIndex = hostIndex + 1;
+  }
+  if (matched === true) {
+    document.documentElement.setAttribute('data-unlocked', 'yes');
+    return;
+  }
+  document.documentElement.setAttribute('data-locked', 'yes');
+})();
+
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    if (document.documentElement.getAttribute('data-unlocked') === 'yes') {
+      return;
+    }
+    var notice = document.createElement('div');
+    notice.className = 'lock-screen';
+    notice.innerHTML = '<div class="lock-inner">'
+      + '<div class="lock-mark">S</div>'
+      + '<h1>This game only runs at its home address</h1>'
+      + '<p>A copy of these files has been opened somewhere else, so it is switched off here.</p>'
+      + '<a class="lock-link" href="https://shresthaxcoder.github.io">Go to shresthaxcoder.github.io</a>'
+      + '</div>';
+    document.body.appendChild(notice);
+  });
+})();
+</script>
+<style>
+html:not([data-unlocked="yes"]) body > *:not(.lock-screen) { display: none !important; }
+html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0b1522; }
+.lock-screen { position: fixed; inset: 0; z-index: 99999; display: grid; place-items: center; padding: 28px;
+  background: radial-gradient(120% 90% at 50% 0%, #16294a 0%, #0b1522 70%); color: #c6d4e3; text-align: center;
+  font-family: system-ui, sans-serif; }
+.lock-inner { max-width: 460px; }
+.lock-mark { width: 74px; height: 74px; margin: 0 auto 20px; border-radius: 20px; display: grid; place-items: center;
+  font-weight: 700; font-size: 40px; color: #0b1522; background: linear-gradient(145deg, #6ff5c8, #8f7bff 55%, #ff5fd0); }
+.lock-screen h1 { font-size: 22px; line-height: 1.3; color: #eaf2fb; }
+.lock-screen p { margin-top: 12px; font-size: 15px; color: #93a1b3; line-height: 1.6; }
+.lock-link { display: inline-block; margin-top: 22px; padding: 13px 22px; border-radius: 999px;
+  background: #6ff5c8; color: #0b1522; font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="back" href="../index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6"/></svg>
+    Back to the portfolio
+  </a>
+  <div class="title">Voxel Tower Defence <span>&middot; built by Shrestha</span></div>
+  <div class="stats">
+    <div class="stat gold"><i>Gold</i><b id="hudGold">0</b></div>
+    <div class="stat lives"><i>Lives</i><b id="hudLives">0</b></div>
+    <div class="stat"><i>Wave</i><b id="hudWave">0</b></div>
+    <div class="stat score"><i>Score</i><b id="hudScore">0</b></div>
+    <div class="stat"><i>Best</i><b id="hudBest">0</b></div>
+  </div>
+</div>
+
+<div class="stage">
+  <canvas id="gameCanvas"></canvas>
+  <div class="toast" id="gameToast"></div>
+  <div class="overlay" id="gameOverlay"></div>
+</div>
+
+<div class="tray">
+  <button class="turret on" data-turret="cannon">
+    <span class="swatch"></span> Cannon <em>50</em>
+  </button>
+  <button class="turret" data-turret="frost">
+    <span class="swatch"></span> Frost <em>75</em>
+  </button>
+  <span class="spacer"></span>
+  <button class="ghost" id="gameSpeed">1x speed</button>
+  <button class="ghost" id="gameMute">Sound on</button>
+  <button class="go" id="sendWave">Send wave 1</button>
+</div>
+
+<script src="game.js?v=1"></script>
+</body>
+</html>
