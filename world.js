@@ -8,6 +8,11 @@ let sceneAPI = null;
     return;
   }
   const THREE = await import('three');
+  // Wait for the opening splash before building, so several thousand voxels
+  // are not created while the logo is still drawing.
+  if (window.__splashDone) {
+    await window.__splashDone;
+  }
   // NOTE: post-processing bloom is intentionally not used — UnrealBloomPass
   // destroys the alpha channel, which would tint the CSS sky behind the canvas.
   // Glow is done with additive sprites instead.

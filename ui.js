@@ -43,33 +43,42 @@ window.__PROJECTS = PROJECTS;
   (function(){
     const l = $('#loader');
     if(!l) return;
-    const started = Date.now();
     const line = l.querySelector('.splash-draw');
     const rest = l.querySelector('.splash-rest');
     const word = l.querySelector('.splash-name');
 
-    if(line && line.getTotalLength){
-      const len = line.getTotalLength();
-      line.style.strokeDasharray = len;
-      line.style.strokeDashoffset = len;
-      line.getBoundingClientRect();
-      line.classList.add('draw');
-    }
+    // The heavy 3D build waits on this promise, so the main thread stays free
+    // while the logo is drawing. That is what keeps the animation smooth.
+    let freeTheWorld = null;
+    window.__splashDone = new Promise(function(resolve){ freeTheWorld = resolve; });
+    function releaseWorld(){ if(freeTheWorld) freeTheWorld(); }
 
-    setTimeout(function(){ if(rest) rest.classList.add('in'); }, 1200);
-    setTimeout(function(){ if(word) word.classList.add('in'); }, 1440);
+    function beginDraw(){
+      if(line && line.getTotalLength){
+        const len = line.getTotalLength();
+        line.style.strokeDasharray = len;
+        line.style.strokeDashoffset = len;
+        line.getBoundingClientRect();
+        line.classList.add('draw');
+      }
+      setTimeout(function(){ if(rest) rest.classList.add('in'); }, 900);
+      setTimeout(function(){ if(word) word.classList.add('in'); }, 1120);
+      // let the world start building while the splash is still on screen
+      setTimeout(releaseWorld, 1150);
+    }
 
     function hideLoader(){
       const el = $('#loader');
       if(el) el.classList.add('done');
+      releaseWorld();
     }
 
-    window.addEventListener('load', function(){
-      const waited = Date.now() - started;
-      const left = Math.max(0, 2400 - waited);
-      setTimeout(hideLoader, left + 350);
-    });
-    setTimeout(hideLoader, 5400);
+    // begin on a clean frame rather than mid-parse
+    requestAnimationFrame(function(){ requestAnimationFrame(beginDraw); });
+
+    // fixed timing, so a slow download can never leave the splash stuck open
+    setTimeout(hideLoader, 2350);
+    setTimeout(hideLoader, 6000);
   })();
 
   /* nav */
