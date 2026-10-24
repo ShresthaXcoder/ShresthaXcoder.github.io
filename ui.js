@@ -44,8 +44,8 @@ window.__PROJECTS = PROJECTS;
     const l = $('#loader');
     if(!l) return;
     const started = Date.now();
-    const line = l.querySelector('.splash-path');
-    const leaves = l.querySelectorAll('.splash-leaf');
+    const line = l.querySelector('.splash-draw');
+    const rest = l.querySelector('.splash-rest');
     const word = l.querySelector('.splash-name');
 
     if(line && line.getTotalLength){
@@ -56,8 +56,8 @@ window.__PROJECTS = PROJECTS;
       line.classList.add('draw');
     }
 
-    setTimeout(function(){ leaves.forEach(function(x){ x.classList.add('in'); }); }, 1040);
-    setTimeout(function(){ if(word) word.classList.add('in'); }, 1180);
+    setTimeout(function(){ if(rest) rest.classList.add('in'); }, 1200);
+    setTimeout(function(){ if(word) word.classList.add('in'); }, 1440);
 
     function hideLoader(){
       const el = $('#loader');

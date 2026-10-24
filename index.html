@@ -84,7 +84,8 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
   background: #6ff5c8; color: #0e1b2e; font-weight: 600; text-decoration: none; }
 .lock-link:hover { background: #8f7bff; }
 </style>
-<link rel="stylesheet" href="style.css?v=9" />
+<link rel="preload" as="image" href="logo-art.png" />
+<link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
 
@@ -92,18 +93,15 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 <div class="loader" id="loader">
   <div class="splash-grid" aria-hidden="true"></div>
   <div class="splash">
-    <svg class="splash-mark" viewBox="0 0 120 120" aria-hidden="true">
+    <svg class="splash-mark" viewBox="8 4 104 104" aria-hidden="true">
       <defs>
-        <linearGradient id="splashGrad" x1="0" y1="0" x2="0.3" y2="1">
-          <stop offset="0" stop-color="#5ef0c0" />
-          <stop offset="0.36" stop-color="#7fb8ff" />
-          <stop offset="0.68" stop-color="#a97cff" />
-          <stop offset="1" stop-color="#ff5fd0" />
-        </linearGradient>
+        <mask id="splashMask" maskUnits="userSpaceOnUse" x="-14" y="-14" width="148" height="148">
+          <rect x="-14" y="-14" width="148" height="148" fill="black" />
+          <path class="splash-draw" d="M 78 38 C 78 20 68 13 54 13 C 40 13 29 22 29 35 C 29 46 38 51 48 55 C 60 60 74 64 79 76 C 83 87 74 94 60 94 C 48 94 39 89 37 80" />
+        </mask>
       </defs>
-      <path class="splash-path" d="M 88 34 C 88 16 58 12 44 24 C 30 36 34 54 56 62 C 78 70 88 78 84 92 C 80 108 48 112 34 98" />
-      <ellipse class="splash-leaf leaf-a" cx="103" cy="29" rx="19" ry="8" transform="rotate(-22 103 29)" />
-      <ellipse class="splash-leaf leaf-b" cx="19" cy="101" rx="19" ry="8" transform="rotate(-22 19 101)" />
+      <image class="splash-art" href="logo-art.png" x="0" y="0" width="120" height="120" mask="url(#splashMask)" />
+      <image class="splash-rest" href="logo-art.png" x="0" y="0" width="120" height="120" />
     </svg>
     <p class="splash-name">SHRESTHA</p>
   </div>
