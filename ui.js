@@ -39,20 +39,38 @@ const PROJECTS = [
 ];
 window.__PROJECTS = PROJECTS;
 
-  /* loader */
-  const lg = $('#loaderGrid');
-  if(lg){ const w='SHRESTHA';
-    w.split('').forEach(ch=>{ const d=document.createElement('div'); d.className='ltr';
-      const rows = {S:['01111','10000','01110','00001','11110'],H:['10001','11111','10001','10001','10001'],
-        R:['11110','10001','11110','10100','10001'],E:['11111','10000','11110','10000','11111'],
-        T:['11111','00100','00100','00100','00100'],A:['01110','10001','11111','10001','10001']}[ch]||[];
-      rows.forEach(r=>{ for(const c of r){ const i=document.createElement('i');
-        if(c==='0'){ i.style.background='transparent'; i.style.animation='none'; }
-        else i.style.animationDelay=(Math.random()*1.2)+'s';
-        d.appendChild(i); } });
-      lg.appendChild(d); }); }
-  window.addEventListener('load', ()=> setTimeout(()=>{ const l=$('#loader'); if(l) l.classList.add('done'); }, 1100));
-  setTimeout(()=>{ const l=$('#loader'); if(l) l.classList.add('done'); }, 3400);
+  /* loader — the logo draws itself, then the world appears */
+  (function(){
+    const l = $('#loader');
+    if(!l) return;
+    const started = Date.now();
+    const line = l.querySelector('.splash-path');
+    const leaves = l.querySelectorAll('.splash-leaf');
+    const word = l.querySelector('.splash-name');
+
+    if(line && line.getTotalLength){
+      const len = line.getTotalLength();
+      line.style.strokeDasharray = len;
+      line.style.strokeDashoffset = len;
+      line.getBoundingClientRect();
+      line.classList.add('draw');
+    }
+
+    setTimeout(function(){ leaves.forEach(function(x){ x.classList.add('in'); }); }, 1040);
+    setTimeout(function(){ if(word) word.classList.add('in'); }, 1180);
+
+    function hideLoader(){
+      const el = $('#loader');
+      if(el) el.classList.add('done');
+    }
+
+    window.addEventListener('load', function(){
+      const waited = Date.now() - started;
+      const left = Math.max(0, 2400 - waited);
+      setTimeout(hideLoader, left + 350);
+    });
+    setTimeout(hideLoader, 5400);
+  })();
 
   /* nav */
   const nav = $('#nav');
@@ -1221,15 +1239,6 @@ window.__PROJECTS = PROJECTS;
     list.addEventListener('click', function(){ wrap.classList.remove('open'); });
     document.addEventListener('click', function(){ wrap.classList.remove('open'); });
   }
-
-  /* ---------- 13. loader percentage ---------- */
-  (function(){
-    const l = $('#loader'); if(!l) return;
-    const p = document.createElement('div'); p.className='pct'; p.textContent='0%'; l.appendChild(p);
-    let v = 0;
-    const id = setInterval(function(){ v = Math.min(96, v + Math.random()*13); p.textContent = Math.round(v)+'%'; }, 130);
-    setTimeout(function(){ clearInterval(id); p.textContent='100%'; }, 1500);
-  })();
 
   /* The favicon is now the real logo, so the old colour cycling is gone. */
 

@@ -88,11 +88,32 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 </head>
 <body>
 
-<!-- loader -->
+<!-- loader: the logo draws itself -->
 <div class="loader" id="loader">
-  <div class="grid" id="loaderGrid"></div>
-  <div class="lbl">assembling voxels&hellip;</div>
+  <div class="splash-grid" aria-hidden="true"></div>
+  <div class="splash">
+    <svg class="splash-mark" viewBox="0 0 120 120" aria-hidden="true">
+      <defs>
+        <linearGradient id="splashGrad" x1="0" y1="0" x2="0.3" y2="1">
+          <stop offset="0" stop-color="#5ef0c0" />
+          <stop offset="0.36" stop-color="#7fb8ff" />
+          <stop offset="0.68" stop-color="#a97cff" />
+          <stop offset="1" stop-color="#ff5fd0" />
+        </linearGradient>
+      </defs>
+      <path class="splash-path" d="M 88 34 C 88 16 58 12 44 24 C 30 36 34 54 56 62 C 78 70 88 78 84 92 C 80 108 48 112 34 98" />
+      <ellipse class="splash-leaf leaf-a" cx="103" cy="29" rx="19" ry="8" transform="rotate(-22 103 29)" />
+      <ellipse class="splash-leaf leaf-b" cx="19" cy="101" rx="19" ry="8" transform="rotate(-22 19 101)" />
+    </svg>
+    <p class="splash-name">SHRESTHA</p>
+  </div>
 </div>
+<script>
+setTimeout(function () {
+  var el = document.getElementById('loader');
+  if (el) { el.classList.add('done'); }
+}, 6000);
+</script>
 
 <div class="progress" id="progress"></div>
 <div class="sky"></div>
