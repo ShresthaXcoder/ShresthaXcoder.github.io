@@ -86,13 +86,86 @@ window.__PROJECTS = PROJECTS;
     setTimeout(hideLoader, 6000);
   })();
 
+  /* ---------- badges: little things to find ---------- */
+  const BADGES = [
+    { id: 'hello',  ico: '\u2726', title: 'Say hello',      hint: 'Double-tap the screen' },
+    { id: 'pet',    ico: '\u2665', title: 'Cat person',     hint: 'Pet the cat ten times' },
+    { id: 'laser',  ico: '\u25C9', title: 'Laser master',   hint: 'Turn on the laser pointer' },
+    { id: 'travel', ico: '\u25F7', title: 'Time traveller', hint: 'Move the time machine' },
+    { id: 'pose',   ico: '\u270E', title: 'Model',          hint: 'Change the boy\u2019s pose' },
+    { id: 'photo',  ico: '\u25A3', title: 'Photographer',   hint: 'Save a photo of the boy' },
+    { id: 'focus',  ico: '\u25CE', title: 'Zen',            hint: 'Enter focus mode' },
+    { id: 'share',  ico: '\u2197', title: 'Show off',       hint: 'Share a view of the world' },
+    { id: 'game',   ico: '\u25B6', title: 'Player one',     hint: 'Open the tower defence' }
+  ];
+  const BADGE_KEY = 'shrestha-badges';
+  let earned = [];
+  try { earned = JSON.parse(window.localStorage.getItem(BADGE_KEY) || '[]'); } catch(e){ earned = []; }
+  if(!Array.isArray(earned)){ earned = []; }
+
+  const badgeList = $('#badgeList');
+  const badgeCount = $('#badgeCount');
+  const badgeTally = $('#badgeTally');
+  const badgePanel = $('#badgePanel');
+
+  function paintBadges(){
+    if(badgeCount) badgeCount.textContent = String(earned.length);
+    if(badgeTally) badgeTally.textContent = earned.length + ' / ' + BADGES.length;
+    if(!badgeList) return;
+    badgeList.innerHTML = BADGES.map(function(b){
+      const got = earned.indexOf(b.id) !== -1;
+      return '<li class="' + (got ? 'got' : '') + '">'
+        + '<span class="badge-ico">' + b.ico + '</span>'
+        + '<span class="badge-txt"><b>' + b.title + '</b><span>' + b.hint + '</span></span></li>';
+    }).join('');
+  }
+
+  let badgeToastTimer = null;
+  function showBadgeToast(b){
+    let el = $('#badgeToast');
+    if(!el){
+      el = document.createElement('div');
+      el.className = 'badge-toast';
+      el.id = 'badgeToast';
+      document.body.appendChild(el);
+    }
+    el.innerHTML = '<em>' + b.ico + '</em><span><i>Badge unlocked</i><b>' + b.title + '</b></span>';
+    el.classList.add('show');
+    if(badgeToastTimer) clearTimeout(badgeToastTimer);
+    badgeToastTimer = setTimeout(function(){ el.classList.remove('show'); }, 2800);
+  }
+
+  function unlockBadge(id){
+    if(earned.indexOf(id) !== -1) return;
+    const b = BADGES.filter(function(x){ return x.id === id; })[0];
+    if(!b) return;
+    earned.push(id);
+    try { window.localStorage.setItem(BADGE_KEY, JSON.stringify(earned)); } catch(e){}
+    paintBadges();
+    showBadgeToast(b);
+  }
+  paintBadges();
+
+  if($('#badgeBtn')) $('#badgeBtn').addEventListener('click', function(){
+    if(badgePanel) badgePanel.classList.add('show');
+  });
+  if($('#badgeClose')) $('#badgeClose').addEventListener('click', function(){
+    if(badgePanel) badgePanel.classList.remove('show');
+  });
+  if(badgePanel) badgePanel.addEventListener('click', function(e){
+    if(e.target === badgePanel) badgePanel.classList.remove('show');
+  });
+
   /* ---------- a little cat that chases the cursor ---------- */
   (function(){
     const cat = $('#petCat');
     if(!cat) return;
+    const dot = $('#laserDot');
     let tx = 0, ty = 0, cx = 0, cy = 0;
-    let facing = 1, started = true, idle = 30;
-    let halfW = 28, halfH = 24;
+    let facing = 1, started = true, idle = 30, still = 0;
+    let halfW = 14, halfH = 12;
+    let laserOn = false;
+    let purrCtx = null;
 
     function measure(){
       halfW = cat.offsetWidth / 2;
@@ -114,14 +187,95 @@ window.__PROJECTS = PROJECTS;
       if(!p || typeof p.clientX !== 'number') return;
       if(p.clientX === 0 && p.clientY === 0) return;
       tx = p.clientX; ty = p.clientY;
-      if(!started){
-        started = true;
-        cat.classList.add('on');
+      if(dot && laserOn){
+        dot.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0)';
       }
+      if(!started){ started = true; cat.classList.add('on'); }
     }
     window.addEventListener('pointermove', aim, {passive:true});
     window.addEventListener('touchmove', aim, {passive:true});
     window.addEventListener('touchstart', aim, {passive:true});
+
+    /* ---------- petting ---------- */
+    let pets = 0;
+    try { pets = parseInt(window.localStorage.getItem('shrestha-pets') || '0', 10) || 0; } catch(e){ pets = 0; }
+
+    function purr(){
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return;
+        if(!purrCtx) purrCtx = new AC();
+        if(purrCtx.state === 'suspended') purrCtx.resume();
+        const t0 = purrCtx.currentTime;
+        const osc = purrCtx.createOscillator();
+        const gain = purrCtx.createGain();
+        const lfo = purrCtx.createOscillator();
+        const lfoGain = purrCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.value = 44;
+        lfo.type = 'sine';
+        lfo.frequency.value = 26;
+        lfoGain.gain.value = 0.035;
+        gain.gain.value = 0.045;
+        lfo.connect(lfoGain);
+        lfoGain.connect(gain.gain);
+        osc.connect(gain);
+        gain.connect(purrCtx.destination);
+        osc.start(t0);
+        lfo.start(t0);
+        gain.gain.setTargetAtTime(0, t0 + 0.55, 0.22);
+        osc.stop(t0 + 1.7);
+        lfo.stop(t0 + 1.7);
+      } catch(e){}
+    }
+
+    function popHearts(){
+      const r = cat.getBoundingClientRect();
+      let i = 0;
+      while(i < 5){
+        const h = document.createElement('span');
+        h.className = 'pet-heart';
+        h.textContent = '\u2665';
+        h.style.left = (r.left + r.width / 2 + (Math.random() - 0.5) * 22) + 'px';
+        h.style.top = (r.top + r.height / 2) + 'px';
+        h.style.animationDelay = (i * 0.06) + 's';
+        document.body.appendChild(h);
+        setTimeout(function(){ h.remove(); }, 1500);
+        i = i + 1;
+      }
+    }
+
+    cat.addEventListener('pointerdown', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      pets = pets + 1;
+      try { window.localStorage.setItem('shrestha-pets', String(pets)); } catch(err){}
+      popHearts();
+      purr();
+      cat.classList.add('pouncing');
+      setTimeout(function(){ cat.classList.remove('pouncing'); }, 470);
+      toast('petted ' + pets + ' time' + (pets === 1 ? '' : 's'));
+      if(pets >= 10){ unlockBadge('pet'); }
+    });
+
+    /* ---------- the laser pointer ---------- */
+    const laserBtn = $('#laserBtn');
+    if(laserBtn){
+      laserBtn.addEventListener('click', function(){
+        laserOn = !laserOn;
+        laserBtn.classList.toggle('on', laserOn);
+        if(dot){
+          dot.classList.toggle('on', laserOn);
+          dot.style.transform = 'translate3d(' + tx + 'px,' + ty + 'px,0)';
+        }
+        if(laserOn){
+          unlockBadge('laser');
+          toast('laser on \u2014 here kitty');
+        } else {
+          toast('laser off');
+        }
+      });
+    }
 
     function chase(){
       requestAnimationFrame(chase);
@@ -129,11 +283,10 @@ window.__PROJECTS = PROJECTS;
       const dx = tx - cx;
       const dy = ty - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      // the cat keeps its distance, so it settles a little way off the pointer
-      const keepAway = 30;
+      const keepAway = laserOn ? 5 : 30;
       if(dist > keepAway + 0.5){
         const closing = dist - keepAway;
-        const step = Math.min(closing, closing * 0.22 + 1.6);
+        const step = Math.min(closing, closing * (laserOn ? 0.32 : 0.22) + 1.6);
         cx = cx + (dx / dist) * step;
         cy = cy + (dy / dist) * step;
         if(Math.abs(dx) > 0.7){ facing = dx > 0 ? 1 : -1; }
@@ -141,13 +294,24 @@ window.__PROJECTS = PROJECTS;
       } else {
         idle = idle + 1;
       }
-      const running = dist > keepAway + 8;
+      const running = dist > keepAway + (laserOn ? 3 : 8);
+      if(laserOn && dist < keepAway + 4){ still = still + 1; } else { still = 0; }
+      if(laserOn && still === 26){
+        cat.classList.add('pouncing');
+        setTimeout(function(){ cat.classList.remove('pouncing'); }, 470);
+      }
       cat.style.transform = 'translate3d(' + (cx - halfW) + 'px,' + (cy - halfH) + 'px,0) scaleX(' + facing + ')';
       cat.classList.toggle('running', running);
-      cat.classList.toggle('sitting', idle > 22);
+      cat.classList.toggle('sitting', !laserOn && idle > 22);
     }
     requestAnimationFrame(chase);
   })();
+
+  /* opening the game earns a badge */
+  const playLink = document.querySelector('.play-btn');
+  if(playLink){
+    playLink.addEventListener('click', function(){ unlockBadge('game'); });
+  }
 
   /* nav */
   const nav = $('#nav');
@@ -954,6 +1118,7 @@ window.__PROJECTS = PROJECTS;
       const sc = SC();
       if(sc && sc.setEra) sc.setEra(v);
       if(eraOut) eraOut.textContent = String(Math.round(2023 + v * 7));
+      unlockBadge('travel');
     });
   }
 
@@ -973,6 +1138,7 @@ window.__PROJECTS = PROJECTS;
             document.body.appendChild(a); a.click(); a.remove();
             setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
             toast('saved shrestha-me.png');
+            unlockBadge('photo');
           }, 'image/png');
         });
         return;
@@ -981,6 +1147,7 @@ window.__PROJECTS = PROJECTS;
       if(window.__boyPose) window.__boyPose(name);
       poseBar.querySelectorAll('[data-pose]').forEach(function(x){ x.classList.toggle('on', x === b); });
       toast('pose: ' + b.textContent.toLowerCase());
+      unlockBadge('pose');
     });
   }
 
@@ -1066,6 +1233,7 @@ window.__PROJECTS = PROJECTS;
       holdScreenAwake();
       pushOverlay('focus');
       toast('focus mode on');
+      unlockBadge('focus');
       return;
     }
     dropFullscreen();
@@ -1187,6 +1355,7 @@ window.__PROJECTS = PROJECTS;
             file = null;
           }
           if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+            unlockBadge('share');
             navigator.share({ files: [file], title: 'Shrestha — voxel world', text: 'shresthaxcoder.github.io' })
               .catch(function () {});
             return;
@@ -1231,6 +1400,7 @@ window.__PROJECTS = PROJECTS;
       return;
     }
     notice.classList.add('show');
+    unlockBadge('hello');
     if (noticeTimer) {
       clearTimeout(noticeTimer);
     }

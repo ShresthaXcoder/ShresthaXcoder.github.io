@@ -495,6 +495,26 @@ setTimeout(function () {
 
 <div class="watermark" id="watermark" aria-hidden="true"></div>
 
+<div class="laser-dot" id="laserDot" aria-hidden="true"></div>
+
+<button class="laser-btn" id="laserBtn" aria-label="Laser pointer" title="Laser pointer for the cat">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+</button>
+
+<button class="badge-btn" id="badgeBtn" aria-label="Badges" title="Badges">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H5a2 2 0 0 0 2 4M17 6h2a2 2 0 0 1-2 4"/><path d="M10 14h4l1 6H9z"/></svg>
+  <span class="badge-count" id="badgeCount">0</span>
+</button>
+
+<div class="badge-panel" id="badgePanel" role="dialog" aria-label="Badges">
+  <div class="badge-card">
+    <h3>Badges <span class="badge-tally" id="badgeTally">0 / 9</span></h3>
+    <p>Little things to find around the site. Nothing here is needed &mdash; it is just for fun.</p>
+    <ul class="badge-list" id="badgeList"></ul>
+    <button class="badge-close" id="badgeClose">Close</button>
+  </div>
+</div>
+
 <button class="focus-btn" id="focusBtn" aria-label="Focus mode" title="Focus mode">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
 </button>
