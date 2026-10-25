@@ -224,6 +224,41 @@ function buildBoy(THREE) {
   var clock = new THREE.Clock();
   var onScreen = true;
 
+  var BOY_POSES = {
+    wave:  { arm: 2.32, armX: 0, turn: 0, lean: 0 },
+    high:  { arm: 2.95, armX: 0, turn: -0.35, lean: -0.05 },
+    out:   { arm: 1.55, armX: 0, turn: 0.4, lean: 0.06 },
+    down:  { arm: 0.12, armX: 0, turn: 0.1, lean: 0 },
+    back:  { arm: 0.6, armX: 0, turn: 2.9, lean: 0 }
+  };
+  var boyPose = 'wave';
+
+  window.__boyPose = function (name) {
+    if (BOY_POSES[name]) {
+      boyPose = name;
+    }
+  };
+
+  window.__boyShot = function (done) {
+    renderer.render(scene, camera);
+    var shot = document.createElement('canvas');
+    shot.width = canvas.width;
+    shot.height = canvas.height;
+    var paint = shot.getContext('2d');
+    paint.fillStyle = '#0b1522';
+    paint.fillRect(0, 0, shot.width, shot.height);
+    paint.drawImage(canvas, 0, 0);
+    var unit = shot.width / 260;
+    paint.fillStyle = '#ffffff';
+    paint.font = '700 ' + (20 * unit) + 'px "Space Grotesk", system-ui, sans-serif';
+    paint.textAlign = 'center';
+    paint.fillText('SHRESTHA', shot.width / 2, shot.height - 26 * unit);
+    paint.fillStyle = 'rgba(255,255,255,0.55)';
+    paint.font = '400 ' + (11 * unit) + 'px "Plus Jakarta Sans", system-ui, sans-serif';
+    paint.fillText('shresthaxcoder.github.io', shot.width / 2, shot.height - 12 * unit);
+    done(shot);
+  };
+
   if ('IntersectionObserver' in window) {
     var watcher = new IntersectionObserver(function (entries) {
       onScreen = entries[0].isIntersecting;
@@ -240,10 +275,16 @@ function buildBoy(THREE) {
       return;
     }
     var t = clock.getElapsedTime();
-    boy.rotation.y = Math.sin(t * 0.45) * 0.62;
+    var pose = BOY_POSES[boyPose];
+    var wantArm = pose.arm;
+    if (boyPose === 'wave') {
+      wantArm = wantArm + Math.sin(t * 5) * 0.26;
+    }
+    armGroup.rotation.z = armGroup.rotation.z + (wantArm - armGroup.rotation.z) * 0.16;
+    armGroup.rotation.x = armGroup.rotation.x + (pose.armX - armGroup.rotation.x) * 0.16;
+    boy.rotation.y = boy.rotation.y + (pose.turn - boy.rotation.y) * 0.1;
+    boy.rotation.z = boy.rotation.z + (pose.lean - boy.rotation.z) * 0.12;
     boy.position.y = Math.sin(t * 1.6) * 0.22;
-    armGroup.rotation.z = 2.32 + Math.sin(t * 5) * 0.26;
-    armGroup.rotation.x = Math.sin(t * 2.2) * 0.12;
     renderer.render(scene, camera);
   }
   draw();
@@ -1276,6 +1317,95 @@ function build(THREE, PP){
   let scatter = 0, scatterDir = 0;
   addEventListener('pointerdown', e=>{ if(e.target===canvas){ scatter=1; scatterDir=Math.random()>0.5?1:-1; } });
 
+  /* ---------- a little creature that follows the pointer ---------- */
+  const petCells = {};
+  function putPet(x, y, z, color) { petCells[x + ',' + y + ',' + z] = { x: x, y: y, z: z, color: color }; }
+
+  let px, pz;
+  // legs
+  putPet(-2, 0, 2, 0xd97a33);
+  putPet(2, 0, 2, 0xd97a33);
+  putPet(-2, 0, -2, 0xd97a33);
+  putPet(2, 0, -2, 0xd97a33);
+  // body
+  for (px = -2; px <= 2; px = px + 1) {
+    for (pz = -3; pz <= 1; pz = pz + 1) {
+      for (let py = 1; py <= 3; py = py + 1) {
+        if (Math.abs(px) === 2 && (pz === -3 || pz === 1)) { continue; }
+        putPet(px, py, pz, py === 1 ? 0xf7e7d3 : 0xff9a4d);
+      }
+    }
+  }
+  // head
+  for (px = -1; px <= 1; px = px + 1) {
+    for (pz = 2; pz <= 4; pz = pz + 1) {
+      for (let py = 3; py <= 5; py = py + 1) {
+        putPet(px, py, pz, 0xff9a4d);
+      }
+    }
+  }
+  // ears, face, snout
+  putPet(-1, 6, 3, 0xff9a4d);
+  putPet(1, 6, 3, 0xff9a4d);
+  putPet(-1, 4, 4, 0x2a1d16);
+  putPet(1, 4, 4, 0x2a1d16);
+  putPet(0, 3, 5, 0x2a1d16);
+  putPet(0, 4, 5, 0xf7e7d3);
+
+  const petList = [];
+  for (const petKey in petCells) { petList.push(petCells[petKey]); }
+
+  const pet = new THREE.Group();
+  pet.add(makeVoxels(petList, 1.0));
+  pet.scale.setScalar(0.7);
+  pet.position.set(0, 0, 6);
+  island.add(pet);
+
+  // tail, kept separate so it can wag
+  const tailBlocks = [];
+  for (let ti = 0; ti < 4; ti = ti + 1) {
+    tailBlocks.push({ x: 0, y: 2 + ti * 0.6, z: -4 - ti * 0.4, color: ti === 3 ? 0xf7e7d3 : 0xff9a4d });
+  }
+  const petTail = makeVoxels(tailBlocks, 0.85);
+  petTail.scale.setScalar(0.7);
+  island.add(petTail);
+
+  const petRay = new THREE.Raycaster();
+  const petHit = new THREE.Vector3();
+  island.updateWorldMatrix(true, false);
+  const groundY = island.localToWorld(new THREE.Vector3(0, 3, 0)).y;
+  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -groundY);
+  let petWalk = 0;
+
+  /* ---------- the time machine: the island grows into a future ---------- */
+  let era = 0.43;
+  const futurePillars = [];
+  for (let fi = 0; fi < 8; fi = fi + 1) {
+    const fa = (fi / 8) * Math.PI * 2 + 0.4;
+    const fx = Math.cos(fa) * (R - 1.5);
+    const fz = Math.sin(fa) * (R - 1.5);
+    const towerBlocks = [];
+    const towerH = 5 + (fi % 3) * 3;
+    for (let ty = 0; ty < towerH; ty = ty + 1) {
+      towerBlocks.push({ x: 0, y: ty, z: 0, color: 0x7fe8ff });
+    }
+    const tower = makeVoxels(towerBlocks, 0.8);
+    tower.material = new THREE.MeshLambertMaterial({
+      color: 0xffffff, emissive: 0x1f9fd0, emissiveIntensity: 0.7, transparent: true, opacity: 0
+    });
+    tower.position.set(fx, heightAt(fx, fz) + 1, fz);
+    island.add(tower);
+    futurePillars.push(tower);
+  }
+
+  const holoRing = new THREE.Mesh(
+    new THREE.TorusGeometry(11.5, 0.1, 6, 96),
+    new THREE.MeshBasicMaterial({ color: 0x7fe8ff, transparent: true, opacity: 0 })
+  );
+  holoRing.rotation.x = Math.PI / 2;
+  holoRing.position.y = 15;
+  island.add(holoRing);
+
   const clock = new THREE.Clock();
   let scrollY = window.scrollY, sunset = 0;
   addEventListener('scroll', ()=>{ scrollY = window.scrollY; }, {passive:true});
@@ -1295,7 +1425,48 @@ function build(THREE, PP){
 
     // time of day — drives every night-time effect
     sunset += ((pageP*0.85) - sunset)*0.05;
-    const night = Math.min(1, Math.max(sunset, manualNight));
+    // the time machine pushes the sky toward dawn in the past, night in the future
+    const eraNight = Math.max(0, (era - 0.5) * 1.7) + Math.max(0, (0.43 - era) * 0.6);
+    const night = Math.min(1, Math.max(sunset, manualNight, eraNight));
+
+    // the island grows as the years pass, and towers rise in the future
+    island.scale.setScalar(0.87 + era * 0.22);
+    const futureP = Math.max(0, (era - 0.6) / 0.4);
+    for (let fp = 0; fp < futurePillars.length; fp = fp + 1) {
+      futurePillars[fp].material.opacity = futureP * 0.95;
+      futurePillars[fp].scale.y = 0.3 + futureP * 0.7;
+    }
+    holoRing.material.opacity = futureP * 0.5;
+    holoRing.rotation.z = holoRing.rotation.z + 0.004;
+
+    // the creature walks toward wherever the pointer is
+    petRay.setFromCamera({ x: tgt.x * 2, y: -tgt.y * 2 }, camera);
+    if (petRay.ray.intersectPlane(groundPlane, petHit)) {
+      const petLocal = pet.parent.worldToLocal(petHit.clone());
+      const petRad = Math.hypot(petLocal.x, petLocal.z) || 1;
+      const petMax = R - 1.5;
+      if (petRad > petMax) {
+        petLocal.x = petLocal.x * (petMax / petRad);
+        petLocal.z = petLocal.z * (petMax / petRad);
+      }
+      const petDx = petLocal.x - pet.position.x;
+      const petDz = petLocal.z - pet.position.z;
+      const petDist = Math.hypot(petDx, petDz);
+      if (petDist > 0.4) {
+        const petStep = Math.min(petDist, 0.1 + petDist * 0.05);
+        pet.position.x = pet.position.x + (petDx / petDist) * petStep;
+        pet.position.z = pet.position.z + (petDz / petDist) * petStep;
+        pet.rotation.y = Math.atan2(petDx, petDz);
+        petWalk = Math.min(1, petWalk + 0.1);
+      } else {
+        petWalk = Math.max(0, petWalk - 0.08);
+      }
+    }
+    pet.position.y = heightAt(pet.position.x, pet.position.z) + 0.5 + Math.abs(Math.sin(t * 11)) * 0.4 * petWalk;
+    pet.rotation.z = Math.sin(t * 11) * 0.06 * petWalk;
+    petTail.position.set(pet.position.x, pet.position.y, pet.position.z);
+    petTail.rotation.y = pet.rotation.y + Math.sin(t * 9) * (0.35 + petWalk * 0.5);
+    petTail.scale.setScalar(0.7 + Math.sin(t * 3) * 0.04);
 
     scatter = Math.max(0, scatter - 0.012);
     const sc = scatter*scatter;
@@ -1717,6 +1888,7 @@ function build(THREE, PP){
   return {scene, camera, renderer, voxels: voxelTotal,
     setWeather:function(w){ weather = w; },
     setNight:function(n){ manualNight = n; },
+    setEra:function(v){ era = Math.max(0, Math.min(1, v)); },
     setFx:function(k,v){
       if(k==='birds') birds.forEach(function(b){ b.visible = v; });
       else if(k==='leaves') leafMesh.visible = v;

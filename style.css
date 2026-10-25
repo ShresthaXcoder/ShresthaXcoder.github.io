@@ -739,3 +739,16 @@ body { touch-action: manipulation; }
   .play-text em { display: none; }
   .play-btn { padding: 12px 14px; }
 }
+
+/* ---------- pose the boy and take a photo ---------- */
+.boy-poses { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 520px; margin-top: 2px; }
+.boy-poses button { padding: 8px 14px; border-radius: 999px; cursor: pointer; font-family: var(--mono);
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim);
+  border: 1px solid var(--line); background: color-mix(in srgb, var(--ink) 4%, var(--card));
+  transition: border-color .2s, color .2s, background .2s; }
+.boy-poses button:hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); color: var(--ink); }
+.boy-poses button.on { border-color: var(--accent); color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--card)); }
+.boy-poses .boy-shot { color: #06210f; background: var(--accent); border-color: var(--accent); font-weight: 700; }
+.boy-poses .boy-shot:hover { color: #06210f; filter: brightness(1.08); }
+@media (max-width: 640px) { .boy-poses button { padding: 7px 11px; font-size: 10px; } }

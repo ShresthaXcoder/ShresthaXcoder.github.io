@@ -170,6 +170,14 @@ setTimeout(function () {
         <canvas id="boyCanvas"></canvas>
       </div>
       <p class="boy-label">This is Me!!</p>
+      <div class="boy-poses" id="boyPoses">
+        <button type="button" data-pose="wave" class="on">Wave</button>
+        <button type="button" data-pose="high">Arms up</button>
+        <button type="button" data-pose="out">Sideways</button>
+        <button type="button" data-pose="down">Relaxed</button>
+        <button type="button" data-pose="back">Looking away</button>
+        <button type="button" class="boy-shot" id="boyShot">Save photo</button>
+      </div>
     </div>
     <div class="about-copy reveal">
       <div class="eyebrow">01 &mdash; Identity</div>
@@ -383,6 +391,10 @@ setTimeout(function () {
     <div class="wp-row">
       <span class="wp-lbl">Time of day <span class="wp-val" id="wpTimeVal">Day</span></span>
       <input type="range" id="wpTime" min="0" max="100" value="0" aria-label="Time of day">
+    </div>
+    <div class="wp-row">
+      <span class="wp-lbl">Time machine <span class="wp-val" id="wpEraVal">2026</span></span>
+      <input type="range" id="wpEra" min="0" max="100" value="43" aria-label="Time machine">
     </div>
     <div class="wp-row">
       <span class="wp-lbl">Weather</span>

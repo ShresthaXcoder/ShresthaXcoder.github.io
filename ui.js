@@ -877,6 +877,45 @@ window.__PROJECTS = PROJECTS;
     if(k==='watermark'){ document.body.classList.toggle('watermark-on', on); toast(on?'watermark on':'watermark off'); }
   });
 
+  /* ---------- 9b. the time machine ---------- */
+  const eraSlider = $('#wpEra');
+  const eraOut = $('#wpEraVal');
+  if(eraSlider){
+    eraSlider.addEventListener('input', function(){
+      const v = Number(eraSlider.value) / 100;
+      const sc = SC();
+      if(sc && sc.setEra) sc.setEra(v);
+      if(eraOut) eraOut.textContent = String(Math.round(2023 + v * 7));
+    });
+  }
+
+  /* ---------- 9c. pose the boy and take a photo ---------- */
+  const poseBar = $('#boyPoses');
+  if(poseBar){
+    poseBar.addEventListener('click', function(e){
+      const b = e.target.closest('button'); if(!b) return;
+      if(b.id === 'boyShot'){
+        if(!window.__boyShot){ toast('the boy is still loading'); return; }
+        window.__boyShot(function(shot){
+          shot.toBlob(function(blob){
+            if(!blob){ toast('could not build the photo'); return; }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'shrestha-me.png';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 5000);
+            toast('saved shrestha-me.png');
+          }, 'image/png');
+        });
+        return;
+      }
+      const name = b.getAttribute('data-pose');
+      if(window.__boyPose) window.__boyPose(name);
+      poseBar.querySelectorAll('[data-pose]').forEach(function(x){ x.classList.toggle('on', x === b); });
+      toast('pose: ' + b.textContent.toLowerCase());
+    });
+  }
+
   /* ---------- 10. focus mode, fullscreen, wake lock ---------- */
   var focusOn = false;
   var wakeLock = null;
