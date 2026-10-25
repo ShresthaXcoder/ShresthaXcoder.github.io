@@ -81,6 +81,47 @@ window.__PROJECTS = PROJECTS;
     setTimeout(hideLoader, 6000);
   })();
 
+  /* ---------- a little cat that chases the cursor ---------- */
+  (function(){
+    const cat = $('#petCat');
+    if(!cat) return;
+    let tx = 0, ty = 0, cx = 0, cy = 0;
+    let facing = 1, started = false;
+
+    function aim(e){
+      const p = (e.touches && e.touches[0]) ? e.touches[0] : e;
+      if(!p || typeof p.clientX !== 'number') return;
+      if(p.clientX === 0 && p.clientY === 0) return;
+      tx = p.clientX; ty = p.clientY;
+      if(!started){
+        started = true;
+        cx = tx - 70; cy = ty - 40;
+        cat.classList.add('on');
+      }
+    }
+    window.addEventListener('pointermove', aim, {passive:true});
+    window.addEventListener('touchmove', aim, {passive:true});
+    window.addEventListener('touchstart', aim, {passive:true});
+
+    function chase(){
+      requestAnimationFrame(chase);
+      if(!started) return;
+      const dx = tx - cx;
+      const dy = ty - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if(dist > 0.4){
+        const ease = Math.min(0.26, 0.07 + dist * 0.006);
+        cx = cx + dx * ease;
+        cy = cy + dy * ease;
+        if(Math.abs(dx) > 0.7){ facing = dx > 0 ? 1 : -1; }
+      }
+      const running = dist > 5;
+      cat.style.transform = 'translate3d(' + (cx - 20) + 'px,' + (cy - 12) + 'px,0) scaleX(' + facing + ')';
+      cat.classList.toggle('running', running);
+    }
+    requestAnimationFrame(chase);
+  })();
+
   /* nav */
   const nav = $('#nav');
   const progress = $('#progress');

@@ -1317,66 +1317,6 @@ function build(THREE, PP){
   let scatter = 0, scatterDir = 0;
   addEventListener('pointerdown', e=>{ if(e.target===canvas){ scatter=1; scatterDir=Math.random()>0.5?1:-1; } });
 
-  /* ---------- a little creature that follows the pointer ---------- */
-  const petCells = {};
-  function putPet(x, y, z, color) { petCells[x + ',' + y + ',' + z] = { x: x, y: y, z: z, color: color }; }
-
-  let px, pz;
-  // legs
-  putPet(-2, 0, 2, 0xd97a33);
-  putPet(2, 0, 2, 0xd97a33);
-  putPet(-2, 0, -2, 0xd97a33);
-  putPet(2, 0, -2, 0xd97a33);
-  // body
-  for (px = -2; px <= 2; px = px + 1) {
-    for (pz = -3; pz <= 1; pz = pz + 1) {
-      for (let py = 1; py <= 3; py = py + 1) {
-        if (Math.abs(px) === 2 && (pz === -3 || pz === 1)) { continue; }
-        putPet(px, py, pz, py === 1 ? 0xf7e7d3 : 0xff9a4d);
-      }
-    }
-  }
-  // head
-  for (px = -1; px <= 1; px = px + 1) {
-    for (pz = 2; pz <= 4; pz = pz + 1) {
-      for (let py = 3; py <= 5; py = py + 1) {
-        putPet(px, py, pz, 0xff9a4d);
-      }
-    }
-  }
-  // ears, face, snout
-  putPet(-1, 6, 3, 0xff9a4d);
-  putPet(1, 6, 3, 0xff9a4d);
-  putPet(-1, 4, 4, 0x2a1d16);
-  putPet(1, 4, 4, 0x2a1d16);
-  putPet(0, 3, 5, 0x2a1d16);
-  putPet(0, 4, 5, 0xf7e7d3);
-
-  const petList = [];
-  for (const petKey in petCells) { petList.push(petCells[petKey]); }
-
-  const pet = new THREE.Group();
-  pet.add(makeVoxels(petList, 1.0));
-  pet.scale.setScalar(0.7);
-  pet.position.set(0, 0, 6);
-  island.add(pet);
-
-  // tail, kept separate so it can wag
-  const tailBlocks = [];
-  for (let ti = 0; ti < 4; ti = ti + 1) {
-    tailBlocks.push({ x: 0, y: 2 + ti * 0.6, z: -4 - ti * 0.4, color: ti === 3 ? 0xf7e7d3 : 0xff9a4d });
-  }
-  const petTail = makeVoxels(tailBlocks, 0.85);
-  petTail.scale.setScalar(0.7);
-  island.add(petTail);
-
-  const petRay = new THREE.Raycaster();
-  const petHit = new THREE.Vector3();
-  island.updateWorldMatrix(true, false);
-  const groundY = island.localToWorld(new THREE.Vector3(0, 3, 0)).y;
-  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -groundY);
-  let petWalk = 0;
-
   /* ---------- the time machine: the island grows into a future ---------- */
   let era = 0.43;
   const futurePillars = [];
@@ -1439,34 +1379,6 @@ function build(THREE, PP){
     holoRing.material.opacity = futureP * 0.5;
     holoRing.rotation.z = holoRing.rotation.z + 0.004;
 
-    // the creature walks toward wherever the pointer is
-    petRay.setFromCamera({ x: tgt.x * 2, y: -tgt.y * 2 }, camera);
-    if (petRay.ray.intersectPlane(groundPlane, petHit)) {
-      const petLocal = pet.parent.worldToLocal(petHit.clone());
-      const petRad = Math.hypot(petLocal.x, petLocal.z) || 1;
-      const petMax = R - 1.5;
-      if (petRad > petMax) {
-        petLocal.x = petLocal.x * (petMax / petRad);
-        petLocal.z = petLocal.z * (petMax / petRad);
-      }
-      const petDx = petLocal.x - pet.position.x;
-      const petDz = petLocal.z - pet.position.z;
-      const petDist = Math.hypot(petDx, petDz);
-      if (petDist > 0.4) {
-        const petStep = Math.min(petDist, 0.1 + petDist * 0.05);
-        pet.position.x = pet.position.x + (petDx / petDist) * petStep;
-        pet.position.z = pet.position.z + (petDz / petDist) * petStep;
-        pet.rotation.y = Math.atan2(petDx, petDz);
-        petWalk = Math.min(1, petWalk + 0.1);
-      } else {
-        petWalk = Math.max(0, petWalk - 0.08);
-      }
-    }
-    pet.position.y = heightAt(pet.position.x, pet.position.z) + 0.5 + Math.abs(Math.sin(t * 11)) * 0.4 * petWalk;
-    pet.rotation.z = Math.sin(t * 11) * 0.06 * petWalk;
-    petTail.position.set(pet.position.x, pet.position.y, pet.position.z);
-    petTail.rotation.y = pet.rotation.y + Math.sin(t * 9) * (0.35 + petWalk * 0.5);
-    petTail.scale.setScalar(0.7 + Math.sin(t * 3) * 0.04);
 
     scatter = Math.max(0, scatter - 0.012);
     const sc = scatter*scatter;
