@@ -91,7 +91,7 @@ window.__PROJECTS = PROJECTS;
     const cat = $('#petCat');
     if(!cat) return;
     let tx = 0, ty = 0, cx = 0, cy = 0;
-    let facing = 1, started = true, idle = 0;
+    let facing = 1, started = true, idle = 30;
     let halfW = 28, halfH = 24;
 
     function measure(){
