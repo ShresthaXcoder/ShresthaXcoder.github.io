@@ -114,14 +114,19 @@ window.__PROJECTS = PROJECTS;
       const dx = tx - cx;
       const dy = ty - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if(dist > 0.4){
-        const ease = Math.min(0.26, 0.07 + dist * 0.006);
-        cx = cx + dx * ease;
-        cy = cy + dy * ease;
+      // the cat keeps its distance, so it settles a little way off the pointer
+      const keepAway = 40;
+      if(dist > keepAway + 0.5){
+        const closing = dist - keepAway;
+        const step = Math.min(closing, closing * 0.22 + 1.6);
+        cx = cx + (dx / dist) * step;
+        cy = cy + (dy / dist) * step;
         if(Math.abs(dx) > 0.7){ facing = dx > 0 ? 1 : -1; }
+        idle = 0;
+      } else {
+        idle = idle + 1;
       }
-      const running = dist > 4;
-      if(running){ idle = 0; } else { idle = idle + 1; }
+      const running = dist > keepAway + 8;
       cat.style.transform = 'translate3d(' + (cx - 14) + 'px,' + (cy - 9) + 'px,0) scaleX(' + facing + ')';
       cat.classList.toggle('running', running);
       cat.classList.toggle('sitting', idle > 22);
