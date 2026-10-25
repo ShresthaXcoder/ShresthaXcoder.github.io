@@ -91,7 +91,23 @@ window.__PROJECTS = PROJECTS;
     const cat = $('#petCat');
     if(!cat) return;
     let tx = 0, ty = 0, cx = 0, cy = 0;
-    let facing = 1, started = false, idle = 0;
+    let facing = 1, started = true, idle = 0;
+    let halfW = 28, halfH = 24;
+
+    function measure(){
+      halfW = cat.offsetWidth / 2;
+      halfH = cat.offsetHeight / 2;
+    }
+    measure();
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+
+    // park him on the page straight away, so he is always easy to spot
+    cx = Math.round(window.innerWidth * 0.72);
+    cy = Math.round(window.innerHeight * 0.78);
+    tx = cx;
+    ty = cy;
+    cat.classList.add('on', 'sitting');
 
     function aim(e){
       const p = (e.touches && e.touches[0]) ? e.touches[0] : e;
@@ -100,7 +116,6 @@ window.__PROJECTS = PROJECTS;
       tx = p.clientX; ty = p.clientY;
       if(!started){
         started = true;
-        cx = tx - 70; cy = ty - 40;
         cat.classList.add('on');
       }
     }
@@ -115,7 +130,7 @@ window.__PROJECTS = PROJECTS;
       const dy = ty - cy;
       const dist = Math.sqrt(dx * dx + dy * dy);
       // the cat keeps its distance, so it settles a little way off the pointer
-      const keepAway = 40;
+      const keepAway = 30;
       if(dist > keepAway + 0.5){
         const closing = dist - keepAway;
         const step = Math.min(closing, closing * 0.22 + 1.6);
@@ -127,7 +142,7 @@ window.__PROJECTS = PROJECTS;
         idle = idle + 1;
       }
       const running = dist > keepAway + 8;
-      cat.style.transform = 'translate3d(' + (cx - 14) + 'px,' + (cy - 9) + 'px,0) scaleX(' + facing + ')';
+      cat.style.transform = 'translate3d(' + (cx - halfW) + 'px,' + (cy - halfH) + 'px,0) scaleX(' + facing + ')';
       cat.classList.toggle('running', running);
       cat.classList.toggle('sitting', idle > 22);
     }
