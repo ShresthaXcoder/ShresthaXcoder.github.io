@@ -1369,8 +1369,7 @@ function build(THREE, PP){
     const eraNight = Math.max(0, (era - 0.5) * 1.7) + Math.max(0, (0.43 - era) * 0.6);
     const night = Math.min(1, Math.max(sunset, manualNight, eraNight));
 
-    // the island grows as the years pass, and towers rise in the future
-    island.scale.setScalar(0.87 + era * 0.22);
+    // towers rise as the years pass (the island itself keeps its size)
     const futureP = Math.max(0, (era - 0.6) / 0.4);
     for (let fp = 0; fp < futurePillars.length; fp = fp + 1) {
       futurePillars[fp].material.opacity = futureP * 0.95;

@@ -69,7 +69,12 @@ window.__PROJECTS = PROJECTS;
 
     function hideLoader(){
       const el = $('#loader');
-      if(el) el.classList.add('done');
+      if(el){
+        el.classList.add('done');
+        // once it has faded, take it out of the page completely so it can never
+        // sit on top of anything or leave a haze behind
+        setTimeout(function(){ el.style.display = 'none'; }, 700);
+      }
       releaseWorld();
     }
 
@@ -86,7 +91,7 @@ window.__PROJECTS = PROJECTS;
     const cat = $('#petCat');
     if(!cat) return;
     let tx = 0, ty = 0, cx = 0, cy = 0;
-    let facing = 1, started = false;
+    let facing = 1, started = false, idle = 0;
 
     function aim(e){
       const p = (e.touches && e.touches[0]) ? e.touches[0] : e;
@@ -115,9 +120,11 @@ window.__PROJECTS = PROJECTS;
         cy = cy + dy * ease;
         if(Math.abs(dx) > 0.7){ facing = dx > 0 ? 1 : -1; }
       }
-      const running = dist > 5;
-      cat.style.transform = 'translate3d(' + (cx - 20) + 'px,' + (cy - 12) + 'px,0) scaleX(' + facing + ')';
+      const running = dist > 4;
+      if(running){ idle = 0; } else { idle = idle + 1; }
+      cat.style.transform = 'translate3d(' + (cx - 14) + 'px,' + (cy - 9) + 'px,0) scaleX(' + facing + ')';
       cat.classList.toggle('running', running);
+      cat.classList.toggle('sitting', idle > 22);
     }
     requestAnimationFrame(chase);
   })();
