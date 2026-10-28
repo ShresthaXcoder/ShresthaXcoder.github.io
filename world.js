@@ -873,14 +873,15 @@ function build(THREE, PP){
   }
   island.add(tufts);
 
-  /* 15. voxel "2043" monument */
+  /* 15. voxel "2047" monument */
   (function(){
     const DG={'2':["01110","10001","00001","00010","00100","01000","11111"],
               '0':["01110","10001","10011","10101","11001","10001","01110"],
               '4':["00010","00110","01010","10010","11111","00010","00010"],
-              '3':["01110","10001","00001","00110","00001","10001","01110"]};
+              '3':["01110","10001","00001","00110","00001","10001","01110"],
+              '7':["11111","00001","00010","00100","01000","01000","01000"]};
     const c=[]; let off=0;
-    '2043'.split('').forEach(function(ch){
+    '2047'.split('').forEach(function(ch){
       const g=DG[ch]; g.forEach(function(row,r){ for(let i=0;i<row.length;i++){
         if(row[i]==='1') c.push({x:off+i, y:(6-r), z:0, color:0xff5a3c}); } });
       off += 6;
@@ -1422,8 +1423,8 @@ function build(THREE, PP){
 
   const avatarGroup = new THREE.Group();
   avatarGroup.add(avMesh);
-  avatarGroup.scale.setScalar(0.62);
-  avatarGroup.position.set(5, 0, 4);
+  avatarGroup.scale.setScalar(0.5);
+  avatarGroup.position.set(8, 0, 7);
   island.add(avatarGroup);
 
   if (window.__pendingAvatar) { paintAvatar(window.__pendingAvatar); } else { paintAvatar(null); }
@@ -1434,6 +1435,64 @@ function build(THREE, PP){
   const avGroundY = island.localToWorld(new THREE.Vector3(0, 3, 0)).y;
   const avPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -avGroundY);
   let avWalk = 0;
+
+  /* ---------- the 2047 city floating under the island ---------- */
+  const cityGroup = new THREE.Group();
+  let ci = 0;
+  while (ci < 12) {
+    const cityAngle = (ci / 12) * Math.PI * 2 + 0.5;
+    const cityRadius = 17 + (ci % 4) * 3.5;
+    const cityX = Math.cos(cityAngle) * cityRadius;
+    const cityZ = Math.sin(cityAngle) * cityRadius;
+    const towerHeight = 7 + (ci % 5) * 2.6;
+    const towerBlocks = [];
+    let ty = 0;
+    while (ty < towerHeight) {
+      let tx = -1;
+      while (tx <= 1) {
+        let tz = -1;
+        while (tz <= 1) {
+          const lit = ((tx + tz + ty * 2) % 4 === 0) && ty > 0;
+          towerBlocks.push({ x: tx, y: ty, z: tz, color: lit ? 0xffffff : 0x2f8fd4 });
+          tz = tz + 1;
+        }
+        tx = tx + 1;
+      }
+      ty = ty + 1;
+    }
+    const tower = makeVoxels(towerBlocks, 1.15);
+    tower.material = new THREE.MeshLambertMaterial({
+      color: 0xffffff, emissive: 0x1f6fa8, emissiveIntensity: 0.8, transparent: true, opacity: 0.97
+    });
+    tower.position.set(cityX, -2 - towerHeight, cityZ);
+    cityGroup.add(tower);
+    ci = ci + 1;
+  }
+  island.add(cityGroup);
+
+  /* ---------- flying cars between the towers ---------- */
+  const flyingCars = [];
+  let vi = 0;
+  while (vi < 8) {
+    const carBlocks = [
+      { x: 0, y: 0, z: 0, color: 0xfff4d6 },
+      { x: 1, y: 0, z: 0, color: 0x9fe4ff },
+      { x: -1, y: 0, z: 0, color: 0x9fe4ff }
+    ];
+    const car = makeVoxels(carBlocks, 1.15);
+    car.material = new THREE.MeshLambertMaterial({
+      color: 0xffffff, emissive: 0x3fd0ff, emissiveIntensity: 1.6, transparent: true, opacity: 0.98
+    });
+    island.add(car);
+    flyingCars.push({
+      mesh: car,
+      angle: (vi / 8) * Math.PI * 2,
+      radius: 14 + (vi % 4) * 4.5,
+      height: -6 - (vi % 3) * 3,
+      speed: 0.22 + (vi % 3) * 0.14
+    });
+    vi = vi + 1;
+  }
 
   const clock = new THREE.Clock();
   let scrollY = window.scrollY, sunset = 0;
@@ -1457,6 +1516,21 @@ function build(THREE, PP){
     // the time machine pushes the sky toward dawn in the past, night in the future
     const eraNight = Math.max(0, (era - 0.5) * 1.7) + Math.max(0, (0.43 - era) * 0.6);
     const night = Math.min(1, Math.max(sunset, manualNight, eraNight));
+
+    // the 2047 city: flying cars drift between the towers
+    let cv = 0;
+    while (cv < flyingCars.length) {
+      const flyingCar = flyingCars[cv];
+      flyingCar.angle = flyingCar.angle + flyingCar.speed * 0.01;
+      flyingCar.mesh.position.set(
+        Math.cos(flyingCar.angle) * flyingCar.radius,
+        flyingCar.height + Math.sin(t * 0.8 + cv) * 0.9,
+        Math.sin(flyingCar.angle) * flyingCar.radius
+      );
+      flyingCar.mesh.rotation.y = -flyingCar.angle + Math.PI / 2;
+      cv = cv + 1;
+    }
+    cityGroup.position.y = Math.sin(t * 0.5) * 0.35;
 
     // your avatar walks toward the pointer too, but slower and further behind
     avRay.setFromCamera({ x: tgt.x * 2, y: -tgt.y * 2 }, camera);
