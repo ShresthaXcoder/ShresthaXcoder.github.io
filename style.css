@@ -842,7 +842,7 @@ body.photo .laser-btn, body.photo .badge-btn { display: none !important; }
   background: color-mix(in srgb, var(--ink) 5%, var(--card)); color: var(--ink); font-family: inherit;
   font-size: 14px; font-weight: 600; cursor: pointer; }
 .badge-close:hover { border-color: var(--accent); color: var(--accent); }
-.badge-toast { position: fixed; left: 50%; bottom: 108px; transform: translateX(-50%) translateY(14px);
+.badge-toast { position: fixed; left: 50%; top: 84px; transform: translateX(-50%) translateY(-14px);
   z-index: 190; display: flex; align-items: center; gap: 10px; padding: 11px 18px; border-radius: 999px;
   background: var(--card); border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
   box-shadow: 0 20px 44px rgba(0, 0, 0, .28); opacity: 0; transition: opacity .3s, transform .3s; }
@@ -855,4 +855,77 @@ body.photo .laser-btn, body.photo .badge-btn { display: none !important; }
   .laser-btn, .badge-btn { right: calc(12px + env(safe-area-inset-right, 0px)); }
   .laser-btn { bottom: calc(128px + env(safe-area-inset-bottom, 0px)); }
   .badge-btn { bottom: calc(186px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ---------- voxel piano ---------- */
+.piano { position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%) translateY(26px);
+  z-index: 155; width: min(720px, 94vw); padding: 16px 16px 12px; border-radius: 20px;
+  background: color-mix(in srgb, var(--card) 94%, transparent); border: 1px solid var(--line);
+  backdrop-filter: blur(16px); box-shadow: 0 30px 70px rgba(14, 27, 46, .26);
+  opacity: 0; visibility: hidden; transition: opacity .28s, transform .28s var(--ease), visibility .28s; }
+.piano.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.piano-keys { display: flex; gap: 6px; }
+.pkey { flex: 1 1 0; min-width: 0; height: 74px; padding: 0; cursor: pointer; position: relative;
+  border-radius: 9px; border: 1px solid var(--line); border-bottom-width: 5px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--kc, var(--accent)) 48%, var(--card)),
+    color-mix(in srgb, var(--kc, var(--accent)) 18%, var(--card)));
+  border-bottom-color: color-mix(in srgb, var(--kc, var(--accent)) 55%, var(--line));
+  transition: transform .08s, border-color .12s, box-shadow .12s; }
+.pkey span { position: absolute; left: 0; right: 0; bottom: 6px; font-family: var(--mono); font-size: 10px;
+  font-weight: 700; letter-spacing: .06em; color: color-mix(in srgb, var(--kc, var(--accent)) 65%, var(--ink)); }
+.pkey:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.pkey.hit { transform: translateY(4px); border-bottom-width: 1px;
+  border-color: var(--accent); box-shadow: 0 0 22px 4px color-mix(in srgb, var(--accent) 55%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 42%, var(--card)), color-mix(in srgb, var(--accent) 16%, var(--card))); }
+.piano-hint { margin: 10px 0 0; text-align: center; font-family: var(--mono); font-size: 10px;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+
+/* ---------- build your avatar ---------- */
+.avatar-panel { position: fixed; inset: 0; z-index: 180; display: grid; place-items: center; padding: 20px;
+  background: rgba(7, 13, 22, .6); backdrop-filter: blur(7px); opacity: 0; visibility: hidden;
+  transition: opacity .3s, visibility .3s; }
+.avatar-panel.show { opacity: 1; visibility: visible; }
+.avatar-card { width: min(460px, 100%); max-height: 88vh; overflow: auto; padding: 24px;
+  border-radius: 20px; background: var(--card); border: 1px solid var(--line);
+  box-shadow: 0 34px 80px rgba(0, 0, 0, .35); }
+.avatar-card h3 { font-family: var(--display); font-weight: 700; font-size: 21px; }
+.avatar-card > p { color: var(--dim); font-size: 13.5px; margin-top: 7px; }
+.avatar-body { display: flex; gap: 20px; align-items: center; margin-top: 18px; }
+.avatar-preview { flex: none; width: 108px; height: auto; border-radius: 14px;
+  background: color-mix(in srgb, var(--ink) 5%, var(--card)); border: 1px solid var(--line); }
+.avatar-picks { flex: 1; display: grid; gap: 11px; }
+.av-row { display: flex; flex-direction: column; gap: 6px; }
+.av-row > span { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+.sw-row { display: flex; gap: 7px; flex-wrap: wrap; }
+.sw { width: 26px; height: 26px; border-radius: 8px; cursor: pointer; border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); transition: transform .15s, border-color .15s; }
+.sw:hover { transform: translateY(-2px); }
+.sw.on { border-color: var(--ink); transform: translateY(-2px); }
+.avatar-done { margin-top: 18px; width: 100%; padding: 13px; border-radius: 12px; border: 0;
+  background: var(--accent); color: #06210f; font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+.avatar-done:hover { filter: brightness(1.07); }
+.avatar-close { margin-top: 8px; width: 100%; padding: 11px; border-radius: 12px; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 5%, var(--card)); color: var(--dim); font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer; }
+.avatar-close:hover { border-color: var(--accent); color: var(--accent); }
+
+.piano-btn, .avatar-btn { position: fixed; right: 16px; z-index: 76; width: 46px; height: 46px; border-radius: 14px;
+  display: grid; place-items: center; color: var(--ink); border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 90%, transparent); backdrop-filter: blur(14px);
+  box-shadow: 0 16px 34px rgba(14, 27, 46, .18); transition: transform .25s var(--ease), color .25s, border-color .25s; }
+.piano-btn:hover, .avatar-btn:hover { transform: translateY(-2px); border-color: var(--accent); color: var(--accent); }
+.piano-btn svg, .avatar-btn svg { width: 19px; height: 19px; }
+.piano-btn { bottom: 250px; }
+.avatar-btn { bottom: 308px; }
+.piano-btn.on { border-color: var(--accent); color: var(--accent); }
+body.photo .piano, body.photo .piano-btn, body.photo .avatar-btn { display: none !important; }
+@media (max-width: 900px) {
+  .piano-btn, .avatar-btn { right: calc(12px + env(safe-area-inset-right, 0px)); }
+  .piano-btn { bottom: calc(244px + env(safe-area-inset-bottom, 0px)); }
+  .avatar-btn { bottom: calc(302px + env(safe-area-inset-bottom, 0px)); }
+  .piano { bottom: calc(86px + env(safe-area-inset-bottom, 0px)); padding: 12px 12px 10px; }
+  .pkey { height: 58px; }
+  .piano-keys { gap: 4px; }
+  .pkey span { font-size: 7.5px; }
+  .avatar-body { flex-direction: column; }
 }

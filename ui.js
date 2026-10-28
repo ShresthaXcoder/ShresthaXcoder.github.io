@@ -96,7 +96,9 @@ window.__PROJECTS = PROJECTS;
     { id: 'photo',  ico: '\u25A3', title: 'Photographer',   hint: 'Save a photo of the boy' },
     { id: 'focus',  ico: '\u25CE', title: 'Zen',            hint: 'Enter focus mode' },
     { id: 'share',  ico: '\u2197', title: 'Show off',       hint: 'Share a view of the world' },
-    { id: 'game',   ico: '\u25B6', title: 'Player one',     hint: 'Open the tower defence' }
+    { id: 'game',   ico: '\u25B6', title: 'Player one',     hint: 'Open the tower defence' },
+    { id: 'piano',  ico: '\u266B', title: 'Musician',       hint: 'Open the voxel piano' },
+    { id: 'avatar', ico: '\u263A', title: 'Be yourself',    hint: 'Build your own avatar' }
   ];
   const BADGE_KEY = 'shrestha-badges';
   let earned = [];
@@ -305,6 +307,142 @@ window.__PROJECTS = PROJECTS;
       cat.classList.toggle('sitting', !laserOn && idle > 22);
     }
     requestAnimationFrame(chase);
+  })();
+
+  /* ---------- the voxel piano ---------- */
+  (function(){
+    const bar = $('#piano');
+    const btn = $('#pianoBtn');
+    if(!bar || !btn) return;
+    let ctx = null;
+
+    function note(freq){
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return;
+        if(!ctx) ctx = new AC();
+        if(ctx.state === 'suspended') ctx.resume();
+        const t0 = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const shimmer = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const shimmerGain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        shimmer.type = 'sine';
+        shimmer.frequency.value = freq * 2;
+        shimmerGain.gain.value = 0.26;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.95);
+        osc.connect(gain);
+        shimmer.connect(shimmerGain);
+        shimmerGain.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t0);
+        shimmer.start(t0);
+        osc.stop(t0 + 1);
+        shimmer.stop(t0 + 1);
+      } catch(e){}
+    }
+
+    bar.querySelectorAll('.pkey').forEach(function(k, i){
+      k.style.setProperty('--kc', 'hsl(' + ((i * 29) % 360) + ' 72% 58%)');
+    });
+
+    btn.addEventListener('click', function(){
+      const open = !bar.classList.contains('show');
+      bar.classList.toggle('show', open);
+      btn.classList.toggle('on', open);
+      if(open){ unlockBadge('piano'); }
+    });
+
+    bar.addEventListener('pointerdown', function(e){
+      const k = e.target.closest('.pkey');
+      if(!k) return;
+      const f = parseFloat(k.getAttribute('data-freq'));
+      if(f){ note(f); }
+      k.classList.add('hit');
+      setTimeout(function(){ k.classList.remove('hit'); }, 220);
+    });
+  })();
+
+  /* ---------- build your avatar ---------- */
+  (function(){
+    const panel = $('#avatarPanel');
+    const btn = $('#avatarBtn');
+    if(!panel || !btn) return;
+
+    const PALETTE = {
+      skin: ['#f0c9a4', '#e0ab7d', '#c98d5a', '#9c6438'],
+      hair: ['#241c16', '#4a3421', '#8a5a2b', '#d8b26a', '#b03a3a'],
+      shirt: ['#ff5a3c', '#3a7bd5', '#63b96a', '#ffb03a', '#8f7bff', '#2b3a55'],
+      pants: ['#2b3a55', '#3d4a5c', '#5a4632', '#1f2937']
+    };
+
+    let picked = { skin: PALETTE.skin[1], hair: PALETTE.hair[0], shirt: PALETTE.shirt[0], pants: PALETTE.pants[0] };
+    try {
+      const saved = JSON.parse(window.localStorage.getItem('shrestha-avatar') || 'null');
+      if(saved && saved.skin){ picked = saved; }
+    } catch(e){}
+
+    const preview = $('#avatarPreview');
+
+    function paint(){
+      if(preview){
+        preview.querySelectorAll('.av-skin').forEach(function(el){ el.setAttribute('fill', picked.skin); });
+        preview.querySelectorAll('.av-hair').forEach(function(el){ el.setAttribute('fill', picked.hair); });
+        preview.querySelectorAll('.av-shirt').forEach(function(el){ el.setAttribute('fill', picked.shirt); });
+        preview.querySelectorAll('.av-arm').forEach(function(el){ el.setAttribute('fill', picked.shirt); });
+        preview.querySelectorAll('.av-leg').forEach(function(el){ el.setAttribute('fill', picked.pants); });
+      }
+      panel.querySelectorAll('.sw').forEach(function(sw){
+        const part = sw.parentNode.getAttribute('data-part');
+        sw.classList.toggle('on', sw.getAttribute('data-colour') === picked[part]);
+      });
+    }
+
+    panel.querySelectorAll('.sw-row').forEach(function(row){
+      const part = row.getAttribute('data-part');
+      row.innerHTML = '';
+      PALETTE[part].forEach(function(col){
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'sw';
+        b.style.background = col;
+        b.setAttribute('data-colour', col);
+        b.setAttribute('aria-label', part);
+        row.appendChild(b);
+      });
+    });
+    paint();
+
+    panel.addEventListener('click', function(e){
+      const sw = e.target.closest('.sw');
+      if(sw){
+        const part = sw.parentNode.getAttribute('data-part');
+        picked[part] = sw.getAttribute('data-colour');
+        paint();
+        return;
+      }
+      if(e.target === panel){ panel.classList.remove('show'); }
+    });
+
+    btn.addEventListener('click', function(){ panel.classList.add('show'); });
+    if($('#avatarClose')) $('#avatarClose').addEventListener('click', function(){ panel.classList.remove('show'); });
+    if($('#avatarDone')) $('#avatarDone').addEventListener('click', function(){
+      try { window.localStorage.setItem('shrestha-avatar', JSON.stringify(picked)); } catch(e){}
+      if(window.__setAvatar){
+        window.__setAvatar({ skin: picked.skin, hair: picked.hair, shirt: picked.shirt, pants: picked.pants });
+        unlockBadge('avatar');
+        toast('your avatar is on the island');
+      } else {
+        toast('the island is still loading \u2014 try again in a moment');
+      }
+      panel.classList.remove('show');
+    });
+
+    window.__pendingAvatar = picked;
   })();
 
   /* opening the game earns a badge */

@@ -1346,6 +1346,95 @@ function build(THREE, PP){
   holoRing.position.y = 15;
   island.add(holoRing);
 
+  /* ---------- your own avatar, built from the colours you pick ---------- */
+  const AVATAR_BLOCKS = [];
+  function avPut(x, y, z, part) { AVATAR_BLOCKS.push({ x: x, y: y, z: z, part: part }); }
+
+  let ax, ay, az;
+  for (ax = -2; ax <= 2; ax = ax + 1) {
+    if (ax === 0) { continue; }
+    for (ay = 0; ay <= 2; ay = ay + 1) {
+      for (az = -1; az <= 1; az = az + 1) { avPut(ax, ay, az, 'pants'); }
+    }
+  }
+  for (ay = 3; ay <= 6; ay = ay + 1) {
+    for (ax = -2; ax <= 2; ax = ax + 1) {
+      for (az = -1; az <= 1; az = az + 1) { avPut(ax, ay, az, 'shirt'); }
+    }
+  }
+  for (ay = 3; ay <= 6; ay = ay + 1) {
+    for (az = -1; az <= 1; az = az + 1) {
+      avPut(-3, ay, az, ay >= 6 ? 'shirt' : 'skin');
+      avPut(3, ay, az, ay >= 6 ? 'shirt' : 'skin');
+    }
+  }
+  for (ay = 7; ay <= 10; ay = ay + 1) {
+    for (ax = -2; ax <= 2; ax = ax + 1) {
+      for (az = -1; az <= 1; az = az + 1) { avPut(ax, ay, az, 'skin'); }
+    }
+  }
+  for (ax = -2; ax <= 2; ax = ax + 1) {
+    for (az = -1; az <= 1; az = az + 1) { avPut(ax, 11, az, 'hair'); }
+  }
+  for (ay = 9; ay <= 10; ay = ay + 1) {
+    for (ax = -2; ax <= 2; ax = ax + 1) { avPut(ax, ay, -1, 'hair'); }
+  }
+  avPut(-1, 9, 1, 'eye');
+  avPut(1, 9, 1, 'eye');
+
+  const avMesh = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshLambertMaterial({ color: 0xffffff }),
+    AVATAR_BLOCKS.length
+  );
+  const avMatrix = new THREE.Matrix4();
+  const avColour = new THREE.Color();
+  let ai = 0;
+  while (ai < AVATAR_BLOCKS.length) {
+    avMatrix.makeTranslation(AVATAR_BLOCKS[ai].x, AVATAR_BLOCKS[ai].y, AVATAR_BLOCKS[ai].z);
+    avMesh.setMatrixAt(ai, avMatrix);
+    ai = ai + 1;
+  }
+  avMesh.instanceMatrix.needsUpdate = true;
+
+  const AVATAR_COLOURS = { skin: '#e0ab7d', hair: '#241c16', shirt: '#ff5a3c', pants: '#2b3a55' };
+
+  function paintAvatar(colours) {
+    if (colours) {
+      if (colours.skin) { AVATAR_COLOURS.skin = colours.skin; }
+      if (colours.hair) { AVATAR_COLOURS.hair = colours.hair; }
+      if (colours.shirt) { AVATAR_COLOURS.shirt = colours.shirt; }
+      if (colours.pants) { AVATAR_COLOURS.pants = colours.pants; }
+    }
+    let i = 0;
+    while (i < AVATAR_BLOCKS.length) {
+      const part = AVATAR_BLOCKS[i].part;
+      if (part === 'eye') {
+        avColour.set('#241c16');
+      } else {
+        avColour.set(AVATAR_COLOURS[part] || '#e0ab7d');
+      }
+      avMesh.setColorAt(i, avColour);
+      i = i + 1;
+    }
+    avMesh.instanceColor.needsUpdate = true;
+  }
+
+  const avatarGroup = new THREE.Group();
+  avatarGroup.add(avMesh);
+  avatarGroup.scale.setScalar(0.62);
+  avatarGroup.position.set(5, 0, 4);
+  island.add(avatarGroup);
+
+  if (window.__pendingAvatar) { paintAvatar(window.__pendingAvatar); } else { paintAvatar(null); }
+
+  const avRay = new THREE.Raycaster();
+  const avHitPoint = new THREE.Vector3();
+  island.updateWorldMatrix(true, false);
+  const avGroundY = island.localToWorld(new THREE.Vector3(0, 3, 0)).y;
+  const avPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -avGroundY);
+  let avWalk = 0;
+
   const clock = new THREE.Clock();
   let scrollY = window.scrollY, sunset = 0;
   addEventListener('scroll', ()=>{ scrollY = window.scrollY; }, {passive:true});
@@ -1368,6 +1457,33 @@ function build(THREE, PP){
     // the time machine pushes the sky toward dawn in the past, night in the future
     const eraNight = Math.max(0, (era - 0.5) * 1.7) + Math.max(0, (0.43 - era) * 0.6);
     const night = Math.min(1, Math.max(sunset, manualNight, eraNight));
+
+    // your avatar walks toward the pointer too, but slower and further behind
+    avRay.setFromCamera({ x: tgt.x * 2, y: -tgt.y * 2 }, camera);
+    if (avRay.ray.intersectPlane(avPlane, avHitPoint)) {
+      const avLocal = avatarGroup.parent.worldToLocal(avHitPoint.clone());
+      const avRad = Math.hypot(avLocal.x, avLocal.z) || 1;
+      const avMax = R - 2;
+      if (avRad > avMax) {
+        avLocal.x = avLocal.x * (avMax / avRad);
+        avLocal.z = avLocal.z * (avMax / avRad);
+      }
+      const avDx = avLocal.x - avatarGroup.position.x;
+      const avDz = avLocal.z - avatarGroup.position.z;
+      const avDist = Math.hypot(avDx, avDz);
+      if (avDist > 1.4) {
+        const avStep = Math.min(avDist, 0.05 + avDist * 0.022);
+        avatarGroup.position.x = avatarGroup.position.x + (avDx / avDist) * avStep;
+        avatarGroup.position.z = avatarGroup.position.z + (avDz / avDist) * avStep;
+        avatarGroup.rotation.y = Math.atan2(avDx, avDz);
+        avWalk = Math.min(1, avWalk + 0.07);
+      } else {
+        avWalk = Math.max(0, avWalk - 0.07);
+      }
+    }
+    avatarGroup.position.y = heightAt(avatarGroup.position.x, avatarGroup.position.z) + 0.5
+      + Math.abs(Math.sin(t * 7)) * 0.32 * avWalk;
+    avatarGroup.rotation.z = Math.sin(t * 7) * 0.05 * avWalk;
 
     // towers rise as the years pass (the island itself keeps its size)
     const futureP = Math.max(0, (era - 0.6) / 0.4);
@@ -1800,6 +1916,7 @@ function build(THREE, PP){
     setWeather:function(w){ weather = w; },
     setNight:function(n){ manualNight = n; },
     setEra:function(v){ era = Math.max(0, Math.min(1, v)); },
+    setAvatar:function(c){ paintAvatar(c); },
     setFx:function(k,v){
       if(k==='birds') birds.forEach(function(b){ b.visible = v; });
       else if(k==='leaves') leafMesh.visible = v;
