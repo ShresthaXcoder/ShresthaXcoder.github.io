@@ -86,6 +86,133 @@ window.__PROJECTS = PROJECTS;
     setTimeout(hideLoader, 6000);
   })();
 
+  const HI_MAP = {
+    "Core": "कोर",
+    "AI & Backend": "AI और बैकएंड",
+    "Toolkit": "टूलकिट",
+    "UI / UX Design": "UI / UX डिज़ाइन",
+    "LLM API Integration": "LLM API इंटीग्रेशन",
+    "AI Workflows": "AI वर्कफ़्लो",
+    "Discovered code": "खोजा गया कोड",
+    "Started building with AI": "AI के साथ निर्माण शुरू किया",
+    "Building the future": "भविष्य का निर्माण",
+    "Opened DevTools on a website out of curiosity. Changed a color. Watched the whole page change.": "उत्सुकतावश एक वेबसाइट पर DevTools खोले। रंग बदला। पूरा पेज बदलते देखा।",
+    "Months of building bad websites on purpose. Every broken layout taught something.": "जानबूझकर महीनों तक खराब वेबसाइट बनाईं। हर टूटे लेआउट ने कुछ सिखाया।",
+    "Built my first chatbot, then realized AI could live inside everything I make.": "अपना पहला चैटबॉट बनाया, फिर एहसास हुआ कि AI मेरी बनाई हर चीज़ के अंदर रह सकता है।",
+    "Developing MyDaksha, the AI-supported browser, and designing the interfaces I want to use in 2047.": "MyDaksha, AI-समर्थित ब्राउज़र विकसित करना, और उन इंटरफेस को डिज़ाइन करना जिनका मैं 2047 में उपयोग करना चाहता हूँ।",
+    "MyDaksha Browser": "MyDaksha ब्राउज़र",
+    "MyDaksha Chat": "MyDaksha चैट",
+    "Daksha Studio": "Daksha स्टूडियो",
+    "Mission Control": "मिशन कंट्रोल",
+    "In dev": "dev में",
+    "In beta": "beta में",
+    "Live": "लाइव",
+    "An AI-supported browser that doesn't just display pages — it understands them. Built for people who want the web to move at their speed.": "एक AI-समर्थित ब्राउज़र जो सिर्फ पेज नहीं दिखाता — बल्कि उन्हें समझता है। उन लोगों के लिए बनाया गया है जो चाहते हैं कि वेब उनकी गति से चले।",
+    "The AI assistant inside the MyDaksha universe — ask it anything, hand it an image, or let it deep-research a topic while you grab chai.": "MyDaksha यूनिवर्स के अंदर AI असिस्टेंट — इसे कुछ भी पूछें, कोई तस्वीर दें, या जब आप चाय पी रहे हों तो इसे किसी विषय पर गहराई से रिसर्च करने दें।",
+    "A cyberpunk component library — the exact design system powering this page. Glitch headings, HUD cards, neon terminals: all packaged and reusable.": "एक साइबरपंक कंपोनेंट लाइब्रेरी — यह पेज जिस डिज़ाइन सिस्टम से चल रहा है, बिल्कुल वही। ग्लिच हेडिंग्स, HUD कार्ड्स, नियॉन टर्मिनल्स: सब पैक और दोबारा इस्तेमाल लायक।",
+    "An AI-assisted design playground for frontend devs. Describe a layout, get a live, editable, neon-styled prototype in seconds.": "फ्रंटएंड डेवलपर्स के लिए एक AI-सहायता प्राप्त डिज़ाइन प्लेग्राउंड। एक लेआउट बताएं, और कुछ ही सेकंड में लाइव, एडिट करने योग्य, नियॉन-स्टाइल वाला प्रोटोटाइप पाएं।",
+    "Pick your city and the sky rebuilds itself around the real numbers — sun and drifting clouds on a clear day, rain, lightning, snow and fog.": "अपना शहर चुनें और आसमान असली डेटा के आधार पर खुद को फिर से बनाता है — साफ दिन में सूरज और उड़ते बादल, बारिश, बिजली, बर्फ और कोहरा।",
+    "A ground-station console for India's space programme — upcoming launches with countdowns ticking to the second, and an archive of the missions that made history.": "भारत के अंतरिक्ष कार्यक्रम के लिए एक ग्राउंड-स्टेशन कंसोल — आने वाले लॉन्च सेकंड-दर-सेकंड काउंटडाउन के साथ, और इतिहास रचने वाले मिशनों का संग्रह।",
+    "A full 3D Rubik's Cube in the browser. The AI scrambles it, you drag the stickers to turn the layers and solve it by hand.": "ब्राउज़र में एक पूरा 3D Rubik's Cube। AI इसे मिला देता है, आप लेयर्स मोड़ने के लिए स्टिकर्स खींचते हैं और इसे हाथ से सॉल्व करते हैं।",
+    "Say hello": "हैलो कहें",
+    "Cat person": "बिल्ली प्रेमी",
+    "Laser master": "लेज़र मास्टर",
+    "Time traveller": "टाइम ट्रैवलर",
+    "Model": "मॉडल",
+    "Photographer": "फोटोग्राफर",
+    "Zen": "ज़ेन",
+    "Show off": "दिखावा करें",
+    "Player one": "प्लेयर वन",
+    "Musician": "संगीतकार",
+    "Be yourself": "जैसे हैं वैसे रहें",
+    "Double-tap the screen": "स्क्रीन को डबल-टैप करें",
+    "Pet the cat ten times": "बिल्ली को दस बार सहलाएं",
+    "Turn on the laser pointer": "लेज़र पॉइंटर चालू करें",
+    "Move the time machine": "टाइम मशीन घुमाएं",
+    "Change the boy's pose": "लड़के का पोज़ बदलें",
+    "Save a photo of the boy": "लड़के की फोटो सेव करें",
+    "Enter focus mode": "फोकस मोड में जाएं",
+    "Share a view of the world": "दुनिया का नज़ारा शेयर करें",
+    "Open the tower defence": "टावर डिफेंस खोलें",
+    "Open the voxel piano": "वोक्सेल पियानो खोलें",
+    "Build your own avatar": "अपना अवतार बनाएं",
+    "Time of day": "दिन का समय",
+    "Time machine": "टाइम मशीन",
+    "Weather": "मौसम",
+    "Display": "डिस्प्ले",
+    "Clear": "साफ़",
+    "Rain": "बारिश",
+    "Snow": "बर्फ",
+    "Reduce motion": "मोशन कम करें",
+    "High contrast": "हाई कॉन्ट्रास्ट",
+    "Voxel cursor": "वोक्सेल कर्सर",
+    "Ambient sound": "एम्बिएंट साउंड",
+    "Focus mode": "फोकस मोड",
+    "Watermark": "वॉटरमार्क",
+    "Wave": "हाथ हिलाएं",
+    "Arms up": "हाथ ऊपर",
+    "Sideways": "बगल में",
+    "Relaxed": "आराम से",
+    "Looking away": "दूसरी तरफ",
+    "Save photo": "फोटो सेव करें",
+    "Role": "भूमिका",
+    "Focus": "फोकस",
+    "Base": "आधार",
+    "Status": "स्थिति",
+    "Building": "निर्माण",
+    "Home": "होम",
+    "About": "बारे में",
+    "Work": "काम",
+    "Skills": "स्किल्स",
+    "Journey": "सफर",
+    "Contact": "संपर्क",
+    "Open for projects": "प्रोजेक्ट्स के लिए उपलब्ध",
+    "07 builds · live links": "07 बिल्ड्स · लाइव लिंक",
+    "See the work": "काम देखें",
+    "Get in touch": "संपर्क करें",
+    "Let's talk": "चलिए बात करते हैं",
+    "HTML / CSS": "HTML / CSS",
+    "JavaScript": "JavaScript",
+    "React": "React",
+    "Python": "Python",
+    "Node.js": "Node.js",
+    "Three.js": "Three.js",
+    "Responsive": "रेस्पॉन्सिव",
+    "Animation": "एनिमेशन",
+    "Design Systems": "डिज़ाइन सिस्टम",
+    "Prompt Engineering": "प्रॉम्प्ट इंजीनियरिंग",
+    "Prompt-driven": "प्रॉम्प्ट-चालित",
+  };
+
+  /* Translate every text node on the page using the dictionary above.
+     This catches the content that JavaScript renders, like project cards. */
+  const originalText = new WeakMap();
+  let translating = false;
+
+  function translateTree(){
+    if(translating) return;
+    translating = true;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let node = walker.nextNode();
+    while(node){
+      if(!originalText.has(node)){ originalText.set(node, node.nodeValue); }
+      const raw = originalText.get(node);
+      const key = raw.trim();
+      if(key && HI_MAP[key]){ node.nodeValue = raw.replace(key, HI_MAP[key]); }
+      node = walker.nextNode();
+    }
+    translating = false;
+  }
+
+  function restoreTree(){
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let node = walker.nextNode();
+    while(node){
+      if(originalText.has(node)){ node.nodeValue = originalText.get(node); }
+      node = walker.nextNode();
+    }
+  }
+
   /* ---------- settings: the Hindi toggle ---------- */
   (function(){
     const panel = $('#settingsPanel');
@@ -103,6 +230,7 @@ window.__PROJECTS = PROJECTS;
         if(!el.dataset.en){ el.dataset.en = el.innerHTML; }
         el.innerHTML = next === 'hi' ? el.dataset.hi : el.dataset.en;
       });
+      if(next === 'hi'){ translateTree(); } else { restoreTree(); }
       panel.querySelectorAll('[data-lang]').forEach(function(b){
         b.classList.toggle('on', b.getAttribute('data-lang') === next);
       });
@@ -122,6 +250,10 @@ window.__PROJECTS = PROJECTS;
     });
 
     if(lang === 'hi'){ applyLang('hi'); }
+
+    // anything rendered later (a project card, the modal) gets translated too
+    const watcher = new MutationObserver(function(){ if(lang === 'hi'){ translateTree(); } });
+    watcher.observe(document.body, { childList: true, subtree: true });
   })();
 
   /* ---------- badges: little things to find ---------- */
