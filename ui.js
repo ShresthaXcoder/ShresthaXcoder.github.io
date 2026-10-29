@@ -86,6 +86,44 @@ window.__PROJECTS = PROJECTS;
     setTimeout(hideLoader, 6000);
   })();
 
+  /* ---------- settings: the Hindi toggle ---------- */
+  (function(){
+    const panel = $('#settingsPanel');
+    const btn = $('#settingsBtn');
+    if(!panel || !btn) return;
+
+    let lang = 'en';
+    try { lang = window.localStorage.getItem('shrestha-lang') || 'en'; } catch(e){ lang = 'en'; }
+
+    function applyLang(next){
+      lang = next;
+      document.documentElement.lang = next === 'hi' ? 'hi' : 'en';
+      document.body.classList.toggle('lang-hi', next === 'hi');
+      document.querySelectorAll('[data-hi]').forEach(function(el){
+        if(!el.dataset.en){ el.dataset.en = el.innerHTML; }
+        el.innerHTML = next === 'hi' ? el.dataset.hi : el.dataset.en;
+      });
+      panel.querySelectorAll('[data-lang]').forEach(function(b){
+        b.classList.toggle('on', b.getAttribute('data-lang') === next);
+      });
+      try { window.localStorage.setItem('shrestha-lang', next); } catch(e){}
+    }
+
+    btn.addEventListener('click', function(){ panel.classList.add('show'); });
+    if($('#settingsClose')) $('#settingsClose').addEventListener('click', function(){ panel.classList.remove('show'); });
+    panel.addEventListener('click', function(e){
+      const choice = e.target.closest('[data-lang]');
+      if(choice){
+        applyLang(choice.getAttribute('data-lang'));
+        toast(choice.getAttribute('data-lang') === 'hi' ? 'भाषा: हिन्दी' : 'language: english');
+        return;
+      }
+      if(e.target === panel){ panel.classList.remove('show'); }
+    });
+
+    if(lang === 'hi'){ applyLang('hi'); }
+  })();
+
   /* ---------- badges: little things to find ---------- */
   const BADGES = [
     { id: 'hello',  ico: '\u2726', title: 'Say hello',      hint: 'Double-tap the screen' },

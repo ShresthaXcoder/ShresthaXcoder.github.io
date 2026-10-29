@@ -159,14 +159,17 @@ setTimeout(function () {
 <nav class="nav" id="nav">
   <a href="#top" class="brand"><span class="cube"><i></i><i></i><i></i><i></i></span> Shrestha</a>
   <div class="nav-links" id="navLinks">
-    <a href="#about">About</a><a href="#work">Work</a><a href="#skills">Skills</a>
-    <a href="#journey">Journey</a><a href="#resume">R&eacute;sum&eacute;</a><a href="#contact">Contact</a>
+    <a href="#about" data-hi="बारे में">About</a><a href="#work" data-hi="काम">Work</a><a href="#skills" data-hi="स्किल्स">Skills</a>
+    <a href="#journey" data-hi="सफर">Journey</a><a href="#resume" data-hi="रेज़्यूमे">R&eacute;sum&eacute;</a><a href="#contact" data-hi="संपर्क">Contact</a>
   </div>
   <div class="nav-right">
+    <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+    </button>
     <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
     </button>
-    <a href="#contact" class="nav-cta" id="navCta">Let's talk</a>
+    <a href="#contact" class="nav-cta" id="navCta" data-hi="चलिए बात करते हैं">Let's talk</a>
     <button class="nav-toggle" id="navToggle" aria-label="Menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
@@ -177,17 +180,17 @@ setTimeout(function () {
   <span class="scrim"></span>
   <div class="wrap hero-top">
     <span class="pill"><span class="dot"></span> Open for projects &middot; <span id="clock">IST</span></span>
-    <span class="hero-kicker">Frontend Designer &middot; AI Builder</span>
+    <span class="hero-kicker" data-hi="फ्रंटएंड डिज़ाइनर &middot; एआई बिल्डर">Frontend Designer &middot; AI Builder</span>
     <div class="hero-fallback">SHRESTHA</div>
   </div>
   <div class="wrap hero-foot">
-    <p>I design and build interfaces that feel like they were <b>smuggled back from 2047</b> — AI browsers, assistants that understand, and UI systems with a soul.</p>
+    <p data-hi="मैं ऐसे इंटरफेस डिज़ाइन और बनाता हूँ जो <b>2047 से चुराकर लाए गए</b> लगते हैं — एआई ब्राउज़र, समझने वाले असिस्टेंट, और एक आत्मा वाले यूआई सिस्टम।">I design and build interfaces that feel like they were <b>smuggled back from 2047</b> — AI browsers, assistants that understand, and UI systems with a soul.</p>
     <div class="actions">
-      <a href="#work" class="btn btn-primary" data-confetti>See the work
+      <a href="#work" class="btn btn-primary" data-confetti><span data-hi="काम देखें">See the work</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      <a href="#contact" class="btn btn-ghost">Get in touch</a>
+      <a href="#contact" class="btn btn-ghost" data-hi="संपर्क करें">Get in touch</a>
     </div>
-    <div class="cue"><span>Scroll</span><span class="bar"></span></div>
+    <div class="cue"><span data-hi="स्क्रॉल">Scroll</span><span class="bar"></span></div>
   </div>
 </header>
 
@@ -211,10 +214,10 @@ setTimeout(function () {
       </div>
     </div>
     <div class="about-copy reveal">
-      <div class="eyebrow">01 &mdash; Identity</div>
-      <h2 class="title">Young age.<br><span class="thin">Not young ideas.</span></h2>
-      <p>What started as curiosity about how websites work turned into an obsession with crafting interfaces that feel like <b>science fiction</b> — and work like science fact.</p>
-      <p>Today I design and build frontend experiences powered by AI: a browser that thinks with you, chatbots that understand context, and UI systems with a cyberpunk soul. Everything is <b>hand-coded</b>.</p>
+      <div class="eyebrow" data-hi="01 &mdash; पहचान">01 &mdash; Identity</div>
+      <h2 class="title" data-hi="कम उम्र।<br><span class='thin'>कम उम्र के विचार नहीं।</span>">Young age.<br><span class="thin">Not young ideas.</span></h2>
+      <p data-hi="वेबसाइट्स कैसे काम करती हैं, इस जिज्ञासा से जो शुरू हुआ, वह ऐसे इंटरफेस बनाने के जुनून में बदल गया जो <b>साइंस फिक्शन</b> जैसे लगते हैं — और साइंस फैक्ट की तरह काम करते हैं।">What started as curiosity about how websites work turned into an obsession with crafting interfaces that feel like <b>science fiction</b> — and work like science fact.</p>
+      <p data-hi="आज मैं एआई से चलने वाले फ्रंटएंड अनुभव बनाता हूँ: एक ब्राउज़र जो आपके साथ सोचता है, ऐसे चैटबॉट जो संदर्भ समझते हैं, और साइबरपंक आत्मा वाले यूआई सिस्टम। सब कुछ <b>हाथ से कोड किया गया</b> है।">Today I design and build frontend experiences powered by AI: a browser that thinks with you, chatbots that understand context, and UI systems with a cyberpunk soul. Everything is <b>hand-coded</b>.</p>
       <div class="meta-row">
         <div class="meta-cell"><div class="k">Role</div><div class="v">Frontend Designer</div></div>
         <div class="meta-cell"><div class="k">Focus</div><div class="v">AI &times; Web</div></div>
@@ -233,8 +236,8 @@ setTimeout(function () {
   <div class="wrap">
     <div class="video-head reveal">
       <div>
-        <div class="eyebrow">01.5 &mdash; Watch</div>
-        <h2 class="title">See it <span class="thin">in motion.</span></h2>
+        <div class="eyebrow" data-hi="01.5 &mdash; देखें">01.5 &mdash; Watch</div>
+        <h2 class="title" data-hi="इसे <span class='thin'>गति में देखें।</span>">See it <span class="thin">in motion.</span></h2>
       </div>
       <div class="eyebrow" style="margin:0" id="videoNote">video</div>
     </div>
@@ -254,8 +257,8 @@ setTimeout(function () {
   <div class="wrap">
     <div class="work-head reveal">
       <div>
-        <div class="eyebrow">02 &mdash; Selected work</div>
-        <h2 class="title">Projects from<br><span class="thin">the future.</span></h2>
+        <div class="eyebrow" data-hi="02 &mdash; चुना हुआ काम">02 &mdash; Selected work</div>
+        <h2 class="title" data-hi="भविष्य के<br><span class='thin'>प्रोजेक्ट्स।</span>">Projects from<br><span class="thin">the future.</span></h2>
       </div>
       <div class="eyebrow" style="margin:0">07 builds &middot; live links</div>
     </div>
@@ -271,8 +274,8 @@ setTimeout(function () {
 <section class="section-pad" id="skills">
   <div class="wrap">
     <div class="reveal">
-      <div class="eyebrow">03 &mdash; Capability</div>
-      <h2 class="title">The stack behind<br><span class="thin">the interfaces.</span></h2>
+      <div class="eyebrow" data-hi="03 &mdash; क्षमता">03 &mdash; Capability</div>
+      <h2 class="title" data-hi="इंटरफेस के पीछे का<br><span class='thin'>स्टैक।</span>">The stack behind<br><span class="thin">the interfaces.</span></h2>
     </div>
     <div class="skills-grid">
       <div class="voxel-stack reveal" id="voxelStack"><div class="iso" id="isoStack"></div><div class="cap">Hand-coded, always</div></div>
@@ -291,8 +294,8 @@ setTimeout(function () {
 
 <section class="section-pad" id="journey">
   <div class="wrap">
-    <div class="reveal"><div class="eyebrow">04 &mdash; Timeline</div>
-      <h2 class="title">The journey<br><span class="thin">so far.</span></h2></div>
+    <div class="reveal"><div class="eyebrow" data-hi="04 &mdash; टाइमलाइन">04 &mdash; Timeline</div>
+      <h2 class="title" data-hi="अब तक का<br><span class='thin'>सफर।</span>">The journey<br><span class="thin">so far.</span></h2></div>
     <div class="timeline" id="timeline">
       <div class="rail"><i id="railFill"></i></div>
       <div class="tl-item reveal"><div class="tl-year">2023 &middot; First contact</div><h3>Discovered code</h3>
@@ -311,29 +314,29 @@ setTimeout(function () {
 <section class="section-pad" id="resume">
   <div class="wrap">
     <div class="reveal">
-      <div class="eyebrow">05 &mdash; R&eacute;sum&eacute;</div>
-      <h2 class="title">The short<br><span class="thin">version.</span></h2>
+      <div class="eyebrow" data-hi="05 &mdash; रेज़्यूमे">05 &mdash; R&eacute;sum&eacute;</div>
+      <h2 class="title" data-hi="छोटा<br><span class='thin'>वर्ज़न।</span>">The short<br><span class="thin">version.</span></h2>
     </div>
     <div class="resume-cta reveal">
       <span class="resume-cta-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/><path d="M10 13h6M10 17h4"/></svg>
       </span>
       <div class="resume-cta-text">
-        <h3>My r&eacute;sum&eacute; lives on one page</h3>
-        <p>Education, skills, selected projects and how to reach me &mdash; kept on a single page and always up to date.</p>
+        <h3 data-hi="मेरा रेज़्यूमे एक पेज का है">My r&eacute;sum&eacute; lives on one page</h3>
+        <p data-hi="शिक्षा, स्किल्स, चुने हुए प्रोजेक्ट्स और मुझसे संपर्क कैसे करें — सब एक ही पेज पर और हमेशा अप-टू-डेट।">Education, skills, selected projects and how to reach me &mdash; kept on a single page and always up to date.</p>
       </div>
       <div class="resume-cta-actions">
-        <a class="btn btn-primary" href="resume/shrestha_resume.pdf" target="_blank" rel="noopener">Visit r&eacute;sum&eacute;
+        <a class="btn btn-primary" href="resume/shrestha_resume.pdf" target="_blank" rel="noopener"><span data-hi="रेज़्यूमे देखें">Visit r&eacute;sum&eacute;</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="mini" href="resume/shrestha_resume.pdf" download>Download a copy</a>
+        <a class="mini" href="resume/shrestha_resume.pdf" download data-hi="एक कॉपी डाउनलोड करें">Download a copy</a>
       </div>
       <a class="play-btn" href="game/">
         <span class="play-mark">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
         </span>
         <span class="play-text">
-          <b>Play Voxel Tower Defence</b>
-          <em>Blocky invaders are coming for your crystal. Works offline.</em>
+          <b data-hi="वोक्सेल टावर डिफेंस खेलें">Play Voxel Tower Defence</b>
+          <em data-hi="ब्लॉकी हमलावर आपके क्रिस्टल के लिए आ रहे हैं। ऑफ़लाइन काम करता है।">Blocky invaders are coming for your crystal. Works offline.</em>
         </span>
         <svg class="play-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
@@ -344,13 +347,13 @@ setTimeout(function () {
 <section class="section-pad contact" id="contact">
   <div class="wrap contact-inner">
     <div class="reveal">
-      <div class="eyebrow">06 &mdash; Contact</div>
-      <h2>Let's build<br>something <span class="accent">loud.</span></h2>
-      <p>Open to collaborations, freelance builds and anything that lives at the edge of AI and interface design.</p>
+      <div class="eyebrow" data-hi="06 &mdash; संपर्क">06 &mdash; Contact</div>
+      <h2 data-hi="चलिए कुछ <span class='accent'>शानदार</span><br>बनाते हैं।">Let's build<br>something <span class="accent">loud.</span></h2>
+      <p data-hi="कोलैबोरेशन, फ्रीलांस बिल्ड्स और एआई व इंटरफेस डिज़ाइन की सीमाओं पर काम करने वाली किसी भी चीज़ के लिए उपलब्ध।">Open to collaborations, freelance builds and anything that lives at the edge of AI and interface design.</p>
     </div>
     <div class="contact-links reveal">
       <button class="clink" id="copyMail">
-        <span><span class="lbl">Email &middot; click to copy</span><br><span class="val">iamshresthax@gmail.com</span></span>
+        <span><span class="lbl" data-hi="ईमेल &middot; कॉपी करने के लिए क्लिक करें">Email &middot; click to copy</span><br><span class="val">iamshresthax@gmail.com</span></span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg></button>
       <a class="clink" href="https://github.com/shresthaxcoder" target="_blank" rel="noopener">
         <span><span class="lbl">GitHub</span><br><span class="val">github.com/shresthaxcoder</span></span>
@@ -362,7 +365,7 @@ setTimeout(function () {
   </div>
   <footer><div class="wrap foot">
     <span>&copy; 2026 Shrestha &middot; built by hand</span>
-    <span>Darbhanga, India &middot; <span class="accent">available for work</span></span>
+    <span>Darbhanga, India &middot; <span class="accent" data-hi="काम के लिए उपलब्ध">available for work</span></span>
   </div></footer>
 </section>
 </main>
@@ -494,6 +497,21 @@ setTimeout(function () {
 <div class="shutter" id="shutter"></div>
 
 <div class="watermark" id="watermark" aria-hidden="true"></div>
+
+<div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Settings">
+  <div class="settings-card">
+    <h3 data-hi="सेटिंग्स">Settings</h3>
+    <p class="set-sub">Change how the site reads and looks.</p>
+    <div class="set-row">
+      <span class="set-lbl" data-hi="भाषा">Language</span>
+      <div class="set-opts">
+        <button type="button" data-lang="en" class="on">English</button>
+        <button type="button" data-lang="hi">हिन्दी</button>
+      </div>
+    </div>
+    <button class="set-close" id="settingsClose" data-hi="बंद करें">Close</button>
+  </div>
+</div>
 
 <div class="laser-dot" id="laserDot" aria-hidden="true"></div>
 
