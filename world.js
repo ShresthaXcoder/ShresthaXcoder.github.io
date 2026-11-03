@@ -1471,25 +1471,30 @@ function build(THREE, PP){
   island.add(cityGroup);
 
   /* ---------- flying cars between the towers ---------- */
+  /* fourteen flying cars, big enough to spot and click, cruising in open sky */
   const flyingCars = [];
+  const CARS = 14;
   let vi = 0;
-  while (vi < 8) {
+  while (vi < CARS) {
     const carBlocks = [
-      { x: 0, y: 0, z: 0, color: 0xfff4d6 },
+      { x: 0, y: 0, z: 0, color: 0xfff6dd },
       { x: 1, y: 0, z: 0, color: 0x9fe4ff },
-      { x: -1, y: 0, z: 0, color: 0x9fe4ff }
+      { x: -1, y: 0, z: 0, color: 0x9fe4ff },
+      { x: 0, y: 1, z: 0, color: 0xffffff },
+      { x: 0, y: 0, z: 1, color: 0x3fd0ff },
+      { x: 0, y: 0, z: -1, color: 0x3fd0ff }
     ];
-    const car = makeVoxels(carBlocks, 1.15);
+    const car = makeVoxels(carBlocks, 1.95);
     car.material = new THREE.MeshLambertMaterial({
-      color: 0xffffff, emissive: 0x3fd0ff, emissiveIntensity: 1.6, transparent: true, opacity: 0.98
+      color: 0xffffff, emissive: 0x4fd8ff, emissiveIntensity: 2.1, transparent: true, opacity: 0.98
     });
     island.add(car);
     flyingCars.push({
       mesh: car,
-      angle: (vi / 8) * Math.PI * 2,
-      radius: 14 + (vi % 4) * 4.5,
-      height: -6 - (vi % 3) * 3,
-      speed: 0.22 + (vi % 3) * 0.14
+      angle: (vi / CARS) * Math.PI * 2 + (vi % 3) * 0.22,
+      radius: 18 + (vi % 5) * 3,
+      height: -1.5 + (vi % 4) * 2.6,
+      speed: 0.20 + (vi % 4) * 0.11
     });
     vi = vi + 1;
   }
@@ -2007,9 +2012,9 @@ function build(THREE, PP){
       rideCar.mesh.getWorldPosition(rideCam);
       const tanX = -Math.sin(rideCar.angle);
       const tanZ = Math.cos(rideCar.angle);
-      const back = 12;
+      const back = 10;
       const wantX = rideCam.x - tanX * back;
-      const wantY = rideCam.y + 6.2;
+      const wantY = rideCam.y + 4.6;
       const wantZ = rideCam.z - tanZ * back;
       camera.position.x += (wantX - camera.position.x) * 0.06;
       camera.position.y += (wantY - camera.position.y) * 0.06;
