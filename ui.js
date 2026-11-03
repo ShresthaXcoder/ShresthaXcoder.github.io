@@ -966,6 +966,347 @@ window.__PROJECTS = PROJECTS;
     toast('world reset');
   });
 
+  /* ---------- QR code (byte mode, ECC M, versions 1-5) ---------- */
+  const QRCode = (function(){
+    const EXP = new Array(512), LOG = new Array(256);
+    (function(){
+      let x = 1;
+      for (let i = 0; i < 255; i++){
+        EXP[i] = x; LOG[x] = i;
+        x <<= 1;
+        if (x & 0x100) { x ^= 0x11d; }
+      }
+      for (let i = 255; i < 512; i++) { EXP[i] = EXP[i - 255]; }
+    })();
+
+    function gmul(a, b){ return (a === 0 || b === 0) ? 0 : EXP[LOG[a] + LOG[b]]; }
+
+    function polyMul(a, b){
+      const out = new Array(a.length + b.length - 1).fill(0);
+      for (let i = 0; i < a.length; i++){
+        for (let j = 0; j < b.length; j++){ out[i + j] ^= gmul(a[i], b[j]); }
+      }
+      return out;
+    }
+
+    function genPoly(n){
+      let g = [1];
+      for (let i = 0; i < n; i++){ g = polyMul(g, [1, EXP[i]]); }
+      return g;
+    }
+
+    function rsEncode(data, ecLen){
+      const g = genPoly(ecLen);
+      const res = data.slice();
+      for (let i = 0; i < ecLen; i++){ res.push(0); }
+      for (let i = 0; i < data.length; i++){
+        const coef = res[i];
+        if (coef !== 0){
+          for (let j = 0; j < g.length; j++){ res[i + j] ^= gmul(g[j], coef); }
+        }
+      }
+      return res.slice(data.length);
+    }
+
+    const INFO = {
+      1: { ec: 10, blocks: [16], align: [] },
+      2: { ec: 16, blocks: [28], align: [18] },
+      3: { ec: 26, blocks: [44], align: [22] },
+      4: { ec: 18, blocks: [32, 32], align: [26] },
+      5: { ec: 24, blocks: [43, 43], align: [30] }
+    };
+
+    function utf8(text){
+      const out = [];
+      for (let i = 0; i < text.length; i++){
+        const c = text.charCodeAt(i);
+        if (c < 0x80) { out.push(c); }
+        else if (c < 0x800) { out.push(0xc0 | (c >> 6), 0x80 | (c & 63)); }
+        else { out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 63), 0x80 | (c & 63)); }
+      }
+      return out;
+    }
+
+    function make(text, forceMask){
+      const bytes = utf8(text);
+      let ver = 0;
+      for (let v = 1; v <= 5; v++){
+        const cap = INFO[v].blocks.reduce((a, b) => a + b, 0);
+        if (bytes.length + 2 <= cap) { ver = v; break; }
+      }
+      if (!ver) { return null; }
+
+      const info = INFO[ver];
+      const totalData = info.blocks.reduce((a, b) => a + b, 0);
+      const size = 17 + ver * 4;
+      const mask = (typeof forceMask === 'number') ? forceMask : 4;
+
+      const bits = [];
+      function push(val, len){ for (let i = len - 1; i >= 0; i--){ bits.push((val >> i) & 1); } }
+      push(4, 4);
+      push(bytes.length, 8);
+      for (let i = 0; i < bytes.length; i++){ push(bytes[i], 8); }
+      const capBits = totalData * 8;
+      push(0, Math.min(4, capBits - bits.length));
+      while (bits.length % 8) { bits.push(0); }
+      const pads = [0xEC, 0x11];
+      let pi = 0;
+      while (bits.length < capBits){ push(pads[pi % 2], 8); pi++; }
+
+      const cw = [];
+      for (let i = 0; i < bits.length; i += 8){
+        let b = 0;
+        for (let j = 0; j < 8; j++){ b = (b << 1) | bits[i + j]; }
+        cw.push(b);
+      }
+
+      const dataBlocks = [], ecBlocks = [];
+      let off = 0;
+      for (let bi = 0; bi < info.blocks.length; bi++){
+        const blk = cw.slice(off, off + info.blocks[bi]);
+        off += info.blocks[bi];
+        dataBlocks.push(blk);
+        ecBlocks.push(rsEncode(blk, info.ec));
+      }
+      const maxData = Math.max.apply(null, info.blocks);
+      const final = [];
+      for (let i = 0; i < maxData; i++){
+        for (let bi = 0; bi < dataBlocks.length; bi++){
+          if (i < dataBlocks[bi].length) { final.push(dataBlocks[bi][i]); }
+        }
+      }
+      for (let i = 0; i < info.ec; i++){
+        for (let bi = 0; bi < ecBlocks.length; bi++){ final.push(ecBlocks[bi][i]); }
+      }
+
+      const m = [];
+      for (let r = 0; r < size; r++){ m.push(new Array(size).fill(null)); }
+      function set(r, c, v){ if (r >= 0 && r < size && c >= 0 && c < size) { m[r][c] = v; } }
+
+      [[0, 0], [0, size - 7], [size - 7, 0]].forEach(function(f){
+        for (let i = -1; i <= 7; i++){
+          for (let j = -1; j <= 7; j++){
+            const on = (i >= 0 && i <= 6 && j >= 0 && j <= 6) &&
+              (i === 0 || i === 6 || j === 0 || j === 6 || (i >= 2 && i <= 4 && j >= 2 && j <= 4));
+            set(f[0] + i, f[1] + j, on ? 1 : 0);
+          }
+        }
+      });
+
+      for (let i = 8; i < size - 8; i++){
+        set(6, i, (i % 2 === 0) ? 1 : 0);
+        set(i, 6, (i % 2 === 0) ? 1 : 0);
+      }
+
+      info.align.forEach(function(a){
+        for (let i = -2; i <= 2; i++){
+          for (let j = -2; j <= 2; j++){
+            set(a + i, a + j, Math.max(Math.abs(i), Math.abs(j)) !== 1 ? 1 : 0);
+          }
+        }
+      });
+
+      set(size - 8, 8, 1);
+
+      let fmtData = (0 << 3) | mask;
+      let rem = fmtData;
+      for (let i = 0; i < 10; i++){ rem = (rem << 1) ^ ((rem >>> 9) * 0x537); }
+      const fmt = ((fmtData << 10) | rem) ^ 0x5412;
+      const fbit = n => (fmt >> n) & 1;
+
+      for (let i = 0; i <= 5; i++){ set(i, 8, fbit(i)); }
+      set(7, 8, fbit(6));
+      set(8, 8, fbit(7));
+      set(8, 7, fbit(8));
+      for (let i = 9; i < 15; i++){ set(8, 14 - i, fbit(i)); }
+      for (let i = 0; i < 8; i++){ set(8, size - 1 - i, fbit(i)); }
+      for (let i = 8; i < 15; i++){ set(size - 15 + i, 8, fbit(i)); }
+
+      const taken = m.map(row => row.map(v => v !== null));
+      let idx = 0;
+      const totalBits = final.length * 8;
+      function bitAt(n){
+        if (n >= totalBits) { return 0; }
+        return (final[Math.floor(n / 8)] >> (7 - (n % 8))) & 1;
+      }
+
+      let up = true;
+      for (let col = size - 1; col > 0; col -= 2){
+        if (col === 6) { col = 5; }
+        for (let row = 0; row < size; row++){
+          const r = up ? (size - 1 - row) : row;
+          for (let k = 0; k < 2; k++){
+            const c = col - k;
+            if (!taken[r][c]){ m[r][c] = bitAt(idx); idx++; }
+          }
+        }
+        up = !up;
+      }
+
+      function masked(r, c){
+        if (mask === 0) { return (r + c) % 2 === 0; }
+        if (mask === 1) { return r % 2 === 0; }
+        if (mask === 2) { return c % 3 === 0; }
+        if (mask === 3) { return (r + c) % 3 === 0; }
+        if (mask === 4) { return (Math.floor(r / 2) + Math.floor(c / 3)) % 2 === 0; }
+        if (mask === 5) { return ((r * c) % 2) + ((r * c) % 3) === 0; }
+        if (mask === 6) { return (((r * c) % 2) + ((r * c) % 3)) % 2 === 0; }
+        return (((r + c) % 2) + ((r * c) % 3)) % 2 === 0;
+      }
+
+      for (let r = 0; r < size; r++){
+        for (let c = 0; c < size; c++){
+          if (!taken[r][c] && masked(r, c)) { m[r][c] ^= 1; }
+        }
+      }
+
+      return m;
+    }
+
+    return { make: make };
+  })();
+
+  const qrCanvas = $('#qrCanvas');
+  if (qrCanvas){
+    const m = QRCode.make('shresthaxcoder.github.io');
+    if (m){
+      const ctx = qrCanvas.getContext('2d');
+      const n = m.length;
+      const quiet = 3;
+      const total = n + quiet * 2;
+      const cell = Math.floor(qrCanvas.width / total);
+      const off = Math.floor((qrCanvas.width - cell * total) / 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, qrCanvas.width, qrCanvas.height);
+      ctx.fillStyle = '#0d1b2e';
+      for (let r = 0; r < n; r++){
+        for (let c = 0; c < n; c++){
+          if (m[r][c]) {
+            ctx.fillRect(off + (c + quiet) * cell, off + (r + quiet) * cell, cell, cell);
+          }
+        }
+      }
+    }
+  }
+
+  /* ---------- offline banner ---------- */
+  const offlineBar = $('#offlineBar');
+  function paintOnline(){
+    if (!offlineBar) { return; }
+    offlineBar.classList.toggle('show', !navigator.onLine);
+  }
+  addEventListener('online', function(){ paintOnline(); toast('back online'); });
+  addEventListener('offline', function(){ paintOnline(); });
+  paintOnline();
+
+  /* ---------- share card, WhatsApp ---------- */
+  const SITE_URL = 'https://shresthaxcoder.github.io';
+
+  function buildShareCard(){
+    const W = 1200, H = 630;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#0d1b2e');
+    g.addColorStop(0.55, '#122744');
+    g.addColorStop(1, '#07101c');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    const world = document.getElementById('world');
+    if (world && world.width){
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      const scale = Math.max(W / world.width, H / world.height);
+      const dw = world.width * scale, dh = world.height * scale;
+      ctx.drawImage(world, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      ctx.restore();
+    }
+
+    const shade = ctx.createLinearGradient(0, 0, 0, H);
+    shade.addColorStop(0, 'rgba(7,16,28,0.15)');
+    shade.addColorStop(0.55, 'rgba(7,16,28,0.72)');
+    shade.addColorStop(1, 'rgba(7,16,28,0.96)');
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.strokeStyle = 'rgba(240,192,96,0.55)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(22, 22, W - 44, H - 44);
+
+    ctx.fillStyle = '#f0c060';
+    ctx.font = '700 22px ui-monospace, monospace';
+    ctx.fillText('SHRESTHAXCODER', 64, 96);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 92px Georgia, serif';
+    ctx.fillText('Shrestha', 64, 210);
+
+    ctx.fillStyle = '#b9cbe4';
+    ctx.font = '400 30px Georgia, serif';
+    ctx.fillText('Frontend designer & AI builder', 64, 262);
+    ctx.fillText('from Darbhanga, India', 64, 302);
+
+    ctx.fillStyle = '#ffd98a';
+    ctx.font = '600 26px ui-monospace, monospace';
+    ctx.fillText('shresthaxcoder.github.io', 64, H - 74);
+
+    const qm = QRCode.make('shresthaxcoder.github.io');
+    if (qm){
+      const n = qm.length, quiet = 2, total = n + quiet * 2;
+      const box = 150, cell = Math.floor(box / total);
+      const ox = W - 64 - cell * total, oy = H - 64 - cell * total;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(ox - 8, oy - 8, cell * total + 16, cell * total + 16);
+      ctx.fillStyle = '#0d1b2e';
+      for (let r = 0; r < n; r++){
+        for (let c = 0; c < n; c++){
+          if (qm[r][c]) { ctx.fillRect(ox + (c + quiet) * cell, oy + (r + quiet) * cell, cell, cell); }
+        }
+      }
+    }
+
+    return cv;
+  }
+
+  function shareSiteCard(){
+    const cv = buildShareCard();
+    cv.toBlob(function(blob){
+      if (!blob) { toast('could not build the card'); return; }
+      const file = new File([blob], 'shrestha-card.png', { type: 'image/png' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){
+        navigator.share({ files: [file], title: 'Shrestha', text: SITE_URL }).catch(function(){});
+        return;
+      }
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'shrestha-card.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      toast('share card saved');
+    }, 'image/png');
+  }
+
+  function shareWhatsApp(){
+    const text = 'Shrestha — frontend designer & AI builder. Take a look: ' + SITE_URL;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+  }
+
+  function rideCar(){
+    const s = SC();
+    if (s && s.rideCar){
+      if (s.isRiding && s.isRiding()){ s.stopRide(); toast('back to the island'); return; }
+      s.rideCar();
+      toast('hold on \u2014 press Esc to get off');
+    } else {
+      toast('the world is still loading');
+    }
+  }
+
   /* ---------- 5. command palette ---------- */
   const palette = $('#palette'), pInput = $('#paletteInput'), pList = $('#paletteList');
   function palItems(){
@@ -975,6 +1316,16 @@ window.__PROJECTS = PROJECTS;
     out.push({label:'Toggle stats HUD', kind:'Action', key:'H', act:toggleHud});
     out.push({label:'Keyboard shortcuts', kind:'Action', key:'?', act:()=>$('#keys').classList.add('open')});
     out.push({label:'Email Shrestha', kind:'Action', key:'', act:()=>{ location.href='mailto:iamshresthax@gmail.com'; }});
+    out.push({label:'Ride a flying car', kind:'World', key:'', act:rideCar});
+    out.push({label:'Share card for the site', kind:'Share', key:'', act:shareSiteCard});
+    out.push({label:'Share on WhatsApp', kind:'Share', key:'', act:shareWhatsApp});
+    out.push({label:'Show the QR code', kind:'Share', key:'', act:()=>{ const q=$('#qrCanvas'); if(q){ q.scrollIntoView({behavior:'smooth', block:'center'}); q.classList.add('pulse'); setTimeout(()=>q.classList.remove('pulse'),1600); } }});
+    out.push({label:'Copy link to this site', kind:'Share', key:'', act:()=>{ if(navigator.clipboard){ navigator.clipboard.writeText(SITE_URL).then(()=>toast('link copied')); } }});
+    out.push({label:'Switch to Hindi', kind:'Action', key:'', act:()=>{ const b=document.querySelector('[data-lang="hi"]'); if(b) b.click(); }});
+    out.push({label:'Switch to English', kind:'Action', key:'', act:()=>{ const b=document.querySelector('[data-lang="en"]'); if(b) b.click(); }});
+    out.push({label:'Open the voxel piano', kind:'Play', key:'', act:()=>{ const b=$('#pianoBtn'); if(b) b.click(); }});
+    out.push({label:'Turn the laser on', kind:'Play', key:'', act:()=>{ const b=$('#laserBtn'); if(b) b.click(); }});
+    out.push({label:'Play Voxel Tower Defence', kind:'Play', key:'', act:()=>{ location.href='game/'; }});
     out.push({label:'GitHub profile', kind:'Action', key:'', act:()=>window.open('https://github.com/shresthaxcoder','_blank')});
     return out;
   }
@@ -1163,6 +1514,7 @@ window.__PROJECTS = PROJECTS;
   document.addEventListener('keydown', e=>{
     const typing = /INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName);
     if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openPalette(); return; }
+    if(e.key==='Escape'){ const w = SC(); if(w && w.isRiding && w.isRiding()){ w.stopRide(); toast('back to the island'); } }
     if(typing){
       if(palette.classList.contains('open')){
         if(e.key==='Escape') closePalette();

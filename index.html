@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=12" />
+<link rel="stylesheet" href="style.css?v=26" />
 </head>
 <body>
 
@@ -155,6 +155,12 @@ setTimeout(function () {
 <div class="toast" id="toast">copied</div>
 
 <h1 class="sr">Shrestha — Frontend Designer and AI Builder</h1>
+
+<div class="offline-bar" id="offlineBar">
+  <span class="dot"></span>
+  <span data-hi="आप ऑफ़लाइन हैं">You're offline</span>
+  <em data-hi="कैश किया हुआ वर्ज़न दिख रहा है">showing the cached version</em>
+</div>
 
 <nav class="nav" id="nav">
   <a href="#top" class="brand"><span class="cube"><i></i><i></i><i></i><i></i></span> Shrestha</a>
@@ -350,6 +356,13 @@ setTimeout(function () {
       <div class="eyebrow" data-hi="06 &mdash; संपर्क">06 &mdash; Contact</div>
       <h2 data-hi="चलिए कुछ <span class='accent'>शानदार</span><br>बनाते हैं।">Let's build<br>something <span class="accent">loud.</span></h2>
       <p data-hi="कोलैबोरेशन, फ्रीलांस बिल्ड्स और एआई व इंटरफेस डिज़ाइन की सीमाओं पर काम करने वाली किसी भी चीज़ के लिए उपलब्ध।">Open to collaborations, freelance builds and anything that lives at the edge of AI and interface design.</p>
+    </div>
+    <div class="qr-block reveal">
+      <canvas id="qrCanvas" width="220" height="220" aria-label="QR code to this site"></canvas>
+      <div class="qr-text">
+        <span class="lbl" data-hi="स्कैन करें">Scan to open</span>
+        <span class="val">shresthaxcoder.github.io</span>
+      </div>
     </div>
     <div class="contact-links reveal">
       <button class="clink" id="copyMail">
@@ -615,8 +628,8 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=9"></script>
+<script type="module" src="world.js?v=26"></script>
 
-<script src="ui.js?v=9"></script>
+<script src="ui.js?v=26"></script>
 </body>
 </html>

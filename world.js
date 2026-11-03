@@ -1494,6 +1494,51 @@ function build(THREE, PP){
     vi = vi + 1;
   }
 
+  /* ---------- riding a flying car ---------- */
+  let rideCar = null;
+  const rideCam = new THREE.Vector3();
+  const rideLook = new THREE.Vector3();
+  const carRay = new THREE.Raycaster();
+  const carPick = new THREE.Vector2();
+
+  function startRide(index){
+    if (!flyingCars.length) { return false; }
+    let pick = index;
+    if (typeof pick !== 'number' || pick < 0 || pick >= flyingCars.length) {
+      pick = Math.floor(Math.random() * flyingCars.length);
+    }
+    rideCar = flyingCars[pick];
+    rideCar.speed = rideCar.speed + 0.35;
+    return true;
+  }
+
+  function stopRide(){
+    if (!rideCar) { return; }
+    rideCar.speed = Math.max(0.22, rideCar.speed - 0.35);
+    rideCar = null;
+  }
+
+  function isRiding(){ return rideCar !== null; }
+
+  const canvasEl = renderer.domElement;
+  let rideDownX = 0, rideDownY = 0;
+  canvasEl.addEventListener('pointerdown', function(e){
+    rideDownX = e.clientX; rideDownY = e.clientY;
+  });
+  canvasEl.addEventListener('pointerup', function(e){
+    if (Math.abs(e.clientX - rideDownX) > 6 || Math.abs(e.clientY - rideDownY) > 6) { return; }
+    const r = canvasEl.getBoundingClientRect();
+    carPick.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    carPick.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    carRay.setFromCamera(carPick, camera);
+    const meshes = flyingCars.map(function(c){ return c.mesh; });
+    const hits = carRay.intersectObjects(meshes, false);
+    if (hits.length) {
+      const idx = meshes.indexOf(hits[0].object);
+      if (idx !== -1) { startRide(idx); }
+    }
+  });
+
   const clock = new THREE.Clock();
   let scrollY = window.scrollY, sunset = 0;
   addEventListener('scroll', ()=>{ scrollY = window.scrollY; }, {passive:true});
@@ -1958,10 +2003,25 @@ function build(THREE, PP){
     sunLight.intensity = 1.5 - night*1.15;
     fill.intensity = 0.5 + night*0.25;
 
-    camera.position.x = mouse.x*2.4;
-    camera.position.y = 6 - mouse.y*1.8;
-    camera.position.z = 46 - pageP*8;
-    camera.lookAt(0, 4 - pageP*6, 0);
+    if (rideCar) {
+      rideCar.mesh.getWorldPosition(rideCam);
+      const tanX = -Math.sin(rideCar.angle);
+      const tanZ = Math.cos(rideCar.angle);
+      const back = 12;
+      const wantX = rideCam.x - tanX * back;
+      const wantY = rideCam.y + 6.2;
+      const wantZ = rideCam.z - tanZ * back;
+      camera.position.x += (wantX - camera.position.x) * 0.06;
+      camera.position.y += (wantY - camera.position.y) * 0.06;
+      camera.position.z += (wantZ - camera.position.z) * 0.06;
+      rideLook.set(rideCam.x + tanX * 10, rideCam.y - 0.8, rideCam.z + tanZ * 10);
+      camera.lookAt(rideLook);
+    } else {
+      camera.position.x = mouse.x*2.4;
+      camera.position.y = 6 - mouse.y*1.8;
+      camera.position.z = 46 - pageP*8;
+      camera.lookAt(0, 4 - pageP*6, 0);
+    }
 
 
     camera.position.x += (Math.random()-0.5)*shakeAmt;
@@ -1991,6 +2051,9 @@ function build(THREE, PP){
     setNight:function(n){ manualNight = n; },
     setEra:function(v){ era = Math.max(0, Math.min(1, v)); },
     setAvatar:function(c){ paintAvatar(c); },
+    rideCar:function(i){ return startRide(i); },
+    stopRide:function(){ stopRide(); },
+    isRiding:function(){ return isRiding(); },
     setFx:function(k,v){
       if(k==='birds') birds.forEach(function(b){ b.visible = v; });
       else if(k==='leaves') leafMesh.visible = v;
