@@ -1471,9 +1471,9 @@ function build(THREE, PP){
   island.add(cityGroup);
 
   /* ---------- flying cars between the towers ---------- */
-  /* fourteen flying cars, big enough to spot and click, cruising in open sky */
+  /* nine flying cars, big enough to spot and click, cruising in open sky */
   const flyingCars = [];
-  const CARS = 14;
+  const CARS = 9;
   let vi = 0;
   while (vi < CARS) {
     const carBlocks = [
