@@ -1296,6 +1296,20 @@ window.__PROJECTS = PROJECTS;
     window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
   }
 
+  const rideExitBtn = $('#rideExit');
+  if (rideExitBtn){
+    rideExitBtn.addEventListener('click', function(){
+      const s = SC();
+      if (s && s.stopRide) { s.stopRide(); }
+      toast('back to the island');
+    });
+    setInterval(function(){
+      const s = SC();
+      const riding = !!(s && s.isRiding && s.isRiding());
+      rideExitBtn.classList.toggle('on', riding);
+    }, 400);
+  }
+
   function rideCar(){
     const s = SC();
     if (s && s.rideCar){
