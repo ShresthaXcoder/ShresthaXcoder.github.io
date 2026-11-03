@@ -748,10 +748,145 @@ window.__PROJECTS = PROJECTS;
     $('#mList').innerHTML = p.feats.map(f=>'<li>'+f+'</li>').join('');
     $('#mMeta').innerHTML = p.meta.map(m=>'<span>'+m[0]+'<b>'+m[1]+'</b></span>').join('');
     $('#mActions').innerHTML = (p.live ? '<a class="mini solid" href="'+p.live+'" target="_blank" rel="noopener">Open live site'+arrow+'</a>' : '<span class="mini" style="cursor:default">Coming soon</span>')
+      + (CASES[p.id] ? '<button class="mini solid" data-case="'+p.id+'">Read the case study</button>' : '')
       + '<button class="mini" data-close>Close</button>';
     modal.classList.add('open'); document.body.classList.add('locked');
   }
   function closeModal(){ modal.classList.remove('open'); document.body.classList.remove('locked'); }
+  /* ---------- case studies ---------- */
+  const CASES = {
+    PRJ_001: {
+      problem: 'Every browser treats a page as a picture of text. You still have to read it, skim it and remember it yourself — tabs pile up and nothing understands what the page is actually about.',
+      approach: [
+        'Started from the interaction, not the engine: what should the browser do when you ask it something?',
+        'Made the copilot a sidebar that can see the page you are on, instead of a separate chat window.',
+        'Grouped tabs by what a page is about rather than by its title.'
+      ],
+      shipped: [
+        'One-click summaries of any page',
+        'Tab clustering that organises itself',
+        'Voice commands — "Daksha, find me the answer"',
+        'A focus mode that mutes the noise and keeps the signal'
+      ],
+      change: 'I designed the AI panel before I designed the empty state. If I started again, the first thing you would see is a prompt, not a blank sidebar.'
+    },
+    PRJ_002: {
+      problem: 'Chat interfaces make you type like a search engine. They forget context, and they cannot see what you are looking at.',
+      approach: [
+        'Treated tools as buttons rather than prompts — image analysis and deep research are one tap, not a sentence you have to phrase.',
+        'Kept the conversation history searchable so an answer from last week is still findable.'
+      ],
+      shipped: [
+        'Analyse Image and Deep Research as first-class tools',
+        'Suggested prompts that adapt to what you ask',
+        'Voice input with a live waveform',
+        'Full searchable chat history'
+      ],
+      change: 'The suggested prompts should come from your own past questions, not from a fixed list I wrote.'
+    },
+    PRJ_003: {
+      problem: 'I kept rebuilding the same glitch headings, HUD cards and neon terminals on every project. The design work was repeating itself.',
+      approach: [
+        'Pulled the repeating parts out into a system instead of copy-pasting them.',
+        'Kept it dependency-free — CSS does the glitch, the scanlines and the HUD, with no JavaScript effects.',
+        'Built it dark-first, then made the tokens themeable.'
+      ],
+      shipped: [
+        '40+ components with zero dependencies',
+        'CSS-only glitch, scanline and HUD effects',
+        'Dark-first tokens, fully themeable'
+      ],
+      change: 'I would document it as I build it. Right now half the components are explained only by their class names.'
+    },
+    PRJ_004: {
+      problem: 'Going from an idea to a layout still means an hour of scaffolding before you can see anything on screen.',
+      approach: [
+        'Made the prompt the starting point and the prototype the first thing you see.',
+        'Kept everything editable in place, so the first version is a draft rather than a result.'
+      ],
+      shipped: [
+        'Describe a layout, get a working prototype in seconds',
+        'Neon-styled components that match the rest of the kit',
+        'Editable in the browser, no build step'
+      ],
+      change: 'I would make the first output deliberately rough, so people feel invited to change it instead of accepting it.'
+    },
+    PRJ_005: {
+      problem: 'Weather apps give you numbers. You wanted to know whether to take an umbrella — and a list of temperatures does not answer that.',
+      approach: [
+        'Rebuilt the sky rather than the data: clouds, rain, lightning, snow and fog all driven by real numbers.',
+        'Let the city be the input, so the first action is choosing where you are.'
+      ],
+      shipped: [
+        'Pick a city and the sky rebuilds itself around the real numbers',
+        'Sun and drifting clouds on a clear day',
+        'Rain, lightning, snow and fog'
+      ],
+      change: 'The transition between weather states should be much slower. Right now it snaps and you lose the moment where the sky changes.'
+    },
+    PRJ_006: {
+      problem: 'Launch information for India\u2019s space programme is scattered across press releases, PDFs and news posts. Following a mission means checking five places.',
+      approach: [
+        'Built it as a ground-station console rather than a news feed — the countdown is the centre of the screen.',
+        'Kept an archive alongside the upcoming launches, so a mission does not disappear once it flies.'
+      ],
+      shipped: [
+        'Upcoming launches with countdowns ticking to the second',
+        'An archive of the missions that made history',
+        'A console layout built for glancing, not reading'
+      ],
+      change: 'I would add a plain-language summary above the telemetry. Not everyone reads T-minus.'
+    },
+    PRJ_007: {
+      problem: 'Almost every Rubik\u2019s cube on the web is a 2D grid pretending to be 3D. You cannot see the layers turn, so the puzzle stops making sense.',
+      approach: [
+        'Built the cube in real 3D so turning a layer looks like turning a layer.',
+        'Let you drag the stickers directly instead of learning a control scheme.',
+        'Added hints that step in only when you are actually stuck.'
+      ],
+      shipped: [
+        'A full 3D cube in the browser',
+        'Drag stickers to turn layers and solve it by hand',
+        'AI scramble, plus hints when you get stuck'
+      ],
+      change: 'The hint system should teach the method, not just hand you the next move. Right now it solves the cube for you one step at a time.'
+    }
+  };
+
+  const caseEl = $('#case');
+  function openCase(id){
+    const p = DATA.find(x => x.id === id);
+    const c = CASES[id];
+    if (!p || !c || !caseEl) { return; }
+    closeModal();
+    $('#cId').textContent = p.id + ' \u00b7 ' + p.badge;
+    $('#cTitle').textContent = p.name;
+    $('#cDesc').textContent = p.desc;
+    $('#cProblem').textContent = c.problem;
+    $('#cApproach').innerHTML = c.approach.map(x => '<li>' + x + '</li>').join('');
+    $('#cShipped').innerHTML = c.shipped.map(x => '<li>' + x + '</li>').join('');
+    $('#cChange').textContent = c.change;
+    $('#cMeta').innerHTML = p.meta.map(m => '<span>' + m[0] + '<b>' + m[1] + '</b></span>').join('');
+    $('#cActions').innerHTML =
+      (p.live ? '<a class="mini solid" href="' + p.live + '" target="_blank" rel="noopener">Open live site' + arrow + '</a>' : '<span class="mini" style="cursor:default">In development</span>') +
+      '<button class="mini" data-cclose>Close</button>';
+    caseEl.classList.add('open');
+    document.body.classList.add('locked');
+    caseEl.querySelector('.case-panel').scrollTop = 0;
+  }
+  function closeCase(){
+    if (!caseEl) { return; }
+    caseEl.classList.remove('open');
+    document.body.classList.remove('locked');
+  }
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-case]')) { openCase(e.target.closest('[data-case]').dataset.case); return; }
+    if (e.target.closest('[data-cclose]')) { closeCase(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && caseEl && caseEl.classList.contains('open')) { closeCase(); }
+  });
+
   document.addEventListener('click', e=>{
     const o = e.target.closest('[data-open]'); if(o){ openModal(o.dataset.open); return; }
     if(e.target.closest('[data-close]')) closeModal();
@@ -1330,6 +1465,7 @@ window.__PROJECTS = PROJECTS;
     out.push({label:'Toggle stats HUD', kind:'Action', key:'H', act:toggleHud});
     out.push({label:'Keyboard shortcuts', kind:'Action', key:'?', act:()=>$('#keys').classList.add('open')});
     out.push({label:'Email Shrestha', kind:'Action', key:'', act:()=>{ location.href='mailto:iamshresthax@gmail.com'; }});
+    DATA.forEach(function(p){ if (CASES[p.id]) { out.push({label:'Case study: ' + p.name, kind:'Case study', key:'', act:function(){ openCase(p.id); }}); } });
     out.push({label:'Ride a flying car', kind:'World', key:'', act:rideCar});
     out.push({label:'Share card for the site', kind:'Share', key:'', act:shareSiteCard});
     out.push({label:'Share on WhatsApp', kind:'Share', key:'', act:shareWhatsApp});

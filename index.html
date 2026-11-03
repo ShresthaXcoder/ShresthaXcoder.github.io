@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=29" />
+<link rel="stylesheet" href="style.css?v=30" />
 </head>
 <body>
 
@@ -401,6 +401,40 @@ setTimeout(function () {
   <a href="#contact"><span class="tip">Contact</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M4 7l8 6 8-6"/></svg></a>
 </div>
 
+<div class="case" id="case" role="dialog" aria-modal="true">
+  <div class="backdrop" data-cclose></div>
+  <div class="case-panel">
+    <button class="close" data-cclose aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <div class="case-head">
+      <span class="card-id" id="cId"></span>
+      <h2 id="cTitle"></h2>
+      <p id="cDesc"></p>
+    </div>
+    <div class="case-grid">
+      <section class="case-sec">
+        <h4>The problem</h4>
+        <p id="cProblem"></p>
+      </section>
+      <section class="case-sec">
+        <h4>What I built</h4>
+        <ul id="cApproach"></ul>
+      </section>
+      <section class="case-sec">
+        <h4>What shipped</h4>
+        <ul id="cShipped"></ul>
+      </section>
+      <section class="case-sec">
+        <h4>What I would change</h4>
+        <p id="cChange"></p>
+      </section>
+    </div>
+    <div class="card-meta" id="cMeta"></div>
+    <div class="card-actions" id="cActions"></div>
+  </div>
+</div>
+
 <div class="modal" id="modal" role="dialog" aria-modal="true">
   <div class="backdrop" data-close></div>
   <div class="panel">
@@ -635,8 +669,8 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=29"></script>
+<script type="module" src="world.js?v=30"></script>
 
-<script src="ui.js?v=29"></script>
+<script src="ui.js?v=30"></script>
 </body>
 </html>
