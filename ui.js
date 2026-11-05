@@ -753,6 +753,136 @@ window.__PROJECTS = PROJECTS;
     modal.classList.add('open'); document.body.classList.add('locked');
   }
   function closeModal(){ modal.classList.remove('open'); document.body.classList.remove('locked'); }
+  /* ---------- build your own ---------- */
+  const buildEl = $('#build');
+  const BUILD_STEPS = [
+    { q: 'What is your name?', hint: 'This becomes the big word floating over the island.', type: 'text', ph: 'Your name' },
+    { q: 'How old are you?', hint: 'It goes into the About section and the terminal.', type: 'number', ph: '14' },
+    { q: 'Describe yourself in one line', hint: 'This replaces the tagline under the world.', type: 'text', ph: 'I build strange things on the internet.' }
+  ];
+  let bStep = 0;
+  const bValues = ['', '', ''];
+  const ORIGINAL = {};
+
+  function bPaint(){
+    const s = BUILD_STEPS[bStep];
+    $('#bQ').textContent = s.q;
+    $('#bHint').textContent = s.hint;
+    const inp = $('#bInput');
+    inp.type = s.type;
+    inp.placeholder = s.ph;
+    inp.value = bValues[bStep] || '';
+    Array.prototype.forEach.call($('#bDots').children, function(d, i){
+      d.classList.toggle('on', i <= bStep);
+    });
+    $('#bBack').style.visibility = bStep === 0 ? 'hidden' : 'visible';
+    $('#bNext').textContent = bStep === BUILD_STEPS.length - 1 ? 'Build it' : 'Next';
+    setTimeout(function(){ inp.focus(); }, 80);
+  }
+
+  function openBuild(){
+    bStep = 0;
+    bPaint();
+    buildEl.classList.add('open');
+    document.body.classList.add('locked');
+  }
+
+  function closeBuild(){
+    buildEl.classList.remove('open');
+    document.body.classList.remove('locked');
+  }
+
+  function remember(el, key){
+    if (!el) { return; }
+    if (!(key in ORIGINAL)) { ORIGINAL[key] = el.innerHTML; }
+  }
+
+  function applyIdentity(name, age, desc){
+    const nm = (name || '').trim() || 'Shrestha';
+    const yr = (age || '').toString().trim();
+    const ds = (desc || '').trim();
+
+    const brand = document.querySelector('.brand');
+    if (brand) {
+      remember(brand, 'brand');
+      brand.innerHTML = '<span class="cube"><i></i><i></i><i></i><i></i></span> ' + nm;
+    }
+
+    document.title = nm + ' — voxel world';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) { metaDesc.setAttribute('content', nm + ' — frontend designer and AI builder.'); }
+
+    const kicker = document.querySelector('.hero-kicker');
+    if (kicker) {
+      remember(kicker, 'kicker');
+      kicker.textContent = yr ? (yr + ' years old \u00b7 building things') : 'building things on the internet';
+    }
+
+    if (ds) {
+      const foot = document.querySelector('.hero-foot p');
+      if (foot) {
+        remember(foot, 'foot');
+        foot.innerHTML = ds;
+      }
+    }
+
+    const aboutEyebrow = document.querySelector('#about .eyebrow');
+    if (aboutEyebrow) {
+      remember(aboutEyebrow, 'aboutEyebrow');
+      aboutEyebrow.innerHTML = '01 &mdash; Identity';
+    }
+
+    const aboutTitle = document.querySelector('#about .title');
+    if (aboutTitle) {
+      remember(aboutTitle, 'aboutTitle');
+      aboutTitle.innerHTML = (yr ? ('Age ' + yr + '.') : 'Hello.') +
+        '<br><span class="thin">Not just a number.</span>';
+    }
+
+    const aboutP = document.querySelector('#about p');
+    if (aboutP) {
+      remember(aboutP, 'aboutP');
+      aboutP.innerHTML = 'I am <b>' + nm + '</b>' + (yr ? (', ' + yr + ' years old') : '') +
+        '. ' + (ds ? ds : 'This page has been rebuilt with my own name on it.');
+    }
+
+    const term = document.querySelector('.term-bar .name');
+    if (term) {
+      remember(term, 'term');
+      term.textContent = nm.toLowerCase().replace(/\s+/g, '') + '@daksha: ~/about';
+    }
+
+    const w = SC();
+    if (w && w.setName) { w.setName(nm); }
+
+    toast('this page is yours now');
+  }
+
+  if ($('#buildBtn')) {
+    $('#buildBtn').addEventListener('click', openBuild);
+  }
+  if (buildEl) {
+    $('#bNext').addEventListener('click', function(){
+      bValues[bStep] = $('#bInput').value.trim();
+      if (bStep === 0 && !bValues[0]) { $('#bInput').focus(); return; }
+      if (bStep < BUILD_STEPS.length - 1) { bStep += 1; bPaint(); return; }
+      applyIdentity(bValues[0], bValues[1], bValues[2]);
+      closeBuild();
+    });
+    $('#bBack').addEventListener('click', function(){
+      if (bStep > 0) { bStep -= 1; bPaint(); }
+    });
+    $('#bInput').addEventListener('keydown', function(e){
+      if (e.key === 'Enter') { e.preventDefault(); $('#bNext').click(); }
+    });
+    buildEl.addEventListener('click', function(e){
+      if (e.target.closest('[data-bclose]')) { closeBuild(); }
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && buildEl.classList.contains('open')) { closeBuild(); }
+    });
+  }
+
   /* ---------- case studies ---------- */
   const CASES = {
     PRJ_001: {
@@ -1466,6 +1596,7 @@ window.__PROJECTS = PROJECTS;
     out.push({label:'Keyboard shortcuts', kind:'Action', key:'?', act:()=>$('#keys').classList.add('open')});
     out.push({label:'Email Shrestha', kind:'Action', key:'', act:()=>{ location.href='mailto:iamshresthax@gmail.com'; }});
     DATA.forEach(function(p){ if (CASES[p.id]) { out.push({label:'Case study: ' + p.name, kind:'Case study', key:'', act:function(){ openCase(p.id); }}); } });
+    out.push({label:'Build your own version of this page', kind:'Play', key:'', act:openBuild});
     out.push({label:'Ride a flying car', kind:'World', key:'', act:rideCar});
     out.push({label:'Share card for the site', kind:'Share', key:'', act:shareSiteCard});
     out.push({label:'Share on WhatsApp', kind:'Share', key:'', act:shareWhatsApp});

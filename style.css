@@ -1030,3 +1030,23 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
   .case-panel { padding: 26px 20px 22px; border-radius: 18px; max-height: 92vh; }
   .case-grid { grid-template-columns: 1fr; gap: 20px; }
 }
+
+/* ---------- build your own ---------- */
+.build { position: fixed; inset: 0; z-index: 160; display: none; }
+.build.open { display: block; }
+.build-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(460px, 92vw); padding: 30px 28px 24px; border-radius: 22px;
+  background: var(--card); border: 1px solid var(--line);
+  box-shadow: 0 40px 90px rgba(0, 0, 0, .45); }
+.build-dots { display: flex; gap: 7px; margin-bottom: 18px; }
+.build-dots i { width: 26px; height: 4px; border-radius: 99px; background: var(--line); transition: background .3s; }
+.build-dots i.on { background: var(--accent); }
+.build-panel h3 { font-family: var(--display); font-size: 23px; font-weight: 700;
+  letter-spacing: -.01em; margin-bottom: 8px; }
+.build-panel p { color: var(--dim); font-size: 13.5px; line-height: 1.6; margin-bottom: 16px; }
+.build-panel input { width: 100%; padding: 13px 15px; border-radius: 12px; font-size: 16px;
+  background: var(--bg); color: var(--ink); border: 1px solid var(--line);
+  font-family: inherit; outline: none; }
+.build-panel input:focus { border-color: var(--accent); }
+.build-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.build-actions .mini { min-width: 84px; justify-content: center; }

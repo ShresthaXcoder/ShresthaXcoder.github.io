@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=30" />
+<link rel="stylesheet" href="style.css?v=31" />
 </head>
 <body>
 
@@ -202,6 +202,7 @@ setTimeout(function () {
       <a href="#work" class="btn btn-primary" data-confetti><span data-hi="काम देखें">See the work</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="#contact" class="btn btn-ghost" data-hi="संपर्क करें">Get in touch</a>
+      <button class="btn btn-ghost" id="buildBtn" data-hi="अपना बनाएं">Build your own</button>
     </div>
     <div class="cue"><span data-hi="स्क्रॉल">Scroll</span><span class="bar"></span></div>
   </div>
@@ -399,6 +400,20 @@ setTimeout(function () {
   <a href="#journey"><span class="tip">Journey</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></a>
   <a href="#resume"><span class="tip">R&eacute;sum&eacute;</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg></a>
   <a href="#contact"><span class="tip">Contact</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M4 7l8 6 8-6"/></svg></a>
+</div>
+
+<div class="build" id="build" role="dialog" aria-modal="true">
+  <div class="backdrop" data-bclose></div>
+  <div class="build-panel">
+    <div class="build-dots" id="bDots"><i></i><i></i><i></i></div>
+    <h3 id="bQ">What is your name?</h3>
+    <p id="bHint">This becomes the big word floating over the island.</p>
+    <input id="bInput" autocomplete="off" spellcheck="false">
+    <div class="build-actions">
+      <button class="mini" id="bBack">Back</button>
+      <button class="mini solid" id="bNext">Next</button>
+    </div>
+  </div>
 </div>
 
 <div class="case" id="case" role="dialog" aria-modal="true">
@@ -669,8 +684,8 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=30"></script>
+<script type="module" src="world.js?v=31"></script>
 
-<script src="ui.js?v=30"></script>
+<script src="ui.js?v=31"></script>
 </body>
 </html>

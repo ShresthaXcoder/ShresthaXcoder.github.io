@@ -533,27 +533,82 @@ function build(THREE, PP){
 
   /* ---------- the name ---------- */
   const FONT = {
-    S:["01111","10000","10000","01110","00001","00001","11110"],
-    H:["10001","10001","10001","11111","10001","10001","10001"],
-    R:["11110","10001","10001","11110","10100","10010","10001"],
+    A:["01110","10001","10001","11111","10001","10001","10001"],
+    B:["11110","10001","10001","11110","10001","10001","11110"],
+    C:["01110","10001","10000","10000","10000","10001","01110"],
+    D:["11110","10001","10001","10001","10001","10001","11110"],
     E:["11111","10000","10000","11110","10000","10000","11111"],
+    F:["11111","10000","10000","11110","10000","10000","10000"],
+    G:["01110","10001","10000","10111","10001","10001","01111"],
+    H:["10001","10001","10001","11111","10001","10001","10001"],
+    I:["11111","00100","00100","00100","00100","00100","11111"],
+    J:["00111","00010","00010","00010","00010","10010","01100"],
+    K:["10001","10010","10100","11000","10100","10010","10001"],
+    L:["10000","10000","10000","10000","10000","10000","11111"],
+    M:["10001","11011","10101","10101","10001","10001","10001"],
+    N:["10001","11001","10101","10011","10001","10001","10001"],
+    O:["01110","10001","10001","10001","10001","10001","01110"],
+    P:["11110","10001","10001","11110","10000","10000","10000"],
+    Q:["01110","10001","10001","10001","10101","10010","01101"],
+    R:["11110","10001","10001","11110","10100","10010","10001"],
+    S:["01111","10000","10000","01110","00001","00001","11110"],
     T:["11111","00100","00100","00100","00100","00100","00100"],
-    A:["01110","10001","10001","11111","10001","10001","10001"]
+    U:["10001","10001","10001","10001","10001","10001","01110"],
+    V:["10001","10001","10001","10001","10001","01010","00100"],
+    W:["10001","10001","10001","10101","10101","11011","10001"],
+    X:["10001","10001","01010","00100","01010","10001","10001"],
+    Y:["10001","10001","01010","00100","00100","00100","00100"],
+    Z:["11111","00001","00010","00100","01000","10000","11111"],
+    "0":["01110","10001","10011","10101","11001","10001","01110"],
+    "1":["00100","01100","00100","00100","00100","00100","01110"],
+    "2":["01110","10001","00001","00010","00100","01000","11111"],
+    "3":["11110","00001","00001","01110","00001","00001","11110"],
+    "4":["00010","00110","01010","10010","11111","00010","00010"],
+    "5":["11111","10000","11110","00001","00001","10001","01110"],
+    "6":["00110","01000","10000","11110","10001","10001","01110"],
+    "7":["11111","00001","00010","00100","01000","01000","01000"],
+    "8":["01110","10001","10001","01110","10001","10001","01110"],
+    "9":["01110","10001","10001","01111","00001","00010","01100"]
   };
-  const nameGroup = new THREE.Group(), word = "SHRESTHA", SPACING = 6, GAP = 0.06, letters = [];
+  const nameGroup = new THREE.Group(), letters = [];
   const inkA = new THREE.Color(0x1c2c48), inkB = new THREE.Color(0x0b1626);
-  word.split('').forEach((ch,i)=>{
-    const rows = FONT[ch]; if(!rows) return;
-    const lc = [];
-    rows.forEach((row,r)=>{ for(let c=0;c<row.length;c++) if(row[c]==='1'){
-      lc.push({x:c-2,y:(6-r)-3,z:-0.5}); lc.push({x:c-2,y:(6-r)-3,z:0.5}); } });
-    const mesh = makeVoxels(lc, 1-GAP, false);
-    const baseCol = inkA.clone().lerp(inkB, i/(word.length-1));
-    mesh.material = new THREE.MeshLambertMaterial({color: baseCol});
-    mesh.position.x = (i-(word.length-1)/2)*SPACING;
-    mesh.userData = {baseCol: baseCol, baseX:mesh.position.x, idx:i, rx:(Math.random()-0.5), ry:(Math.random()-0.5), rz:(Math.random()-0.5)};
-    nameGroup.add(mesh); letters.push(mesh);
-  });
+
+  function buildName(text) {
+    while (letters.length) {
+      const m = letters.pop();
+      nameGroup.remove(m);
+      if (m.geometry) { m.geometry.dispose(); }
+      if (m.material) { m.material.dispose(); }
+    }
+    let clean = String(text || '').toUpperCase().replace(/[^A-Z0-9 ]/g, '').trim();
+    if (!clean) { clean = 'SHRESTHA'; }
+    if (clean.length > 14) { clean = clean.slice(0, 14); }
+    const spacing = clean.length > 9 ? (6 * 9 / clean.length) : 6;
+    const GAP = 0.06;
+    clean.split('').forEach(function(ch, i){
+      const rows = FONT[ch];
+      if (!rows) { return; }
+      const lc = [];
+      rows.forEach(function(row, r){
+        for (let c = 0; c < row.length; c++){
+          if (row[c] === '1') {
+            lc.push({ x: c - 2, y: (6 - r) - 3, z: -0.5 });
+            lc.push({ x: c - 2, y: (6 - r) - 3, z: 0.5 });
+          }
+        }
+      });
+      const mesh = makeVoxels(lc, 1 - GAP, false);
+      const baseCol = inkA.clone().lerp(inkB, clean.length > 1 ? i / (clean.length - 1) : 0);
+      mesh.material = new THREE.MeshLambertMaterial({ color: baseCol });
+      mesh.position.x = (i - (clean.length - 1) / 2) * spacing;
+      mesh.userData = { baseCol: baseCol, baseX: mesh.position.x, idx: i,
+        rx: (Math.random() - 0.5), ry: (Math.random() - 0.5), rz: (Math.random() - 0.5) };
+      nameGroup.add(mesh);
+      letters.push(mesh);
+    });
+  }
+
+  buildName('SHRESTHA');
   const NAME_NIGHT = new THREE.Color(0xdbe7f5);
   const NAME_Y = 8.4; nameGroup.position.y = NAME_Y; scene.add(nameGroup);
 
@@ -2056,6 +2111,7 @@ function build(THREE, PP){
     setNight:function(n){ manualNight = n; },
     setEra:function(v){ era = Math.max(0, Math.min(1, v)); },
     setAvatar:function(c){ paintAvatar(c); },
+    setName:function(t){ buildName(t); },
     rideCar:function(i){ return startRide(i); },
     stopRide:function(){ stopRide(); },
     isRiding:function(){ return isRiding(); },
