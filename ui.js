@@ -753,11 +753,45 @@ window.__PROJECTS = PROJECTS;
     modal.classList.add('open'); document.body.classList.add('locked');
   }
   function closeModal(){ modal.classList.remove('open'); document.body.classList.remove('locked'); }
-  /* ---------- views and likes ----------
-     COUNTER_URL: set this to a small endpoint that returns {views, likes}
-     and accepts POST {like:1} to make the numbers site-wide.
-     Leave it empty and the counts live on this device only. */
-  const COUNTER_URL = '';
+  /* ---------- the About character: boy or girl ---------- */
+  let wantedChar = 'boy';
+  let charApplied = false;
+
+  function applyChar(kind){
+    wantedChar = kind === 'girl' ? 'girl' : 'boy';
+    charApplied = false;
+    if (window.__boyVariant) {
+      window.__boyVariant(wantedChar === 'girl' ? 'girl' : 'boy2');
+      charApplied = true;
+    }
+    const opts = document.querySelectorAll('[data-char]');
+    Array.prototype.forEach.call(opts, function(b){
+      b.classList.toggle('on', b.getAttribute('data-char') === wantedChar);
+    });
+  }
+
+  /* the 3D scene loads late, so keep trying until it is there */
+  const charTimer = setInterval(function(){
+    if (!charApplied && window.__boyVariant) {
+      window.__boyVariant(wantedChar === 'girl' ? 'girl' : 'boy2');
+      charApplied = true;
+      clearInterval(charTimer);
+    }
+  }, 500);
+
+  document.addEventListener('click', function(e){
+    const b = e.target.closest('[data-char]');
+    if (!b) { return; }
+    applyChar(b.getAttribute('data-char'));
+    toast(wantedChar === 'girl' ? 'she is on the island now' : 'he is on the island now');
+  });
+
+  /* ---------- views and likes, counted for everyone ----------
+     Uses a public hit-counter so the numbers are shared by every visitor
+     on every device. If it cannot be reached, the page falls back to a
+     count kept on this device so nothing ever shows a broken zero. */
+  const COUNTER_BASE = 'https://abacus.jasoncameron.dev';
+  const COUNTER_NS = 'shresthaxcoder-github-io';
   const VIEW_KEY = 'shrestha-views';
   const LIKE_KEY = 'shrestha-likes';
   const LIKED_KEY = 'shrestha-liked';
@@ -774,6 +808,13 @@ window.__PROJECTS = PROJECTS;
     try { localStorage.setItem(key, String(value)); } catch (e) {}
   }
 
+  function counter(path, key){
+    return fetch(COUNTER_BASE + '/' + path + '/' + COUNTER_NS + '/' + key, { cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){ return typeof d.value === 'number' ? d.value : null; })
+      .catch(function(){ return null; });
+  }
+
   let views = readNum(VIEW_KEY, 0);
   let likes = readNum(LIKE_KEY, 0);
   let liked = (function(){ try { return localStorage.getItem(LIKED_KEY) === '1'; } catch (e) { return false; } })();
@@ -785,50 +826,54 @@ window.__PROJECTS = PROJECTS;
     if (lc) { lc.textContent = likes.toLocaleString('en-IN'); }
     const lb = $('#likeBtn');
     if (lb) { lb.classList.toggle('liked', liked); }
-    const strip = document.querySelector('.stats-strip');
-    if (strip) { strip.title = 'counted on this device'; }
   }
 
-  function countOnce(){
+  function countView(){
     let seen = false;
     try { seen = sessionStorage.getItem(SESSION_KEY) === '1'; } catch (e) {}
-    if (seen) { return; }
-    views += 1;
-    writeNum(VIEW_KEY, views);
+    if (seen) {
+      counter('get', 'views').then(function(n){
+        if (n !== null) { views = n; writeNum(VIEW_KEY, n); paintStats(); }
+      });
+      return;
+    }
     try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+    counter('hit', 'views').then(function(n){
+      if (n !== null) {
+        views = n;
+        writeNum(VIEW_KEY, n);
+      } else {
+        views = readNum(VIEW_KEY, 0) + 1;
+        writeNum(VIEW_KEY, views);
+      }
+      paintStats();
+    });
   }
 
-  countOnce();
   paintStats();
+  countView();
 
-  if (COUNTER_URL) {
-    fetch(COUNTER_URL, { method: 'POST' })
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (typeof d.views === 'number') { views = d.views; }
-        if (typeof d.likes === 'number') { likes = d.likes; }
-        paintStats();
-      })
-      .catch(function(){});
-  }
+  counter('get', 'likes').then(function(n){
+    if (n !== null) { likes = n; writeNum(LIKE_KEY, n); paintStats(); }
+  });
 
   const likeBtn = $('#likeBtn');
   if (likeBtn) {
     likeBtn.addEventListener('click', function(){
       liked = !liked;
-      likes += liked ? 1 : -1;
-      if (likes < 0) { likes = 0; }
-      writeNum(LIKE_KEY, likes);
       try { localStorage.setItem(LIKED_KEY, liked ? '1' : '0'); } catch (e) {}
-      paintStats();
-      if (COUNTER_URL) {
-        fetch(COUNTER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ like: liked ? 1 : -1 })
-        }).catch(function(){});
+      if (liked) {
+        likes += 1;
+        paintStats();
+        counter('hit', 'likes').then(function(n){
+          if (n !== null) { likes = n; writeNum(LIKE_KEY, n); paintStats(); }
+        });
+        toast('thanks for the like');
+      } else {
+        likes = Math.max(0, likes - 1);
+        paintStats();
+        toast('like removed');
       }
-      if (liked) { toast('thanks for the like'); }
     });
   }
 
@@ -946,11 +991,7 @@ window.__PROJECTS = PROJECTS;
     const w = SC();
     if (w && w.setName) { w.setName(nm); }
 
-    if (gender === 'girl') {
-      if (window.__boyVariant) { window.__boyVariant('girl'); }
-    } else if (gender === 'boy') {
-      if (window.__boyVariant) { window.__boyVariant('boy2'); }
-    }
+    if (gender === 'girl' || gender === 'boy') { applyChar(gender); }
 
     const boyCaption = document.querySelector('.about-boy .boy-tag');
     if (boyCaption) {
