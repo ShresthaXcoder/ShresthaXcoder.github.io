@@ -790,6 +790,9 @@ window.__PROJECTS = PROJECTS;
      Uses a public hit-counter so the numbers are shared by every visitor
      on every device. If it cannot be reached, the page falls back to a
      count kept on this device so nothing ever shows a broken zero. */
+  /* Point this at your own worker (see counter-worker.js) once it is deployed.
+     Leave it empty and the page falls back to a public hit counter. */
+  const COUNTER_URL = '';
   const COUNTER_BASE = 'https://abacus.jasoncameron.dev';
   const COUNTER_NS = 'shresthaxcoder-github-io';
   const VIEW_KEY = 'shrestha-views';
@@ -809,7 +812,13 @@ window.__PROJECTS = PROJECTS;
   }
 
   function counter(path, key){
-    return fetch(COUNTER_BASE + '/' + path + '/' + COUNTER_NS + '/' + key, { cache: 'no-store' })
+    let url;
+    if (COUNTER_URL) {
+      url = COUNTER_URL + '?key=' + encodeURIComponent(key) + (path === 'hit' ? '&hit=1' : '');
+    } else {
+      url = COUNTER_BASE + '/' + path + '/' + COUNTER_NS + '/' + key;
+    }
+    return fetch(url, { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(d){ return typeof d.value === 'number' ? d.value : null; })
       .catch(function(){ return null; });
@@ -829,15 +838,7 @@ window.__PROJECTS = PROJECTS;
   }
 
   function countView(){
-    let seen = false;
-    try { seen = sessionStorage.getItem(SESSION_KEY) === '1'; } catch (e) {}
-    if (seen) {
-      counter('get', 'views').then(function(n){
-        if (n !== null) { views = n; writeNum(VIEW_KEY, n); paintStats(); }
-      });
-      return;
-    }
-    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+    /* every load counts as a view, the same way a page view works anywhere else */
     counter('hit', 'views').then(function(n){
       if (n !== null) {
         views = n;
