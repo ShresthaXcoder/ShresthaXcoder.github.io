@@ -753,15 +753,95 @@ window.__PROJECTS = PROJECTS;
     modal.classList.add('open'); document.body.classList.add('locked');
   }
   function closeModal(){ modal.classList.remove('open'); document.body.classList.remove('locked'); }
+  /* ---------- views and likes ----------
+     COUNTER_URL: set this to a small endpoint that returns {views, likes}
+     and accepts POST {like:1} to make the numbers site-wide.
+     Leave it empty and the counts live on this device only. */
+  const COUNTER_URL = '';
+  const VIEW_KEY = 'shrestha-views';
+  const LIKE_KEY = 'shrestha-likes';
+  const LIKED_KEY = 'shrestha-liked';
+  const SESSION_KEY = 'shrestha-counted';
+
+  function readNum(key, fallback){
+    try {
+      const raw = localStorage.getItem(key);
+      const n = parseInt(raw === null ? '' : raw, 10);
+      return isNaN(n) ? fallback : n;
+    } catch (e) { return fallback; }
+  }
+  function writeNum(key, value){
+    try { localStorage.setItem(key, String(value)); } catch (e) {}
+  }
+
+  let views = readNum(VIEW_KEY, 0);
+  let likes = readNum(LIKE_KEY, 0);
+  let liked = (function(){ try { return localStorage.getItem(LIKED_KEY) === '1'; } catch (e) { return false; } })();
+
+  function paintStats(){
+    const vc = $('#viewCount');
+    if (vc) { vc.textContent = views.toLocaleString('en-IN'); }
+    const lc = $('#likeCount');
+    if (lc) { lc.textContent = likes.toLocaleString('en-IN'); }
+    const lb = $('#likeBtn');
+    if (lb) { lb.classList.toggle('liked', liked); }
+    const strip = document.querySelector('.stats-strip');
+    if (strip) { strip.title = 'counted on this device'; }
+  }
+
+  function countOnce(){
+    let seen = false;
+    try { seen = sessionStorage.getItem(SESSION_KEY) === '1'; } catch (e) {}
+    if (seen) { return; }
+    views += 1;
+    writeNum(VIEW_KEY, views);
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch (e) {}
+  }
+
+  countOnce();
+  paintStats();
+
+  if (COUNTER_URL) {
+    fetch(COUNTER_URL, { method: 'POST' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (typeof d.views === 'number') { views = d.views; }
+        if (typeof d.likes === 'number') { likes = d.likes; }
+        paintStats();
+      })
+      .catch(function(){});
+  }
+
+  const likeBtn = $('#likeBtn');
+  if (likeBtn) {
+    likeBtn.addEventListener('click', function(){
+      liked = !liked;
+      likes += liked ? 1 : -1;
+      if (likes < 0) { likes = 0; }
+      writeNum(LIKE_KEY, likes);
+      try { localStorage.setItem(LIKED_KEY, liked ? '1' : '0'); } catch (e) {}
+      paintStats();
+      if (COUNTER_URL) {
+        fetch(COUNTER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ like: liked ? 1 : -1 })
+        }).catch(function(){});
+      }
+      if (liked) { toast('thanks for the like'); }
+    });
+  }
+
   /* ---------- build your own ---------- */
   const buildEl = $('#build');
   const BUILD_STEPS = [
     { q: 'What is your name?', hint: 'This becomes the big word floating over the island.', type: 'text', ph: 'Your name' },
     { q: 'How old are you?', hint: 'It goes into the About section and the terminal.', type: 'number', ph: '14' },
+    { q: 'Are you a boy or a girl?', hint: 'The little character in the About section changes to match you.', type: 'choice', ph: '' },
     { q: 'Describe yourself in one line', hint: 'This replaces the tagline under the world.', type: 'text', ph: 'I build strange things on the internet.' }
   ];
   let bStep = 0;
-  const bValues = ['', '', ''];
+  const bValues = ['', '', '', ''];
   const ORIGINAL = {};
 
   function bPaint(){
@@ -769,15 +849,26 @@ window.__PROJECTS = PROJECTS;
     $('#bQ').textContent = s.q;
     $('#bHint').textContent = s.hint;
     const inp = $('#bInput');
-    inp.type = s.type;
-    inp.placeholder = s.ph;
-    inp.value = bValues[bStep] || '';
+    const choices = $('#bChoices');
+    if (s.type === 'choice') {
+      inp.classList.add('hide');
+      choices.classList.add('on');
+      Array.prototype.forEach.call(choices.children, function(c){
+        c.classList.toggle('sel', c.getAttribute('data-gender') === bValues[bStep]);
+      });
+    } else {
+      inp.classList.remove('hide');
+      choices.classList.remove('on');
+      inp.type = s.type;
+      inp.placeholder = s.ph;
+      inp.value = bValues[bStep] || '';
+    }
     Array.prototype.forEach.call($('#bDots').children, function(d, i){
       d.classList.toggle('on', i <= bStep);
     });
     $('#bBack').style.visibility = bStep === 0 ? 'hidden' : 'visible';
     $('#bNext').textContent = bStep === BUILD_STEPS.length - 1 ? 'Build it' : 'Next';
-    setTimeout(function(){ inp.focus(); }, 80);
+    if (s.type !== 'choice') { setTimeout(function(){ inp.focus(); }, 80); }
   }
 
   function openBuild(){
@@ -797,7 +888,7 @@ window.__PROJECTS = PROJECTS;
     if (!(key in ORIGINAL)) { ORIGINAL[key] = el.innerHTML; }
   }
 
-  function applyIdentity(name, age, desc){
+  function applyIdentity(name, age, desc, gender){
     const nm = (name || '').trim() || 'Shrestha';
     const yr = (age || '').toString().trim();
     const ds = (desc || '').trim();
@@ -855,6 +946,18 @@ window.__PROJECTS = PROJECTS;
     const w = SC();
     if (w && w.setName) { w.setName(nm); }
 
+    if (gender === 'girl') {
+      if (window.__boyVariant) { window.__boyVariant('girl'); }
+    } else if (gender === 'boy') {
+      if (window.__boyVariant) { window.__boyVariant('boy2'); }
+    }
+
+    const boyCaption = document.querySelector('.about-boy .boy-tag');
+    if (boyCaption) {
+      remember(boyCaption, 'boyTag');
+      boyCaption.textContent = gender === 'girl' ? 'This is me!!' : 'This is me!!';
+    }
+
     toast('this page is yours now');
   }
 
@@ -863,14 +966,24 @@ window.__PROJECTS = PROJECTS;
   }
   if (buildEl) {
     $('#bNext').addEventListener('click', function(){
-      bValues[bStep] = $('#bInput').value.trim();
+      if (BUILD_STEPS[bStep].type !== 'choice') {
+        bValues[bStep] = $('#bInput').value.trim();
+      }
       if (bStep === 0 && !bValues[0]) { $('#bInput').focus(); return; }
+      if (bStep === 2 && !bValues[2]) { return; }
       if (bStep < BUILD_STEPS.length - 1) { bStep += 1; bPaint(); return; }
-      applyIdentity(bValues[0], bValues[1], bValues[2]);
+      applyIdentity(bValues[0], bValues[1], bValues[3], bValues[2]);
       closeBuild();
     });
     $('#bBack').addEventListener('click', function(){
       if (bStep > 0) { bStep -= 1; bPaint(); }
+    });
+    $('#bChoices').addEventListener('click', function(e){
+      const b = e.target.closest('[data-gender]');
+      if (!b) { return; }
+      bValues[2] = b.getAttribute('data-gender');
+      Array.prototype.forEach.call(this.children, function(c){ c.classList.toggle('sel', c === b); });
+      setTimeout(function(){ $('#bNext').click(); }, 220);
     });
     $('#bInput').addEventListener('keydown', function(e){
       if (e.key === 'Enter') { e.preventDefault(); $('#bNext').click(); }

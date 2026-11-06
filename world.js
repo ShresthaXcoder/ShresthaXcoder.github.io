@@ -90,6 +90,7 @@ function buildBoy(THREE) {
   var shoe = 0x1b2430;
   var eye = 0x171717;
   var mouth = 0x8a4a3a;
+  var hairStyle = 'short';
 
   var cells = {};
   function put(x, y, z, color) {
@@ -99,6 +100,9 @@ function buildBoy(THREE) {
   var x;
   var y;
   var z;
+
+  function fillCells() {
+    cells = {};
 
   // shoes
   y = 0;
@@ -162,17 +166,30 @@ function buildBoy(THREE) {
     }
   }
 
-  // hair down the back
-  for (y = 13; y <= 15; y = y + 1) {
-    for (x = -2; x <= 2; x = x + 1) {
-      put(x, y, -1, hair);
+  if (hairStyle === 'long') {
+    // long hair: down the back and past the shoulders
+    for (y = 7; y <= 15; y = y + 1) {
+      for (x = -2; x <= 2; x = x + 1) {
+        put(x, y, -1, hair);
+      }
+      put(-2, y, 0, hair);
+      put(2, y, 0, hair);
+      put(-3, y, 0, hair);
+      put(3, y, 0, hair);
     }
-  }
-
-  // hair at the sides
-  for (y = 14; y <= 15; y = y + 1) {
-    put(-2, y, 0, hair);
-    put(2, y, 0, hair);
+    put(-3, 14, -1, hair);
+    put(3, 14, -1, hair);
+  } else {
+    // short hair: down the back and at the sides
+    for (y = 13; y <= 15; y = y + 1) {
+      for (x = -2; x <= 2; x = x + 1) {
+        put(x, y, -1, hair);
+      }
+    }
+    for (y = 14; y <= 15; y = y + 1) {
+      put(-2, y, 0, hair);
+      put(2, y, 0, hair);
+    }
   }
 
   // face
@@ -180,32 +197,66 @@ function buildBoy(THREE) {
   put(1, 13, 1, eye);
   put(0, 12, 1, mouth);
 
-  var bodyList = [];
-  var key;
-  for (key in cells) {
-    bodyList.push(cells[key]);
   }
 
   var boy = new THREE.Group();
-  boy.add(makeBlocks(bodyList, 1));
   scene.add(boy);
-
-  // right arm, separate so it can wave
-  var armList = [];
-  var armY = 0;
-  while (armY >= -4) {
-    var armColor = (armY >= -1) ? shirt : skin;
-    for (z = -1; z <= 1; z = z + 1) {
-      armList.push({ x: 0, y: armY, z: z, color: armColor });
-    }
-    armY = armY - 1;
-  }
   var armGroup = new THREE.Group();
-  armGroup.add(makeBlocks(armList, 1));
-  armGroup.position.set(3, 9, 0);
-  boy.add(armGroup);
 
-  boy.position.y = 0;
+  function rebuildBoy(cfg) {
+    if (cfg) {
+      if (cfg.skin !== undefined) { skin = cfg.skin; }
+      if (cfg.hair !== undefined) { hair = cfg.hair; }
+      if (cfg.shirt !== undefined) { shirt = cfg.shirt; }
+      if (cfg.shirtTop !== undefined) { shirtTop = cfg.shirtTop; }
+      if (cfg.pants !== undefined) { pants = cfg.pants; }
+      if (cfg.hairStyle !== undefined) { hairStyle = cfg.hairStyle; }
+    }
+    while (boy.children.length) {
+      var old = boy.children.pop();
+      boy.remove(old);
+      if (old.geometry) { old.geometry.dispose(); }
+      if (old.material) { old.material.dispose(); }
+    }
+    fillCells();
+    var bodyList = [];
+    var key;
+    for (key in cells) {
+      bodyList.push(cells[key]);
+    }
+    boy.add(makeBlocks(bodyList, 1));
+
+    // right arm, separate so it can wave
+    var armList = [];
+    var armY = 0;
+    while (armY >= -4) {
+      var armColor = (armY >= -1) ? shirt : skin;
+      for (z = -1; z <= 1; z = z + 1) {
+        armList.push({ x: 0, y: armY, z: z, color: armColor });
+      }
+      armY = armY - 1;
+    }
+    armGroup = new THREE.Group();
+    armGroup.add(makeBlocks(armList, 1));
+    armGroup.position.set(3, 9, 0);
+    boy.add(armGroup);
+    boy.position.y = 0;
+  }
+
+  rebuildBoy(null);
+
+  window.__boyVariant = function (kind) {
+    if (kind === 'girl') {
+      rebuildBoy({ skin: 0xe3b088, hair: 0x2a1a14, shirt: 0xd94f8a, shirtTop: 0xb83a6e,
+        pants: 0x6a3fa0, hairStyle: 'long' });
+    } else if (kind === 'boy2') {
+      rebuildBoy({ skin: 0xc98a5a, hair: 0x3a2a1a, shirt: 0x2f7fd4, shirtTop: 0x2266b0,
+        pants: 0x2a2f3a, hairStyle: 'short' });
+    } else {
+      rebuildBoy({ skin: 0xd39b6a, hair: 0x241c16, shirt: 0xff5a3c, shirtTop: 0xd8492c,
+        pants: 0x2b3a55, hairStyle: 'short' });
+    }
+  };
 
   function resize() {
     var box = canvas.parentNode;
