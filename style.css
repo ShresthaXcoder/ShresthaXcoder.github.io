@@ -1170,3 +1170,8 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
 .review-item .st { color: #f2b01e; font-size: 12.5px; letter-spacing: 1px; }
 .review-item .when { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; color: var(--mute); margin-left: auto; }
 .review-item .txt { font-size: 14px; line-height: 1.6; color: var(--dim); }
+
+/* the smuggled-back line, now sitting under This is Me!! */
+.boy-tagline { margin-top: 12px; font-size: 14px; line-height: 1.65; color: var(--dim); text-align: center; }
+.boy-tagline b { color: var(--ink); font-weight: 700; }
+@media (max-width: 900px) { .boy-tagline { font-size: 13px; } }
