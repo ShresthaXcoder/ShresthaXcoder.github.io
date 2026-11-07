@@ -1138,23 +1138,30 @@ window.__PROJECTS = PROJECTS;
     return Promise.resolve(list);
   }
 
-  /* posts the review straight to the inbox, no server needed */
+  /* opens the visitor's own mail app with everything filled in,
+     so one tap on Send and it reaches the inbox */
   function mailReview(review){
     const stars = rvStarsText(review.stars);
-    const payload = {
-      _subject: 'New review on your site \u2014 ' + review.name,
-      Name: review.name,
-      Rating: stars + '  (' + review.stars + ' / 5)',
-      Review: review.text ? review.text : '(they left stars only, no words)',
-      When: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
-    };
-    return fetch('https://formsubmit.co/ajax/' + REVIEW_EMAIL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function(r){ return r.json(); })
-      .catch(function(){ return null; });
+    const lines = [
+      'Name: ' + review.name,
+      'Rating: ' + stars + '  (' + review.stars + ' / 5)'
+    ];
+    if (review.text) {
+      lines.push('');
+      lines.push('Review:');
+      lines.push(review.text);
+    } else {
+      lines.push('');
+      lines.push('(they left stars only, no words)');
+    }
+    lines.push('');
+    lines.push('Sent from shresthaxcoder.github.io');
+    const subject = 'New review from ' + review.name + ' \u2014 ' + stars;
+    const url = 'mailto:' + REVIEW_EMAIL +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body=' + encodeURIComponent(lines.join('\n'));
+    window.location.href = url;
+    return url;
   }
 
   function rvStarsText(n){
@@ -1168,7 +1175,7 @@ window.__PROJECTS = PROJECTS;
     const avgEl = $('#reviewAvg');
     const noteEl = $('#rvNote');
     if (noteEl) {
-      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : 'sent to Shrestha';
+      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : 'opens your mail app';
     }
     if (avgEl) {
       if (!list.length) {
@@ -1226,7 +1233,6 @@ window.__PROJECTS = PROJECTS;
       btn.disabled = true;
       btn.textContent = 'Posting\u2026';
       const review = { name: name.slice(0, 24), stars: rvStars, text: text.slice(0, 240), ts: Date.now() };
-      mailReview(review);
       rvPost(review)
         .then(function(list){
           btn.disabled = false;
@@ -1235,7 +1241,8 @@ window.__PROJECTS = PROJECTS;
           $('#rvText').value = '';
           rvStars = 0;
           paintStars(0);
-          toast('thanks for the review');
+          toast('opening your mail app \u2014 just hit send');
+          setTimeout(function(){ mailReview(review); }, 400);
         });
     });
 
