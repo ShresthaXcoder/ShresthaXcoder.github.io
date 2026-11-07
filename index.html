@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=36" />
+<link rel="stylesheet" href="style.css?v=37" />
 </head>
 <body>
 
@@ -445,6 +445,8 @@ setTimeout(function () {
     <h3 id="bQ">What is your name?</h3>
     <p id="bHint">This becomes the big word floating over the island.</p>
     <input id="bInput" autocomplete="off" spellcheck="false">
+    <span class="b-count" id="bCount"></span>
+    <span class="b-warn" id="bWarn"></span>
     <div class="b-choices" id="bChoices">
       <button type="button" data-gender="boy">Boy</button>
       <button type="button" data-gender="girl">Girl</button>
@@ -731,8 +733,8 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=36"></script>
+<script type="module" src="world.js?v=37"></script>
 
-<script src="ui.js?v=36"></script>
+<script src="ui.js?v=37"></script>
 </body>
 </html>

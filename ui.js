@@ -881,10 +881,14 @@ window.__PROJECTS = PROJECTS;
   /* ---------- build your own ---------- */
   const buildEl = $('#build');
   const BUILD_STEPS = [
-    { q: 'What is your name?', hint: 'This becomes the big word floating over the island.', type: 'text', ph: 'Your name' },
-    { q: 'How old are you?', hint: 'It goes into the About section and the terminal.', type: 'number', ph: '14' },
-    { q: 'Are you a boy or a girl?', hint: 'The little character in the About section changes to match you.', type: 'choice', ph: '' },
-    { q: 'Describe yourself in one line', hint: 'This replaces the tagline under the world.', type: 'text', ph: 'I build strange things on the internet.' }
+    { q: 'What is your name?', hint: 'This becomes the big word floating over the island. Up to 10 letters.',
+      type: 'text', ph: 'Your name', max: 10, min: 1, count: true },
+    { q: 'How old are you?', hint: 'It goes into the About section and the terminal. 5 or older.',
+      type: 'number', ph: '14', minAge: 5, maxAge: 120 },
+    { q: 'Are you a boy or a girl?', hint: 'The little character in the About section changes to match you.',
+      type: 'choice', ph: '' },
+    { q: 'Describe yourself in one line', hint: 'This replaces the tagline under the world. Between 40 and 50 characters.',
+      type: 'text', ph: 'I build strange things on the internet.', max: 50, min: 40, count: true }
   ];
   let bStep = 0;
   const bValues = ['', '', '', ''];
@@ -908,6 +912,15 @@ window.__PROJECTS = PROJECTS;
       inp.type = s.type;
       inp.placeholder = s.ph;
       inp.value = bValues[bStep] || '';
+      if (s.max) { inp.setAttribute('maxlength', String(s.max)); } else { inp.removeAttribute('maxlength'); }
+      if (s.type === 'number') {
+        inp.setAttribute('min', String(s.minAge));
+        inp.setAttribute('max', String(s.maxAge));
+      } else {
+        inp.removeAttribute('min');
+        inp.removeAttribute('max');
+      }
+      bUpdateCount();
     }
     Array.prototype.forEach.call($('#bDots').children, function(d, i){
       d.classList.toggle('on', i <= bStep);
@@ -915,6 +928,28 @@ window.__PROJECTS = PROJECTS;
     $('#bBack').style.visibility = bStep === 0 ? 'hidden' : 'visible';
     $('#bNext').textContent = bStep === BUILD_STEPS.length - 1 ? 'Build it' : 'Next';
     if (s.type !== 'choice') { setTimeout(function(){ inp.focus(); }, 80); }
+  }
+
+  function bUpdateCount(){
+    const s = BUILD_STEPS[bStep];
+    const inp = $('#bInput');
+    const count = $('#bCount');
+    const warn = $('#bWarn');
+    if (!count || !warn || !inp) { return; }
+    if (!s.count) {
+      count.classList.remove('on');
+      warn.classList.remove('on');
+      return;
+    }
+    const n = inp.value.length;
+    count.classList.add('on');
+    count.textContent = n + ' / ' + s.max + (s.min > 1 ? ('  \u00b7  at least ' + s.min) : '');
+    if (n > 0 && n < s.min) {
+      warn.classList.add('on');
+      warn.textContent = 'needs ' + (s.min - n) + ' more character' + ((s.min - n) === 1 ? '' : 's');
+    } else {
+      warn.classList.remove('on');
+    }
   }
 
   function openBuild(){
@@ -1008,11 +1043,32 @@ window.__PROJECTS = PROJECTS;
   }
   if (buildEl) {
     $('#bNext').addEventListener('click', function(){
-      if (BUILD_STEPS[bStep].type !== 'choice') {
+      const step = BUILD_STEPS[bStep];
+      const warn = $('#bWarn');
+      if (step.type !== 'choice') {
         bValues[bStep] = $('#bInput').value.trim();
       }
-      if (bStep === 0 && !bValues[0]) { $('#bInput').focus(); return; }
+      function fail(msg){
+        if (warn) { warn.classList.add('on'); warn.textContent = msg; }
+        $('#bInput').focus();
+      }
+      if (bStep === 0) {
+        if (!bValues[0]) { fail('a name is needed'); return; }
+        if (bValues[0].length > 10) { fail('10 letters at most'); return; }
+      }
+      if (bStep === 1) {
+        const age = parseInt(bValues[1], 10);
+        if (isNaN(age) || age < 5) { fail('5 or older, please'); return; }
+        if (age > 120) { fail('that is a bit too old'); return; }
+        bValues[1] = String(age);
+      }
       if (bStep === 2 && !bValues[2]) { return; }
+      if (bStep === 3) {
+        const len = bValues[3].length;
+        if (len < 40) { fail('a little longer \u2014 40 characters at least'); return; }
+        if (len > 50) { fail('50 characters at most'); return; }
+      }
+      if (warn) { warn.classList.remove('on'); }
       if (bStep < BUILD_STEPS.length - 1) { bStep += 1; bPaint(); return; }
       applyIdentity(bValues[0], bValues[1], bValues[3], bValues[2]);
       closeBuild();
@@ -1027,6 +1083,7 @@ window.__PROJECTS = PROJECTS;
       Array.prototype.forEach.call(this.children, function(c){ c.classList.toggle('sel', c === b); });
       setTimeout(function(){ $('#bNext').click(); }, 220);
     });
+    $('#bInput').addEventListener('input', bUpdateCount);
     $('#bInput').addEventListener('keydown', function(e){
       if (e.key === 'Enter') { e.preventDefault(); $('#bNext').click(); }
     });
