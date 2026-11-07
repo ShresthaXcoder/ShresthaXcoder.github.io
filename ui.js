@@ -1095,6 +1095,131 @@ window.__PROJECTS = PROJECTS;
     });
   }
 
+  /* ---------- reviews ----------
+     REVIEW_URL: your worker (see counter-worker.js). Leave it empty and
+     reviews are kept on this device only. */
+  const REVIEW_URL = '';
+  const REVIEW_KEY = 'shrestha-reviews';
+  const rvForm = $('#reviewForm');
+  let rvStars = 0;
+
+  function rvLocal(){
+    try { return JSON.parse(localStorage.getItem(REVIEW_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function rvSaveLocal(list){
+    try { localStorage.setItem(REVIEW_KEY, JSON.stringify(list.slice(0, 100))); } catch (e) {}
+  }
+
+  function rvLoad(){
+    if (REVIEW_URL) {
+      return fetch(REVIEW_URL + '?reviews=1', { cache: 'no-store' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ return Array.isArray(d.value) ? d.value : rvLocal(); })
+        .catch(function(){ return rvLocal(); });
+    }
+    return Promise.resolve(rvLocal());
+  }
+
+  function rvPost(review){
+    if (REVIEW_URL) {
+      return fetch(REVIEW_URL + '?review=1', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ return Array.isArray(d.value) ? d.value : null; })
+        .catch(function(){ return null; });
+    }
+    const list = rvLocal();
+    list.unshift(review);
+    rvSaveLocal(list);
+    return Promise.resolve(list);
+  }
+
+  function rvStarsText(n){
+    let s = '';
+    for (let i = 1; i <= 5; i++) { s += i <= n ? '\u2605' : '\u2606'; }
+    return s;
+  }
+
+  function rvPaint(list){
+    const ul = $('#reviewList');
+    const avgEl = $('#reviewAvg');
+    const noteEl = $('#rvNote');
+    if (noteEl) {
+      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : 'kept on this device';
+    }
+    if (avgEl) {
+      if (!list.length) {
+        avgEl.textContent = 'no reviews yet';
+      } else {
+        const total = list.reduce(function(a, r){ return a + (r.stars || 0); }, 0);
+        const avg = (total / list.length).toFixed(1);
+        avgEl.innerHTML = '<b>' + avg + '</b> \u00b7 ' + rvStarsText(Math.round(avg)) + ' \u00b7 ' +
+          list.length + (list.length === 1 ? ' review' : ' reviews');
+      }
+    }
+    if (!ul) { return; }
+    ul.innerHTML = list.slice(0, 12).map(function(r){
+      const when = r.ts ? new Date(r.ts).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+      const text = r.text ? '<div class="txt">' + escapeXML(r.text) + '</div>' : '';
+      return '<li class="review-item"><div class="who">' +
+        '<span class="nm">' + escapeXML(r.name || 'Someone') + '</span>' +
+        '<span class="st">' + rvStarsText(r.stars || 0) + '</span>' +
+        (when ? '<span class="when">' + when + '</span>' : '') +
+        '</div>' + text + '</li>';
+    }).join('');
+  }
+
+  function rvRefresh(){
+    rvLoad().then(rvPaint);
+  }
+
+  if (rvForm) {
+    const starBtns = document.querySelectorAll('#rvStars button');
+
+    function paintStars(n){
+      Array.prototype.forEach.call(starBtns, function(b){
+        b.classList.toggle('on', parseInt(b.getAttribute('data-star'), 10) <= n);
+      });
+    }
+
+    Array.prototype.forEach.call(starBtns, function(b){
+      const val = parseInt(b.getAttribute('data-star'), 10);
+      b.addEventListener('mouseenter', function(){ paintStars(val); });
+      b.addEventListener('click', function(){
+        rvStars = val;
+        paintStars(val);
+      });
+    });
+
+    $('#rvStars').addEventListener('mouseleave', function(){ paintStars(rvStars); });
+
+    rvForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = $('#rvName').value.trim();
+      const text = $('#rvText').value.trim();
+      if (!name) { $('#rvName').focus(); toast('a name first'); return; }
+      if (!rvStars) { toast('pick a star rating'); return; }
+      const btn = $('#rvSend');
+      btn.disabled = true;
+      btn.textContent = 'Posting\u2026';
+      rvPost({ name: name.slice(0, 24), stars: rvStars, text: text.slice(0, 240), ts: Date.now() })
+        .then(function(list){
+          btn.disabled = false;
+          btn.textContent = 'Post review';
+          if (list) { rvPaint(list); } else { rvRefresh(); }
+          $('#rvText').value = '';
+          rvStars = 0;
+          paintStars(0);
+          toast('thanks for the review');
+        });
+    });
+
+    rvRefresh();
+  }
+
   /* ---------- the dev test and its certificate ---------- */
   const DEV_QUESTIONS = [
     { t: 'Python', q: 'What does len("hello") return?', o: ['4', '5', '6', 'It errors'], a: 1 },

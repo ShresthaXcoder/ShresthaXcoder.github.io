@@ -1,0 +1,9 @@
+name = "shrestha-counter"
+main = "counter-worker.js"
+compatibility_date = "2024-11-01"
+
+# Paste the id printed by:
+#   wrangler kv namespace create COUNTER
+[[kv_namespaces]]
+binding = "COUNTER"
+id = "PASTE_YOUR_KV_ID_HERE"
