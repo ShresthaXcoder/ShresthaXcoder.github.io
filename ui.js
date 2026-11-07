@@ -1038,6 +1038,230 @@ window.__PROJECTS = PROJECTS;
     });
   }
 
+  /* ---------- the dev test and its certificate ---------- */
+  const DEV_QUESTIONS = [
+    { t: 'Python', q: 'What does len("hello") return?', o: ['4', '5', '6', 'It errors'], a: 1 },
+    { t: 'Python', q: 'Which keyword defines a function in Python?', o: ['function', 'def', 'func', 'lambda'], a: 1 },
+    { t: 'Python', q: 'In Python 3, what type is the result of 7 / 2?', o: ['int', 'float', 'str', 'bool'], a: 1 },
+    { t: 'Java', q: 'Which keyword makes one class inherit from another?', o: ['implements', 'inherits', 'extends', 'super'], a: 2 },
+    { t: 'Java', q: 'Which is the correct entry point for a Java program?', o: ['public void main()', 'static main(String args)', 'public static void main(String[] args)', 'void main(String args)'], a: 2 },
+    { t: 'AI', q: 'What does LLM stand for?', o: ['Large Language Model', 'Linear Learning Machine', 'Long Layer Memory', 'Low Latency Model'], a: 0 },
+    { t: 'AI', q: 'In a language model, what is a "token"?', o: ['A password', 'A small chunk of text', 'A GPU core', 'A whole sentence'], a: 1 },
+    { t: 'AI', q: 'What does fine-tuning do?', o: ['Trains a model from nothing', 'Adapts a pretrained model to your own task', 'Deletes the model weights', 'Compresses the model'], a: 1 },
+    { t: 'Web', q: 'In JavaScript, what does === check?', o: ['Value only', 'Type only', 'Value and type', 'Neither'], a: 2 },
+    { t: 'Web', q: 'What does display: flex do to a container?', o: ['Hides it', 'Lays its children out in one direction', 'Makes it scroll', 'Turns it into a grid'], a: 1 }
+  ];
+
+  const DT_KEY = 'shrestha-devtest-best';
+  const dtModal = $('#devTestModal');
+  const dtStage = $('#dtStage');
+  const dtCount = $('#dtCount');
+  const dtBar = $('#dtBar');
+  let dtIndex = 0;
+  let dtScore = 0;
+  let dtName = '';
+
+  function dtBest(){
+    try {
+      const n = parseInt(localStorage.getItem(DT_KEY) || '', 10);
+      return isNaN(n) ? null : n;
+    } catch (e) { return null; }
+  }
+
+  function paintBest(){
+    const el = $('#devTestBest');
+    if (!el) { return; }
+    const b = dtBest();
+    el.textContent = (b === null) ? '' : ('your best so far: ' + b + ' / 10');
+  }
+  paintBest();
+
+  function dtOpen(){
+    dtIndex = 0;
+    dtScore = 0;
+    dtName = '';
+    dtModal.classList.add('open');
+    document.body.classList.add('locked');
+    dtIntro();
+  }
+  function dtClose(){
+    dtModal.classList.remove('open');
+    document.body.classList.remove('locked');
+  }
+
+  function dtIntro(){
+    dtCount.textContent = 'Before you start';
+    dtBar.style.width = '0%';
+    dtStage.innerHTML =
+      '<div class="dt-intro">' +
+        '<p>Ten questions on Python, Java, AI and the web. No timer, no tricks. ' +
+        'Whatever you score goes on the certificate \u2014 the better the score, the better the wording.</p>' +
+        '<input id="dtName" placeholder="Your name for the certificate" autocomplete="off">' +
+        '<div class="dt-actions"><button class="btn btn-primary" id="dtStart">Start the test</button></div>' +
+      '</div>';
+    const inp = $('#dtName');
+    if (inp) { inp.focus(); }
+    $('#dtStart').addEventListener('click', function(){
+      dtName = (inp.value || '').trim() || 'A curious visitor';
+      dtQuestion();
+    });
+    if (inp) {
+      inp.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') { $('#dtStart').click(); }
+      });
+    }
+  }
+
+  function dtQuestion(){
+    if (dtIndex >= DEV_QUESTIONS.length) { dtResult(); return; }
+    const q = DEV_QUESTIONS[dtIndex];
+    dtCount.textContent = 'Question ' + (dtIndex + 1) + ' of ' + DEV_QUESTIONS.length + ' \u00b7 ' + q.t;
+    dtBar.style.width = (dtIndex / DEV_QUESTIONS.length * 100) + '%';
+    dtStage.innerHTML =
+      '<div class="dt-q">' + q.q + '</div>' +
+      '<div class="dt-opts">' +
+        q.o.map(function(o, i){ return '<button class="dt-opt" data-i="' + i + '">' + o + '</button>'; }).join('') +
+      '</div>';
+    const opts = dtStage.querySelectorAll('.dt-opt');
+    Array.prototype.forEach.call(opts, function(btn){
+      btn.addEventListener('click', function(){
+        const picked = parseInt(btn.getAttribute('data-i'), 10);
+        Array.prototype.forEach.call(opts, function(b){ b.disabled = true; });
+        if (picked === q.a) { btn.classList.add('right'); dtScore += 1; }
+        else {
+          btn.classList.add('wrong');
+          opts[q.a].classList.add('right');
+        }
+        setTimeout(function(){ dtIndex += 1; dtQuestion(); }, 620);
+      });
+    });
+  }
+
+  function dtTier(score){
+    if (score >= 8) {
+      return { key: 'excellent', label: 'Excellent', colour: '#d4a017',
+        line: 'You are a complete developer.' };
+    }
+    if (score >= 5) {
+      return { key: 'good', label: 'Good', colour: '#9aa7b4',
+        line: 'A solid foundation \u2014 keep building and it becomes excellent.' };
+    }
+    return { key: 'bronze', label: 'Bronze', colour: '#b06a3b',
+      line: 'Try hard to get a good score in your certificate.' };
+  }
+
+  function certificateSVG(name, score, tier){
+    const W = 900, H = 620;
+    const gold = tier.colour;
+    const date = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    let out = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">';
+    out += '<defs>' +
+      '<linearGradient id="cbg" x1="0" y1="0" x2="1" y2="1">' +
+        '<stop offset="0" stop-color="#0d1b2e"/><stop offset="0.55" stop-color="#132a45"/><stop offset="1" stop-color="#08111d"/>' +
+      '</linearGradient>' +
+      '<linearGradient id="cmedal" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="' + gold + '"/><stop offset="1" stop-color="#7a5a1a"/>' +
+      '</linearGradient></defs>';
+    out += '<rect width="' + W + '" height="' + H + '" fill="url(#cbg)"/>';
+    out += '<rect x="26" y="26" width="' + (W - 52) + '" height="' + (H - 52) + '" rx="10" fill="none" stroke="' + gold + '" stroke-width="2.5"/>';
+    out += '<rect x="38" y="38" width="' + (W - 76) + '" height="' + (H - 76) + '" rx="6" fill="none" stroke="' + gold + '" stroke-width="0.9" opacity="0.55"/>';
+
+    out += '<text x="' + (W / 2) + '" y="112" text-anchor="middle" fill="' + gold + '" font-family="ui-monospace, monospace" font-size="15" letter-spacing="6">CERTIFICATE OF ACHIEVEMENT</text>';
+    out += '<text x="' + (W / 2) + '" y="150" text-anchor="middle" fill="#8fa6c0" font-family="ui-monospace, monospace" font-size="11.5" letter-spacing="3.5">SHRESTHAXCODER.GITHUB.IO \u00b7 DEV TEST</text>';
+
+    out += '<text x="' + (W / 2) + '" y="256" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-size="50" font-weight="700">' + escapeXML(name) + '</text>';
+    out += '<line x1="' + (W / 2 - 150) + '" y1="286" x2="' + (W / 2 + 150) + '" y2="286" stroke="' + gold + '" stroke-width="1.2" opacity="0.6"/>';
+
+    out += '<text x="' + (W / 2) + '" y="336" text-anchor="middle" fill="#cfe0f2" font-family="Georgia, serif" font-size="20">scored</text>';
+    out += '<text x="' + (W / 2) + '" y="412" text-anchor="middle" fill="' + gold + '" font-family="Georgia, serif" font-size="72" font-weight="700">' + score + ' / 10</text>';
+
+    out += '<text x="' + (W / 2) + '" y="466" text-anchor="middle" fill="' + gold + '" font-family="ui-monospace, monospace" font-size="17" letter-spacing="5">' + tier.label.toUpperCase() + '</text>';
+    out += '<text x="' + (W / 2) + '" y="498" text-anchor="middle" fill="#9fb4cb" font-family="Georgia, serif" font-size="16">' + escapeXML(tier.line) + '</text>';
+
+    out += '<circle cx="' + (W - 132) + '" cy="' + (H - 132) + '" r="52" fill="url(#cmedal)"/>';
+    out += '<circle cx="' + (W - 132) + '" cy="' + (H - 132) + '" r="42" fill="none" stroke="#0d1b2e" stroke-width="1.5" opacity="0.5"/>';
+    out += '<text x="' + (W - 132) + '" y="' + (H - 122) + '" text-anchor="middle" fill="#0d1b2e" font-family="Georgia, serif" font-size="26" font-weight="700">' + score + '</text>';
+    out += '<text x="' + (W - 132) + '" y="' + (H - 102) + '" text-anchor="middle" fill="#0d1b2e" font-family="ui-monospace, monospace" font-size="10" letter-spacing="1.5">/ 10</text>';
+
+    out += '<text x="70" y="' + (H - 74) + '" fill="#7d93ab" font-family="ui-monospace, monospace" font-size="11.5" letter-spacing="2">' + date + '</text>';
+    out += '<text x="70" y="' + (H - 52) + '" fill="#5f7a92" font-family="ui-monospace, monospace" font-size="10" letter-spacing="1.5">shresthaxcoder.github.io</text>';
+    out += '</svg>';
+    return out;
+  }
+
+  function escapeXML(s){
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function dtResult(){
+    dtBar.style.width = '100%';
+    dtCount.textContent = 'Your result';
+    const tier = dtTier(dtScore);
+    const best = dtBest();
+    if (best === null || dtScore > best) {
+      try { localStorage.setItem(DT_KEY, String(dtScore)); } catch (e) {}
+    }
+    paintBest();
+
+    dtStage.innerHTML =
+      '<div class="dt-result">' +
+        '<div class="dt-score">' + dtScore + ' / 10</div>' +
+        '<div class="dt-tier" style="color:' + tier.colour + '">' + tier.label + ' achievement</div>' +
+        '<p class="dt-msg">' + escapeXML(tier.line) + '</p>' +
+        '<div class="dt-cert" id="dtCert">' + certificateSVG(dtName, dtScore, tier) + '</div>' +
+        '<div class="dt-actions">' +
+          '<button class="mini solid" id="dtDownload">Save the certificate</button>' +
+          '<button class="mini" id="dtAgain">Try again</button>' +
+          '<button class="mini" data-dclose>Close</button>' +
+        '</div>' +
+      '</div>';
+
+    $('#dtDownload').addEventListener('click', function(){
+      const svgEl = dtStage.querySelector('#dtCert svg');
+      if (!svgEl) { return; }
+      const src = new XMLSerializer().serializeToString(svgEl);
+      const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
+      const img = new Image();
+      img.onload = function(){
+        const cv = document.createElement('canvas');
+        cv.width = 1800;
+        cv.height = 1240;
+        const ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0, cv.width, cv.height);
+        cv.toBlob(function(blob){
+          if (!blob) { return; }
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'dev-test-certificate.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+          toast('certificate saved');
+        }, 'image/png');
+      };
+      img.src = url;
+    });
+
+    $('#dtAgain').addEventListener('click', function(){
+      dtIndex = 0;
+      dtScore = 0;
+      dtIntro();
+    });
+  }
+
+  if ($('#devTestBtn')) {
+    $('#devTestBtn').addEventListener('click', dtOpen);
+  }
+  if (dtModal) {
+    dtModal.addEventListener('click', function(e){
+      if (e.target.closest('[data-dclose]')) { dtClose(); }
+    });
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape' && dtModal.classList.contains('open')) { dtClose(); }
+    });
+  }
+
   /* ---------- case studies ---------- */
   const CASES = {
     PRJ_001: {

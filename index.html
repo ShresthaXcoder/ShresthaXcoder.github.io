@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=35" />
+<link rel="stylesheet" href="style.css?v=36" />
 </head>
 <body>
 
@@ -363,6 +363,19 @@ setTimeout(function () {
         </span>
         <svg class="play-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
+      <div class="devtest">
+        <span class="devtest-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/>
+          </svg>
+        </span>
+        <div class="devtest-text">
+          <h3 data-hi="अपना सर्टिफिकेट लें">Earn a certificate</h3>
+          <p data-hi="पाइथन, जावा, एआई और वेब पर दस सवाल। अच्छा स्कोर करें और अपने नाम का सर्टिफिकेट ले जाएं।">Ten questions on Python, Java, AI and the web. Score well and take home a certificate with your name on it.</p>
+          <span class="devtest-best" id="devTestBest"></span>
+        </div>
+        <button class="btn btn-primary" id="devTestBtn" data-hi="टेस्ट दें">Take the dev test</button>
+      </div>
     </div>
   </div>
 </section>
@@ -409,6 +422,20 @@ setTimeout(function () {
   <a href="#journey"><span class="tip">Journey</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></a>
   <a href="#resume"><span class="tip">R&eacute;sum&eacute;</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg></a>
   <a href="#contact"><span class="tip">Contact</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="M4 7l8 6 8-6"/></svg></a>
+</div>
+
+<div class="devtest-modal" id="devTestModal" role="dialog" aria-modal="true">
+  <div class="backdrop" data-dclose></div>
+  <div class="dt-panel">
+    <div class="dt-top">
+      <span class="dt-count" id="dtCount">Question 1 of 10</span>
+      <button class="close" data-dclose aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="dt-bar"><i id="dtBar"></i></div>
+    <div class="dt-stage" id="dtStage"></div>
+  </div>
 </div>
 
 <div class="build" id="build" role="dialog" aria-modal="true">
@@ -704,8 +731,8 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=35"></script>
+<script type="module" src="world.js?v=36"></script>
 
-<script src="ui.js?v=35"></script>
+<script src="ui.js?v=36"></script>
 </body>
 </html>
