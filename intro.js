@@ -336,10 +336,14 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
   const DUR = 7200;
 
   function fit() {
-    renderer.setSize(window.innerWidth, window.innerHeight, false);
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const holder = canvas.parentNode;
+    const w = holder ? holder.clientWidth : 320;
+    const h = holder ? holder.clientHeight : 240;
+    if (w < 2 || h < 2) { return; }
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    houseCam.aspect = window.innerWidth / window.innerHeight;
+    houseCam.aspect = w / h;
     houseCam.updateProjectionMatrix();
   }
   window.addEventListener('resize', fit);
@@ -348,12 +352,11 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
   function finish() {
     if (done) { return; }
     done = true;
-    box.classList.add('out');
-    try { localStorage.setItem('shrestha-intro', '1'); } catch (e) {}
-    setTimeout(function () { box.remove(); }, 900);
+    box.classList.add('done');
+    if (bubble) { bubble.classList.add('show'); }
   }
 
-  skip.addEventListener('click', finish);
+  if (skip) { skip.addEventListener('click', finish); }
 
   // safety nets: the site must never stay hidden
   setTimeout(finish, 14000);                       // absolute cap
@@ -416,10 +419,31 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
   camera.lookAt(0, 0, 0);
   renderer.render(scene, camera);
 
-  requestAnimationFrame(function (now) { t0 = now; frame(now); });
+  let started = false;
+  function start() {
+    if (started || done) { return; }
+    started = true;
+    fit();
+    requestAnimationFrame(function (now) { t0 = now; frame(now); });
+  }
+
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { start(); io.disconnect(); }
+      });
+    }, { threshold: 0.3 });
+    io.observe(box);
+  } else {
+    start();
+  }
 
   window.__playIntro = function () {
-    try { localStorage.removeItem('shrestha-intro'); } catch (e) {}
-    location.reload();
+    done = false;
+    started = false;
+    box.classList.remove('done');
+    if (bubble) { bubble.classList.remove('show'); }
+    try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+    start();
   };
 })();

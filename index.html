@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=52" />
+<link rel="stylesheet" href="style.css?v=53" />
 </head>
 <body>
 
@@ -435,6 +435,21 @@ setTimeout(function () {
       </form>
       <ul class="review-list" id="reviewList"></ul>
     </div>
+
+    <div class="world-end reveal" id="globeIntro">
+      <div class="world-stage">
+        <canvas id="globeCanvas"></canvas>
+        <div class="globe-cap" id="globeCap">SOMEWHERE ON EARTH</div>
+        <div class="globe-bubble" id="globeBubble">
+          <b>Hi! I&rsquo;m Shrestha</b>
+          <span>welcome to my island</span>
+        </div>
+      </div>
+      <div class="world-end-text">
+        <h3 data-hi="आपने मेरी दुनिया पूरी कर दी">You completed my world</h3>
+        <p data-hi="पूरा द्वीप घूमने के लिए धन्यवाद। ऊपर एक रिव्यू छोड़ें या इंस्टाग्राम पर नमस्ते कहें।">Thanks for walking the whole island. Leave a review above, or say hi on Instagram.</p>
+      </div>
+    </div>
   </div>
   <footer><div class="wrap foot">
     <span>&copy; 2026 Shrestha &middot; built by hand</span>
@@ -661,16 +676,7 @@ setTimeout(function () {
   </div>
 </div>
 
-<div class="globe-intro" id="globeIntro">
-  <canvas id="globeCanvas"></canvas>
-  <div class="globe-cap" id="globeCap">SOMEWHERE ON EARTH</div>
-  <div class="globe-bubble" id="globeBubble">
-    <b>Hi! I&rsquo;m Shrestha</b>
-    <span>welcome to my island</span>
-  </div>
-  <div class="globe-veil" id="globeVeil"></div>
-  <button class="globe-skip" id="globeSkip">Skip</button>
-</div>
+
 
 <div class="laser-dot" id="laserDot" aria-hidden="true"></div>
 
@@ -774,9 +780,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=52"></script>
-<script type="module" src="intro.js?v=52"></script>
+<script type="module" src="world.js?v=53"></script>
+<script type="module" src="intro.js?v=53"></script>
 
-<script src="ui.js?v=52"></script>
+<script src="ui.js?v=53"></script>
 </body>
 </html>

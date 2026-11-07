@@ -2190,7 +2190,7 @@ window.__PROJECTS = PROJECTS;
     out.push({label:'Email Shrestha', kind:'Action', key:'', act:()=>{ location.href='mailto:iamshresthax@gmail.com'; }});
     DATA.forEach(function(p){ if (CASES[p.id]) { out.push({label:'Case study: ' + p.name, kind:'Case study', key:'', act:function(){ openCase(p.id); }}); } });
     out.push({label:'Build your own version of this page', kind:'Play', key:'', act:openBuild});
-    out.push({label:'Watch the globe intro again', kind:'Play', key:'', act:function(){ if (window.__playIntro) { window.__playIntro(); } }});
+    out.push({label:'Play the island ending', kind:'Play', key:'', act:function(){ if (window.__playIntro) { window.__playIntro(); } }});
     out.push({label:'Ride a flying car', kind:'World', key:'', act:rideCar});
     out.push({label:'Share card for the site', kind:'Share', key:'', act:shareSiteCard});
     out.push({label:'Share on WhatsApp', kind:'Share', key:'', act:shareWhatsApp});
