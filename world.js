@@ -406,38 +406,6 @@ function build(THREE, PP){
       cubes.push({x:tx+lx,y:top+2,z:tz+lz,color:jitter(LEAF,0.1)}); }
     cubes.push({x:tx,y:top+3,z:tz,color:jitter(LEAF,0.1)});
   }
-  // cherry blossom trees — the view worth walking to
-  const CHERRY = { x: -6, z: 10 };
-  const PINK = [0xffc2d9, 0xffa9c8, 0xffd7e7, 0xf79bbd, 0xffb8d4];
-  function cherryTree(tx, tz, size){
-    if(Math.hypot(tx,tz) > R-3 || inPond(tx,tz)) return;
-    const top = heightAt(tx,tz);
-    const trunkH = Math.round(3*size) + 2;
-    for(let k=1;k<=trunkH;k++){
-      cubes.push({x:tx,y:top+k,z:tz,color:jitter(WOOD,0.08)});
-    }
-    cubes.push({x:tx+1,y:top+trunkH-1,z:tz,color:jitter(WOOD,0.08)});
-    cubes.push({x:tx-1,y:top+trunkH,z:tz,color:jitter(WOOD,0.08)});
-    cubes.push({x:tx,y:top+trunkH-1,z:tz+1,color:jitter(WOOD,0.08)});
-    const cy = top + trunkH + Math.round(1.4*size);
-    const rad = 2.2*size;
-    const span = Math.ceil(rad);
-    for(let dx=-span;dx<=span;dx++){
-      for(let dy=-span;dy<=span+1;dy++){
-        for(let dz=-span;dz<=span;dz++){
-          const d = Math.sqrt(dx*dx + dy*dy*1.25 + dz*dz);
-          if(d > rad) continue;
-          if(d > rad*0.72 && Math.random() > 0.25) continue;
-          cubes.push({x:tx+dx, y:cy+dy, z:tz+dz, color: PINK[Math.floor(Math.random()*PINK.length)]});
-        }
-      }
-    }
-  }
-  cherryTree(CHERRY.x, CHERRY.z, 1.9);
-  cherryTree(-11, 1, 1.1);
-  cherryTree(5, 3, 0.9);
-  cherryTree(-3, -7, 0.75);
-
   // flowers + rocks
   for(let i=0;i<42;i++){
     const a=Math.random()*Math.PI*2, r=Math.random()*R;
@@ -589,25 +557,6 @@ function build(THREE, PP){
   const leaves = [];
   for(let i=0;i<LEAF_N;i++) leaves.push({x:(Math.random()-0.5)*34, y:Math.random()*28, z:-22+Math.random()*26, s:0.4+Math.random()*0.5, r:Math.random()*6.28});
   scene.add(leafMesh);
-
-  /* ---------- cherry blossom petals ---------- */
-  const PETAL_N = 70;
-  const petalMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(0.24,0.06,0.24),
-    new THREE.MeshLambertMaterial({color:0xffc2d9, transparent:true, opacity:1}), PETAL_N);
-  { const c=new THREE.Color(), m=new THREE.Matrix4();
-    for(let i=0;i<PETAL_N;i++){ c.set(PINK[Math.floor(Math.random()*PINK.length)]);
-      petalMesh.setColorAt(i,c); m.makeTranslation(0,0,0); petalMesh.setMatrixAt(i,m); } }
-  const petals = [];
-  for(let i=0;i<PETAL_N;i++){
-    petals.push({
-      x: CHERRY.x + (Math.random()-0.5)*13,
-      y: 2 + Math.random()*20,
-      z: CHERRY.z + (Math.random()-0.5)*13,
-      s: 0.35 + Math.random()*0.55,
-      r: Math.random()*6.28
-    });
-  }
-  scene.add(petalMesh);
 
   /* ---------- sun + stars ---------- */
   const sunTex = (function(){
@@ -1440,7 +1389,7 @@ function build(THREE, PP){
 
   /* ---------- world scale ---------- */
   const world = new THREE.Group();
-  const wparts = [island, clouds, nameGroup, stars, leafMesh, petalMesh, sparkles, sunSprite, sunDisc].concat(birds, WORLD_EXTRA);
+  const wparts = [island, clouds, nameGroup, stars, leafMesh, sparkles, sunSprite, sunDisc].concat(birds, WORLD_EXTRA);
   wparts.forEach(o=>scene.remove(o));
   wparts.forEach(o=>world.add(o));
   scene.add(world);
@@ -1838,12 +1787,7 @@ function build(THREE, PP){
         e.set(lf.r, lf.r*0.7, lf.r*0.5); q.setFromEuler(e); s.set(1,1,1);
         m.compose(new THREE.Vector3(lf.x, lf.y, lf.z), q, s); leafMesh.setMatrixAt(i,m); });
       leafMesh.instanceMatrix.needsUpdate = true; }
-    { const m=new THREE.Matrix4(), q=new THREE.Quaternion(), e=new THREE.Euler(), s=new THREE.Vector3();
-      petals.forEach((p,i)=>{ p.y -= p.s*0.09; p.x += Math.sin(t*0.7+p.r)*0.035; p.r += 0.018;
-        if(p.y < 0.5){ p.y = 16+Math.random()*8; p.x = CHERRY.x + (Math.random()-0.5)*13; p.z = CHERRY.z + (Math.random()-0.5)*13; }
-        e.set(p.r*0.8, p.r, p.r*0.5); q.setFromEuler(e); s.set(1,1,1);
-        m.compose(new THREE.Vector3(p.x, p.y, p.z), q, s); petalMesh.setMatrixAt(i,m); });
-      petalMesh.instanceMatrix.needsUpdate = true; }
+
 
     /* ================= v4: ANIMATION ================= */
 
