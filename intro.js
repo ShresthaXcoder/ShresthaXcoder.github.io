@@ -197,34 +197,34 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
 
   // clouds, drifting a little faster than the ground
   const clouds = new THREE.Mesh(
-    new THREE.SphereGeometry(2.03, 64, 48),
+    new THREE.SphereGeometry(2.03, 40, 28),
     new THREE.MeshLambertMaterial({ map: cloudTexture(), transparent: true, opacity: 0.34, depthWrite: false })
   );
   earthGroup.add(clouds);
 
-  // atmosphere: a fresnel glow on a slightly larger back-facing sphere
-  const atmoMat = new THREE.ShaderMaterial({
-    vertexShader: [
-      'varying vec3 vN;',
-      'void main(){',
-      '  vN = normalize(normalMatrix * normal);',
-      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-      '}'
-    ].join('\n'),
-    fragmentShader: [
-      'varying vec3 vN;',
-      'void main(){',
-      '  float d = max(0.62 - dot(vN, vec3(0.0, 0.0, 1.0)), 0.0);',
-      '  float rim = pow(d, 3.4);',
-      '  gl_FragColor = vec4(0.30, 0.58, 1.0, 1.0) * rim * 0.85;',
-      '}'
-    ].join('\n'),
-    blending: THREE.AdditiveBlending,
-    side: THREE.BackSide,
-    transparent: true,
-    depthWrite: false
-  });
-  space.add(new THREE.Mesh(new THREE.SphereGeometry(2.18, 64, 48), atmoMat));
+  // atmosphere: a soft additive sprite behind the globe.
+  // (no custom shaders — they fail to compile on some mobile GPUs and
+  //  take the whole render down with them)
+  const haloTex = (function () {
+    const S = 256;
+    const c = document.createElement('canvas');
+    c.width = c.height = S;
+    const g = c.getContext('2d');
+    const grad = g.createRadialGradient(S / 2, S / 2, S * 0.30, S / 2, S / 2, S / 2);
+    grad.addColorStop(0, 'rgba(120,180,255,0)');
+    grad.addColorStop(0.55, 'rgba(110,175,255,0.30)');
+    grad.addColorStop(0.78, 'rgba(90,155,255,0.16)');
+    grad.addColorStop(1, 'rgba(70,130,255,0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, S, S);
+    return new THREE.CanvasTexture(c);
+  })();
+
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: haloTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9
+  }));
+  halo.scale.set(5.4, 5.4, 5.4);
+  earthGroup.add(halo);
 
   /* where home sits on the sphere, in world space */
   const latR = HOME.lat * Math.PI / 180;
@@ -332,6 +332,7 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
   /* ---------- timeline ---------- */
   let t0 = performance.now();
   let done = false;
+  let frames = 0;
   const DUR = 7200;
 
   function fit() {
@@ -354,10 +355,12 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
 
   skip.addEventListener('click', finish);
 
-  // safety net: whatever happens, the site must never stay hidden
-  setTimeout(finish, 14000);
+  // safety nets: the site must never stay hidden
+  setTimeout(finish, 14000);                       // absolute cap
+  setTimeout(function () { if (frames < 8) { finish(); } }, 3000);   // nothing is moving
 
   function frame(now) {
+    frames++;
     const t = Math.min((now - t0) / DUR, 1);
 
     // phase 1: space -> earth -> falling towards home
@@ -401,7 +404,7 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
 
       if (p > 0.62 && bubble) { bubble.classList.add('show'); }
 
-      renderer.render(houseScene, houseCam);
+      try { renderer.render(houseScene, houseCam); } catch (e) { finish(); return; }
     }
 
     if (t >= 1) { finish(); return; }
