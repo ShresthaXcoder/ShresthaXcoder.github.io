@@ -62,6 +62,26 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
   scene.add(stars);
 
   /* ---------- the earth ---------- */
+  function lonLatToPx(lon, lat, W, H) {
+    return [(lon + 180) / 360 * W, (90 - lat) / 180 * H];
+  }
+
+  const LAND = [
+    [[-168,65],[-160,71],[-140,70],[-125,70],[-100,73],[-80,73],[-62,60],[-55,50],[-66,45],[-70,42],
+     [-75,35],[-81,25],[-97,26],[-105,20],[-115,30],[-125,40],[-130,55],[-140,60],[-168,65]],
+    [[-81,8],[-75,11],[-60,10],[-50,0],[-35,-6],[-38,-15],[-48,-25],[-58,-35],[-63,-42],[-68,-52],
+     [-75,-50],[-72,-40],[-71,-20],[-80,-5],[-81,8]],
+    [[-17,15],[-10,5],[9,4],[9,-1],[12,-6],[13,-17],[15,-28],[20,-35],[28,-33],[33,-26],[40,-15],
+     [41,-2],[51,12],[43,12],[35,23],[33,31],[20,32],[10,37],[0,36],[-10,30],[-17,21],[-17,15]],
+    [[-10,36],[0,44],[3,43],[10,44],[20,40],[28,37],[35,36],[45,40],[50,45],[60,45],[70,40],[80,30],
+     [90,22],[95,20],[105,10],[110,20],[120,30],[122,40],[130,43],[135,50],[142,55],[160,60],[180,65],
+     [180,72],[140,74],[100,77],[60,70],[30,70],[10,60],[5,58],[-5,50],[-10,36]],
+    [[68,23],[72,20],[77,8],[80,13],[87,21],[89,22],[85,25],[78,28],[72,28],[68,23]],
+    [[114,-22],[122,-18],[130,-12],[142,-11],[146,-19],[150,-25],[153,-28],[150,-37],[143,-39],
+     [135,-35],[129,-32],[115,-34],[114,-22]],
+    [[-45,60],[-30,64],[-22,70],[-25,76],[-38,78],[-52,76],[-55,68],[-45,60]]
+  ];
+
   function earthTexture() {
     const W = 1024, H = 512;
     const c = document.createElement('canvas');
@@ -69,68 +89,98 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
     const g = c.getContext('2d');
 
     const sea = g.createLinearGradient(0, 0, 0, H);
-    sea.addColorStop(0, '#123c6b');
-    sea.addColorStop(0.5, '#1b5a9c');
-    sea.addColorStop(1, '#123c6b');
+    sea.addColorStop(0.00, '#0a2444');
+    sea.addColorStop(0.25, '#124a7d');
+    sea.addColorStop(0.50, '#1a6aa8');
+    sea.addColorStop(0.75, '#124a7d');
+    sea.addColorStop(1.00, '#0a2444');
     g.fillStyle = sea;
     g.fillRect(0, 0, W, H);
 
-    // faint latitude bands, so the ocean is not flat
-    g.globalAlpha = 0.06;
-    g.fillStyle = '#ffffff';
-    for (let y = 0; y < H; y += 18) { g.fillRect(0, y, W, 1); }
-    g.globalAlpha = 1;
-
-    function px(lon, lat) { return [(lon + 180) / 360 * W, (90 - lat) / 180 * H]; }
-    function blob(lon, lat, rx, ry, rot) {
-      const [x, y] = px(lon, lat);
+    for (let i = 0; i < 420; i++) {
+      g.globalAlpha = 0.03 + Math.random() * 0.05;
+      g.fillStyle = Math.random() > 0.5 ? '#7fc4f0' : '#08243f';
       g.beginPath();
-      g.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2);
+      g.arc(Math.random() * W, Math.random() * H, 4 + Math.random() * 26, 0, 6.283);
       g.fill();
     }
+    g.globalAlpha = 1;
 
-    g.fillStyle = '#3f7d3f';
-    // north america
-    blob(-100, 48, 62, 40, 0.2);
-    blob(-90, 30, 38, 26, 0);
-    // south america
-    blob(-60, -12, 30, 44, -0.25);
-    // europe
-    blob(18, 52, 42, 24, 0);
-    // africa
-    blob(18, 4, 44, 52, 0);
-    blob(28, -22, 30, 26, 0);
-    // asia
-    blob(88, 46, 92, 42, 0);
-    blob(112, 22, 44, 26, 0);
-    // india
-    blob(78, 20, 20, 24, 0);
-    // australia
-    blob(134, -25, 30, 20, 0);
-    // greenland
-    blob(-42, 74, 24, 16, 0);
+    function path(poly) {
+      g.beginPath();
+      poly.forEach(function (pt, i) {
+        const p = lonLatToPx(pt[0], pt[1], W, H);
+        if (i === 0) { g.moveTo(p[0], p[1]); } else { g.lineTo(p[0], p[1]); }
+      });
+      g.closePath();
+    }
 
-    g.fillStyle = '#4f8f4a';
-    blob(-70, -4, 20, 26, 0);
-    blob(20, 10, 26, 30, 0);
-    blob(96, 50, 50, 22, 0);
+    g.shadowColor = 'rgba(0,0,0,0.5)';
+    g.shadowBlur = 9;
+    LAND.forEach(function (poly) { path(poly); g.fillStyle = '#3f7a45'; g.fill(); });
+    g.shadowBlur = 0;
+    g.shadowColor = 'transparent';
 
-    // ice caps
-    g.fillStyle = '#eef6ff';
-    g.fillRect(0, 0, W, 14);
-    g.fillRect(0, H - 16, W, 16);
+    LAND.forEach(function (poly) {
+      path(poly);
+      g.fillStyle = '#4a8a4a';
+      g.fill();
+      g.save();
+      path(poly);
+      g.clip();
+      for (let i = 0; i < 160; i++) {
+        const pick = Math.random();
+        g.globalAlpha = 0.10 + Math.random() * 0.2;
+        g.fillStyle = pick > 0.72 ? '#8fae5a' : (pick > 0.45 ? '#3d7040' : '#5e9450');
+        g.beginPath();
+        g.arc(Math.random() * W, Math.random() * H, 6 + Math.random() * 28, 0, 6.283);
+        g.fill();
+      }
+      g.globalAlpha = 0.3;
+      g.fillStyle = '#c9b276';
+      const d1 = lonLatToPx(18, 22, W, H), d2 = lonLatToPx(52, 24, W, H), d3 = lonLatToPx(133, -25, W, H);
+      g.beginPath(); g.ellipse(d1[0], d1[1], 62, 32, 0, 0, 6.283); g.fill();
+      g.beginPath(); g.ellipse(d2[0], d2[1], 36, 21, 0, 0, 6.283); g.fill();
+      g.beginPath(); g.ellipse(d3[0], d3[1], 48, 28, 0, 0, 6.283); g.fill();
+      g.restore();
+      g.globalAlpha = 1;
+    });
 
-    // a warm pin where home is
-    const [hx, hy] = px(HOME.lon, HOME.lat);
-    const glow = g.createRadialGradient(hx, hy, 0, hx, hy, 26);
-    glow.addColorStop(0, 'rgba(255,120,60,0.95)');
-    glow.addColorStop(0.45, 'rgba(255,120,60,0.35)');
-    glow.addColorStop(1, 'rgba(255,120,60,0)');
+    g.fillStyle = '#eef7ff';
+    g.fillRect(0, 0, W, 15);
+    g.fillRect(0, H - 23, W, 23);
+
+    const hx = lonLatToPx(HOME.lon, HOME.lat, W, H);
+    const glow = g.createRadialGradient(hx[0], hx[1], 0, hx[0], hx[1], 24);
+    glow.addColorStop(0, 'rgba(255,190,120,0.95)');
+    glow.addColorStop(0.3, 'rgba(255,120,50,0.55)');
+    glow.addColorStop(1, 'rgba(255,90,30,0)');
     g.fillStyle = glow;
-    g.beginPath();
-    g.arc(hx, hy, 26, 0, Math.PI * 2);
-    g.fill();
+    g.beginPath(); g.arc(hx[0], hx[1], 24, 0, 6.283); g.fill();
 
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    return tex;
+  }
+
+  function cloudTexture() {
+    const W = 1024, H = 512;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, W, H);
+    for (let i = 0; i < 260; i++) {
+      const x = Math.random() * W;
+      const y = Math.random() * H;
+      const band = Math.sin((y / H) * Math.PI);
+      if (Math.random() > band * 0.95 + 0.08) { continue; }
+      const r = 12 + Math.random() * 52;
+      const grad = g.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, 'rgba(255,255,255,' + (0.3 + Math.random() * 0.38) + ')');
+      grad.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grad;
+      g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+    }
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     return tex;
@@ -141,16 +191,40 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
 
   const earth = new THREE.Mesh(
     new THREE.SphereGeometry(2, 64, 48),
-    new THREE.MeshLambertMaterial({ map: earthTexture() })
+    new THREE.MeshPhongMaterial({ map: earthTexture(), shininess: 22, specular: 0x244a70 })
   );
   earthGroup.add(earth);
 
-  // thin atmosphere
-  const halo = new THREE.Mesh(
-    new THREE.SphereGeometry(2.09, 48, 32),
-    new THREE.MeshBasicMaterial({ color: 0x6fb2ff, transparent: true, opacity: 0.16, side: THREE.BackSide })
+  // clouds, drifting a little faster than the ground
+  const clouds = new THREE.Mesh(
+    new THREE.SphereGeometry(2.03, 64, 48),
+    new THREE.MeshLambertMaterial({ map: cloudTexture(), transparent: true, opacity: 0.34, depthWrite: false })
   );
-  earthGroup.add(halo);
+  earthGroup.add(clouds);
+
+  // atmosphere: a fresnel glow on a slightly larger back-facing sphere
+  const atmoMat = new THREE.ShaderMaterial({
+    vertexShader: [
+      'varying vec3 vN;',
+      'void main(){',
+      '  vN = normalize(normalMatrix * normal);',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'varying vec3 vN;',
+      'void main(){',
+      '  float d = max(0.62 - dot(vN, vec3(0.0, 0.0, 1.0)), 0.0);',
+      '  float rim = pow(d, 3.4);',
+      '  gl_FragColor = vec4(0.30, 0.58, 1.0, 1.0) * rim * 0.85;',
+      '}'
+    ].join('\n'),
+    blending: THREE.AdditiveBlending,
+    side: THREE.BackSide,
+    transparent: true,
+    depthWrite: false
+  });
+  space.add(new THREE.Mesh(new THREE.SphereGeometry(2.18, 64, 48), atmoMat));
 
   /* where home sits on the sphere, in world space */
   const latR = HOME.lat * Math.PI / 180;
@@ -280,6 +354,9 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
 
   skip.addEventListener('click', finish);
 
+  // safety net: whatever happens, the site must never stay hidden
+  setTimeout(finish, 14000);
+
   function frame(now) {
     const t = Math.min((now - t0) / DUR, 1);
 
@@ -290,6 +367,7 @@ const HOME = { lat: 26.15, lon: 85.9 };   // Darbhanga, Bihar
       // the globe turns so home faces us, faster at first
       const spin = (1 - Math.pow(1 - Math.min(p * 1.35, 1), 2));
       earthGroup.rotation.y = -Math.atan2(homeDir.x, homeDir.z) + (1 - spin) * Math.PI * 1.5;
+      if (clouds) { clouds.rotation.y = (1 - spin) * Math.PI * 1.5 + t * 0.18; }
 
       // camera dives in
       const dist = 9.5 - 6.6 * Math.pow(p, 1.7);
