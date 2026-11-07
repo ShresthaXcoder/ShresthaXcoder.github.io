@@ -1100,6 +1100,7 @@ window.__PROJECTS = PROJECTS;
      reviews are kept on this device only. */
   const REVIEW_URL = '';
   const REVIEW_KEY = 'shrestha-reviews';
+  const REVIEW_EMAIL = 'iamshresthax@gmail.com';
   const rvForm = $('#reviewForm');
   let rvStars = 0;
 
@@ -1137,6 +1138,25 @@ window.__PROJECTS = PROJECTS;
     return Promise.resolve(list);
   }
 
+  /* posts the review straight to the inbox, no server needed */
+  function mailReview(review){
+    const stars = rvStarsText(review.stars);
+    const payload = {
+      _subject: 'New review on your site \u2014 ' + review.name,
+      Name: review.name,
+      Rating: stars + '  (' + review.stars + ' / 5)',
+      Review: review.text ? review.text : '(they left stars only, no words)',
+      When: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+    };
+    return fetch('https://formsubmit.co/ajax/' + REVIEW_EMAIL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r){ return r.json(); })
+      .catch(function(){ return null; });
+  }
+
   function rvStarsText(n){
     let s = '';
     for (let i = 1; i <= 5; i++) { s += i <= n ? '\u2605' : '\u2606'; }
@@ -1148,7 +1168,7 @@ window.__PROJECTS = PROJECTS;
     const avgEl = $('#reviewAvg');
     const noteEl = $('#rvNote');
     if (noteEl) {
-      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : 'kept on this device';
+      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : 'sent to Shrestha';
     }
     if (avgEl) {
       if (!list.length) {
@@ -1205,7 +1225,9 @@ window.__PROJECTS = PROJECTS;
       const btn = $('#rvSend');
       btn.disabled = true;
       btn.textContent = 'Posting\u2026';
-      rvPost({ name: name.slice(0, 24), stars: rvStars, text: text.slice(0, 240), ts: Date.now() })
+      const review = { name: name.slice(0, 24), stars: rvStars, text: text.slice(0, 240), ts: Date.now() };
+      mailReview(review);
+      rvPost(review)
         .then(function(list){
           btn.disabled = false;
           btn.textContent = 'Post review';
