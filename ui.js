@@ -980,7 +980,7 @@ window.__PROJECTS = PROJECTS;
       brand.innerHTML = '<span class="cube"><i></i><i></i><i></i><i></i></span> ' + nm;
     }
 
-    document.title = nm + ' — voxel world';
+    document.title = nm;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) { metaDesc.setAttribute('content', nm + ' — frontend designer and AI builder.'); }
 

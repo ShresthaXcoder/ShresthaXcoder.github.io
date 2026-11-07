@@ -1,7 +1,7 @@
 {
-  "name": "Shrestha — Frontend Designer & AI Builder",
+  "name": "Shrestha",
   "short_name": "Shrestha",
-  "description": "A voxel world portfolio by Shrestha — frontend designer and AI builder from Darbhanga, India.",
+  "description": "A voxel world portfolio by Shrestha.",
   "id": "/",
   "start_url": "./",
   "scope": "./",
@@ -40,7 +40,11 @@
       "description": "Jump straight into the tower defence game",
       "url": "./game/",
       "icons": [
-        { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
       ]
     },
     {
@@ -49,7 +53,11 @@
       "description": "Open the one page resume",
       "url": "./resume/shrestha_resume.pdf",
       "icons": [
-        { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
       ]
     },
     {
@@ -58,7 +66,11 @@
       "description": "See the projects",
       "url": "./#work",
       "icons": [
-        { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
       ]
     }
   ]
