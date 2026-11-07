@@ -1,7 +1,7 @@
 // Shrestha portfolio — service worker
 // Keeps the app shell so the page opens offline and can be installed.
 
-var CACHE_NAME = 'shrestha-portfolio-v42';
+var CACHE_NAME = 'shrestha-portfolio-v43';
 
 var CORE_FILES = [
   './',
