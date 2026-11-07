@@ -885,7 +885,7 @@ window.__PROJECTS = PROJECTS;
       type: 'text', ph: 'Your name', max: 10, min: 1, count: true },
     { q: 'How old are you?', hint: 'It goes into the About section and the terminal. 5 or older.',
       type: 'number', ph: '14', minAge: 5, maxAge: 120 },
-    { q: 'Are you a boy or a girl?', hint: 'The little character in the About section changes to match you.',
+    { q: 'Male or female?', hint: 'The little character in the About section changes to match you.',
       type: 'choice', ph: '' },
     { q: 'Describe yourself in one line', hint: 'This replaces the tagline under the world. Between 40 and 50 characters.',
       type: 'text', ph: 'I build strange things on the internet.', max: 50, min: 40, count: true }
