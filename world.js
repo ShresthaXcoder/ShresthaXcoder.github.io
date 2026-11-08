@@ -896,9 +896,10 @@ function build(THREE, PP){
   })();
 
   const fwMesh = new THREE.Points(fwGeo, new THREE.PointsMaterial({
-    size: 1.6, map: fwTex, vertexColors: true, transparent: true, opacity: 1,
-    depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
+    size: 3.0, map: fwTex, vertexColors: true, transparent: true, opacity: 1,
+    depthWrite: false, blending: THREE.NormalBlending, sizeAttenuation: true
   }));
+  fwMesh.frustumCulled = false;   // points move every frame; the cached bounds lie
   scene.add(fwMesh);
 
   const fwBits = [];
@@ -913,7 +914,7 @@ function build(THREE, PP){
   ];
 
   const rockets = [];
-  let fwLaunchWait = 0.5;
+  let fwLaunchWait = 0.15;
 
   function fwSpawn(x, y, z, vx, vy, vz, life, r, g, b, grav, drag) {
     for (let i = 0; i < FW_MAX; i++) {
@@ -943,9 +944,9 @@ function build(THREE, PP){
 
   function fwUpdate(dt) {
     fwLaunchWait -= dt;
-    if (fwLaunchWait <= 0 && rockets.length < 4) {
+    if (fwLaunchWait <= 0 && rockets.length < 5) {
       fwLaunch();
-      fwLaunchWait = 0.45 + Math.random() * 0.9;
+      fwLaunchWait = 0.3 + Math.random() * 0.75;
     }
 
     for (let i = rockets.length - 1; i >= 0; i--) {
@@ -966,7 +967,7 @@ function build(THREE, PP){
       }
 
       if (rk.vy <= 0 || rk.y >= rk.target) {
-        const n = 58 + Math.floor(Math.random() * 24);
+        const n = 72 + Math.floor(Math.random() * 30);
         for (let k = 0; k < n; k++) {
           const th = Math.random() * Math.PI * 2;
           const ph = Math.acos(Math.random() * 2 - 1);
@@ -1515,7 +1516,7 @@ function build(THREE, PP){
 
   /* ---------- world scale ---------- */
   const world = new THREE.Group();
-  const wparts = [island, clouds, nameGroup, stars, leafMesh, sparkles, sunSprite, sunDisc].concat(birds, WORLD_EXTRA);
+  const wparts = [island, clouds, nameGroup, stars, leafMesh, fwMesh, sparkles, sunSprite, sunDisc].concat(birds, WORLD_EXTRA);
   wparts.forEach(o=>scene.remove(o));
   wparts.forEach(o=>world.add(o));
   scene.add(world);
