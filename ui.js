@@ -1784,18 +1784,6 @@ window.__PROJECTS = PROJECTS;
     const one = items.map(x=>'<span>'+x+'</span>').join('');
     mq.innerHTML = one + one; }
 
-  /* cursor */
-  const cur = $('#cursor'), ring = $('#cursorRing');
-  if(cur && matchMedia('(pointer:fine)').matches){
-    let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
-    addEventListener('pointermove', e=>{ mx=e.clientX; my=e.clientY;
-      cur.style.transform='translate('+mx+'px,'+my+'px)'; cur.classList.add('on'); ring.classList.add('on'); });
-    addEventListener('pointerleave', ()=>{ cur.classList.remove('on'); ring.classList.remove('on'); });
-    (function loop(){ rx+=(mx-rx)*0.16; ry+=(my-ry)*0.16; ring.style.transform='translate('+rx+'px,'+ry+'px)'; requestAnimationFrame(loop); })();
-    document.addEventListener('pointerover', e=>{ const t=e.target;
-      const hot = t && t.closest ? t.closest('a,button,.card,.chip') : null; cur.classList.toggle('hot', !!hot); });
-  }
-
   /* toast */
   const toastEl = $('#toast'); let toastT;
   function toast(msg){ if(!toastEl) return; toastEl.textContent = msg; toastEl.classList.add('show');
@@ -2452,20 +2440,6 @@ window.__PROJECTS = PROJECTS;
   const sio = new IntersectionObserver(es=>{ es.forEach(e=>{ if(e.isIntersecting){
     const h = e.target.querySelector('h2.title'); if(h) scrambleEl(h); sio.unobserve(e.target); } }); }, {threshold:0.35});
   $$('.reveal').forEach(el=>{ if(el.querySelector('h2.title')) sio.observe(el); });
-
-  /* ---------- 13. cursor voxel trail ---------- */
-  if(matchMedia('(pointer:fine)').matches && !reduce){
-    const N = 7, dots = [];
-    for(let i=0;i<N;i++){ const d=document.createElement('div'); d.className='trail';
-      d.style.opacity = String(0.42 - i*0.05); d.style.transform='translate(-100px,-100px)';
-      document.body.appendChild(d); dots.push({el:d, x:0, y:0}); }
-    let tx=0, ty=0, seen=false;
-    addEventListener('pointermove', e=>{ tx=e.clientX; ty=e.clientY; seen=true; });
-    (function trail(){ if(seen){ let px=tx, py=ty;
-      dots.forEach(d=>{ d.x += (px-d.x)*0.32; d.y += (py-d.y)*0.32;
-        d.el.style.transform = 'translate('+(d.x-4.5)+'px,'+(d.y-4.5)+'px)'; px=d.x; py=d.y; }); }
-      requestAnimationFrame(trail); })();
-  }
 
   /* ---------- 14. lightbox navigation + share ---------- */
   const mShot = $('#mShot');
