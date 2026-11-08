@@ -1249,6 +1249,58 @@ window.__PROJECTS = PROJECTS;
     rvRefresh();
   }
 
+  /* ---------- the voxel cursor ---------- */
+  const voxelCur = $('#voxelCursor');
+  if (voxelCur && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+    document.body.classList.add('vc-on');
+
+    let curX = window.innerWidth / 2;
+    let curY = window.innerHeight / 2;
+    let aimX = curX;
+    let aimY = curY;
+    let spin = 0;
+    let seen = false;
+
+    function vcMove(e) {
+      aimX = e.clientX;
+      aimY = e.clientY;
+      if (!seen) {
+        seen = true;
+        curX = aimX;
+        curY = aimY;
+        voxelCur.classList.add('on');
+      }
+    }
+    window.addEventListener('mousemove', vcMove, { passive: true });
+    document.addEventListener('mouseleave', function () { voxelCur.classList.remove('on'); });
+    document.addEventListener('mouseenter', function () { if (seen) { voxelCur.classList.add('on'); } });
+
+    // it grows and turns gold over anything clickable
+    document.addEventListener('mouseover', function (e) {
+      const hot = e.target.closest('a, button, input, textarea, [data-open], [data-case], [data-gender], [data-char], .clk');
+      voxelCur.classList.toggle('hot', !!hot);
+    });
+
+    function vcLoop() {
+      const dx = aimX - curX;
+      const dy = aimY - curY;
+      curX += dx * 0.3;
+      curY += dy * 0.3;
+
+      const speed = Math.min(Math.sqrt(dx * dx + dy * dy), 60);
+      spin += 0.5 + speed * 0.5;                 // always turning, faster in motion
+      const scale = 1 + Math.min(speed / 80, 0.5);
+
+      voxelCur.style.transform =
+        'translate3d(' + curX.toFixed(1) + 'px,' + curY.toFixed(1) + 'px,0)' +
+        ' rotate(' + spin.toFixed(1) + 'deg)' +
+        ' scale(' + scale.toFixed(2) + ')';
+
+      requestAnimationFrame(vcLoop);
+    }
+    requestAnimationFrame(vcLoop);
+  }
+
   /* ---------- the dev test and its certificate ---------- */
   const DEV_QUESTIONS = [
     { t: 'Python', q: 'What does len("hello") return?', o: ['4', '5', '6', 'It errors'], a: 1 },

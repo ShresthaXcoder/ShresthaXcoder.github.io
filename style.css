@@ -1226,3 +1226,16 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
   0%, 100% { filter: drop-shadow(0 0 6px rgba(255,160,60,.35)); }
   50% { filter: drop-shadow(0 0 16px rgba(255,190,90,.75)); }
 }
+
+/* ---------- the voxel cursor ---------- */
+.voxel-cursor { position: fixed; left: 0; top: 0; width: 34px; height: 34px;
+  margin: -17px 0 0 -17px; z-index: 99999; pointer-events: none;
+  opacity: 0; transition: opacity .25s; will-change: transform; }
+.voxel-cursor.on { opacity: 1; }
+.voxel-cursor svg { display: block; filter: drop-shadow(0 6px 10px rgba(0,0,0,.28)); }
+.voxel-cursor.hot svg polygon:nth-child(1) { fill: #ffe0a3; }
+.voxel-cursor.hot svg polygon:nth-child(2) { fill: #ffb03a; }
+.voxel-cursor.hot svg polygon:nth-child(3) { fill: #d98618; }
+@media (pointer: fine) {
+  body.vc-on, body.vc-on * { cursor: none !important; }
+}
