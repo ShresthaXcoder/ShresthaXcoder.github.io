@@ -1216,8 +1216,8 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
 }
 
 /* ---------- the voxel cursor ---------- */
-.voxel-cursor { position: fixed; left: 0; top: 0; width: 34px; height: 34px;
-  margin: -17px 0 0 -17px; z-index: 99999; pointer-events: none;
+.voxel-cursor { position: fixed; left: 0; top: 0; width: 42px; height: 42px;
+  margin: -21px 0 0 -21px; z-index: 99999; pointer-events: none;
   opacity: 0; transition: opacity .25s; will-change: transform; }
 .voxel-cursor.on { opacity: 1; }
 .voxel-cursor svg { display: block; filter: drop-shadow(0 6px 10px rgba(0,0,0,.28)); }

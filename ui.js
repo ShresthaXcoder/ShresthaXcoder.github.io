@@ -1275,11 +1275,14 @@ window.__PROJECTS = PROJECTS;
         for (let b = 0; b < 3; b++) {
           let quad;
           if (kind === 'top') {
+            // the top face sits at j = 3
             quad = [proj(a, 3, b), proj(a + 1, 3, b), proj(a + 1, 3, b + 1), proj(a, 3, b + 1)];
           } else if (kind === 'left') {
-            quad = [proj(0, a, b), proj(0, a, b + 1), proj(0, a + 1, b + 1), proj(0, a + 1, b)];
+            // the left face is k = 3 (the one facing the camera, not the back)
+            quad = [proj(a, b, 3), proj(a + 1, b, 3), proj(a + 1, b + 1, 3), proj(a, b + 1, 3)];
           } else {
-            quad = [proj(a, b, 3), proj(a, b + 1, 3), proj(a + 1, b + 1, 3), proj(a + 1, b, 3)];
+            // the right face is i = 3
+            quad = [proj(3, b, a), proj(3, b, a + 1), proj(3, b + 1, a + 1), proj(3, b + 1, a)];
           }
           const el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
           el.setAttribute('points', quad.map(function (p) {
@@ -1319,7 +1322,7 @@ window.__PROJECTS = PROJECTS;
     let curY = window.innerHeight / 2;
     let aimX = curX;
     let aimY = curY;
-    let spin = 0;
+    let tilt = 0;
     let seen = false;
     let scramble = 0;        // 0 = solved, 1 = fully scrambled
 
@@ -1354,12 +1357,16 @@ window.__PROJECTS = PROJECTS;
       const target = Math.min(speed / 14, 1);
       scramble += (target - scramble) * (target > scramble ? 0.16 : 0.055);
 
-      spin += 0.4 + speed * 0.45;
-      const scale = (voxelCur.classList.contains('hot') ? 1.18 : 1) + Math.min(speed / 80, 0.45);
+      // a gentle lean with the movement — never a full spin, or the
+      // isometric cube turns into a skewed wedge and loses its faces
+      const wantTilt = Math.max(-11, Math.min(11, dx * 0.35));
+      tilt += (wantTilt - tilt) * 0.18;
+
+      const scale = (voxelCur.classList.contains('hot') ? 1.18 : 1) + Math.min(speed / 90, 0.35);
 
       voxelCur.style.transform =
         'translate3d(' + curX.toFixed(1) + 'px,' + curY.toFixed(1) + 'px,0)' +
-        ' rotate(' + spin.toFixed(1) + 'deg)' +
+        ' rotate(' + tilt.toFixed(1) + 'deg)' +
         ' scale(' + scale.toFixed(2) + ')';
 
       // paint each sticker between its solved and scrambled colour
