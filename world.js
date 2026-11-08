@@ -871,13 +871,13 @@ function build(THREE, PP){
   scene.add(lanterns); WORLD_EXTRA.push(lanterns);
 
   /* 5. fireworks (night) */
-  const FWN=30;
-  const fireworks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.34,0.34,0.34),
+  const FWN=56;
+  const fireworks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.55,0.55,0.55),
     new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0, depthWrite:false}), FWN);
-  { const c=new THREE.Color(); for(let i=0;i<FWN;i++){ c.setHSL(Math.random(),0.85,0.62); fireworks.setColorAt(i,c); } }
+  { const c=new THREE.Color(); for(let i=0;i<FWN;i++){ c.setHSL(Math.random(),0.95,0.66); fireworks.setColorAt(i,c); } }
   const fwData=[]; for(let i=0;i<FWN;i++) fwData.push({dx:(Math.random()-0.5)*2, dy:(Math.random()-0.5)*2, dz:(Math.random()-0.5)*2});
   scene.add(fireworks); WORLD_EXTRA.push(fireworks);
-  let fwWait = 5+Math.random()*6, fwLife = 0; const fwPos = new THREE.Vector3();
+  let fwWait = 0.8+Math.random()*0.8, fwLife = 0; const fwPos = new THREE.Vector3();
 
   /* 6. airplane with motion trail */
   const plane = new THREE.Group();
@@ -1897,13 +1897,14 @@ function build(THREE, PP){
 
     // fireworks at night
     fwWait -= 0.016;
-    if(fwWait<=0 && fwLife<=0 && night>0.5){ fwLife=1; fwWait=3+Math.random()*6;
-      fwPos.set(-24+Math.random()*48, 20+Math.random()*9, -26+Math.random()*30); }
-    if(fwLife>0){ fwLife -= 0.016; const k=1-fwLife, rad=k*7;
+    if(fwWait<=0 && fwLife<=0){ fwLife=1; fwWait=0.9+Math.random()*1.7;
+      // bursts sit behind and around the SHRESTHA letters
+      fwPos.set(-17+Math.random()*34, 11+Math.random()*9, -9+Math.random()*8); }
+    if(fwLife>0){ fwLife -= 0.016; const k=1-fwLife, rad=k*8.5;
       const m=new THREE.Matrix4();
       fwData.forEach(function(d,i){ m.makeTranslation(fwPos.x+d.dx*rad, fwPos.y+d.dy*rad - k*k*3, fwPos.z+d.dz*rad); fireworks.setMatrixAt(i,m); });
       fireworks.instanceMatrix.needsUpdate = true;
-      fireworks.material.opacity = Math.sin(k*Math.PI)*0.95; }
+      fireworks.material.opacity = Math.sin(k*Math.PI)*1.0; }
     else fireworks.material.opacity = 0;
 
     // airplane circles the sky
