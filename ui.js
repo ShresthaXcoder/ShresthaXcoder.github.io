@@ -259,7 +259,6 @@ window.__PROJECTS = PROJECTS;
   /* ---------- badges: little things to find ---------- */
   const BADGES = [
     { id: 'hello',  ico: '\u2726', title: 'Say hello',      hint: 'Double-tap the screen' },
-    { id: 'pet',    ico: '\u2665', title: 'Cat person',     hint: 'Pet the cat ten times' },
     { id: 'laser',  ico: '\u25C9', title: 'Laser master',   hint: 'Turn on the laser pointer' },
     { id: 'travel', ico: '\u25F7', title: 'Time traveller', hint: 'Move the time machine' },
     { id: 'pose',   ico: '\u270E', title: 'Model',          hint: 'Change the boy\u2019s pose' },
