@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=58" />
+<link rel="stylesheet" href="style.css?v=59" />
 </head>
 <body>
 
@@ -651,11 +651,7 @@ setTimeout(function () {
 
 
 <div class="voxel-cursor" id="voxelCursor" aria-hidden="true">
-  <svg viewBox="0 0 40 40" width="34" height="34">
-    <polygon points="20,3 37,12.5 20,22 3,12.5" fill="#ffb08a"/>
-    <polygon points="3,12.5 20,22 20,38 3,28.5" fill="#e0552f"/>
-    <polygon points="37,12.5 20,22 20,38 37,28.5" fill="#a83518"/>
-  </svg>
+  <svg id="vcSvg" viewBox="0 0 46 46" width="38" height="38"></svg>
 </div>
 
 <div class="laser-dot" id="laserDot" aria-hidden="true"></div>
@@ -760,9 +756,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=58"></script>
-<script type="module" src="intro.js?v=58"></script>
+<script type="module" src="world.js?v=59"></script>
+<script type="module" src="intro.js?v=59"></script>
 
-<script src="ui.js?v=58"></script>
+<script src="ui.js?v=59"></script>
 </body>
 </html>

@@ -1248,10 +1248,72 @@ window.__PROJECTS = PROJECTS;
     rvRefresh();
   }
 
-  /* ---------- the voxel cursor ---------- */
+  /* ---------- the Rubik's cube cursor ---------- */
   const voxelCur = $('#voxelCursor');
   if (voxelCur && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
     document.body.classList.add('vc-on');
+
+    const svg = $('#vcSvg');
+    const SOLVED = ['#f4f4f4', '#3fa34d', '#d43d2f'];   // top, left, right
+    const SCRAMBLE = ['#f4f4f4', '#3fa34d', '#d43d2f', '#f2c14e', '#2f6fd0', '#ef7f2a'];
+    const U = 11;      // half width of the top diamond
+    const V = 6.4;     // half height
+    const D = 13;      // depth of the side faces
+    const OX = 23, OY = 23;
+
+    // project a point on a 3x3x3 grid into the isometric view
+    function proj(i, j, k) {
+      return [
+        OX + (i - k) * (U / 3),
+        OY + (i + k) * (V / 3) - j * (D / 3)
+      ];
+    }
+
+    const stickers = [];
+    function face(kind, colour) {
+      for (let a = 0; a < 3; a++) {
+        for (let b = 0; b < 3; b++) {
+          let quad;
+          if (kind === 'top') {
+            quad = [proj(a, 3, b), proj(a + 1, 3, b), proj(a + 1, 3, b + 1), proj(a, 3, b + 1)];
+          } else if (kind === 'left') {
+            quad = [proj(0, a, b), proj(0, a, b + 1), proj(0, a + 1, b + 1), proj(0, a + 1, b)];
+          } else {
+            quad = [proj(a, b, 3), proj(a, b + 1, 3), proj(a + 1, b + 1, 3), proj(a + 1, b, 3)];
+          }
+          const el = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          el.setAttribute('points', quad.map(function (p) {
+            return p[0].toFixed(1) + ',' + p[1].toFixed(1);
+          }).join(' '));
+          el.setAttribute('fill', colour);
+          el.setAttribute('stroke', 'rgba(12,20,32,.55)');
+          el.setAttribute('stroke-width', '0.7');
+          el.setAttribute('stroke-linejoin', 'round');
+          svg.appendChild(el);
+          stickers.push({
+            el: el,
+            solved: colour,
+            mixed: SCRAMBLE[Math.floor(Math.random() * SCRAMBLE.length)],
+            th: Math.random() * 0.7,
+            cur: colour
+          });
+        }
+      }
+    }
+
+    face('top', SOLVED[0]);
+    face('left', SOLVED[1]);
+    face('right', SOLVED[2]);
+
+    function hexToRgb(h) {
+      return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    }
+    function mixHex(a, b, t) {
+      const A = hexToRgb(a), B = hexToRgb(b);
+      return 'rgb(' + Math.round(A[0] + (B[0] - A[0]) * t) + ',' +
+                      Math.round(A[1] + (B[1] - A[1]) * t) + ',' +
+                      Math.round(A[2] + (B[2] - A[2]) * t) + ')';
+    }
 
     let curX = window.innerWidth / 2;
     let curY = window.innerHeight / 2;
@@ -1259,8 +1321,9 @@ window.__PROJECTS = PROJECTS;
     let aimY = curY;
     let spin = 0;
     let seen = false;
+    let scramble = 0;        // 0 = solved, 1 = fully scrambled
 
-    function vcMove(e) {
+    window.addEventListener('mousemove', function (e) {
       aimX = e.clientX;
       aimY = e.clientY;
       if (!seen) {
@@ -1269,14 +1332,13 @@ window.__PROJECTS = PROJECTS;
         curY = aimY;
         voxelCur.classList.add('on');
       }
-    }
-    window.addEventListener('mousemove', vcMove, { passive: true });
+    }, { passive: true });
+
     document.addEventListener('mouseleave', function () { voxelCur.classList.remove('on'); });
     document.addEventListener('mouseenter', function () { if (seen) { voxelCur.classList.add('on'); } });
 
-    // it grows and turns gold over anything clickable
     document.addEventListener('mouseover', function (e) {
-      const hot = e.target.closest('a, button, input, textarea, [data-open], [data-case], [data-gender], [data-char], .clk');
+      const hot = e.target.closest('a, button, input, textarea, [data-open], [data-case], [data-gender], [data-char]');
       voxelCur.classList.toggle('hot', !!hot);
     });
 
@@ -1287,13 +1349,31 @@ window.__PROJECTS = PROJECTS;
       curY += dy * 0.3;
 
       const speed = Math.min(Math.sqrt(dx * dx + dy * dy), 60);
-      spin += 0.5 + speed * 0.5;                 // always turning, faster in motion
-      const scale = 1 + Math.min(speed / 80, 0.5);
+
+      // moving scrambles it, standing still solves it again
+      const target = Math.min(speed / 14, 1);
+      scramble += (target - scramble) * (target > scramble ? 0.16 : 0.055);
+
+      spin += 0.4 + speed * 0.45;
+      const scale = (voxelCur.classList.contains('hot') ? 1.18 : 1) + Math.min(speed / 80, 0.45);
 
       voxelCur.style.transform =
         'translate3d(' + curX.toFixed(1) + 'px,' + curY.toFixed(1) + 'px,0)' +
         ' rotate(' + spin.toFixed(1) + 'deg)' +
         ' scale(' + scale.toFixed(2) + ')';
+
+      // paint each sticker between its solved and scrambled colour
+      for (let i = 0; i < stickers.length; i++) {
+        const s = stickers[i];
+        let t = (scramble - s.th * 0.55) / 0.45;
+        if (t < 0) { t = 0; }
+        if (t > 1) { t = 1; }
+        const fill = mixHex(s.solved, s.mixed, t);
+        if (fill !== s.cur) {
+          s.cur = fill;
+          s.el.setAttribute('fill', fill);
+        }
+      }
 
       requestAnimationFrame(vcLoop);
     }
