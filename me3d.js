@@ -20,6 +20,9 @@ const ME3D = (async function () {
     return;
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x060b14);
@@ -215,11 +218,42 @@ const ME3D = (async function () {
   pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
   pGeo.setAttribute('color', new THREE.BufferAttribute(pCol, 3));
   const pMesh = new THREE.Points(pGeo, new THREE.PointsMaterial({
-    size: 1.5, map: glowTex, vertexColors: true, transparent: true, opacity: 1,
+    size: 1.7, map: glowTex, vertexColors: true, transparent: true, opacity: 1,
     depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
   }));
   pMesh.frustumCulled = false;
   scene.add(pMesh);
+
+  // sparks: small, fast, additive
+  const sPos = new Float32Array(P_MAX * 3);
+  const sCol = new Float32Array(P_MAX * 3);
+  for (let i = 0; i < P_MAX; i++) { sPos[i * 3 + 1] = -999; }
+  const sGeo = new THREE.BufferGeometry();
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+  sGeo.setAttribute('color', new THREE.BufferAttribute(sCol, 3));
+  const sMesh = new THREE.Points(sGeo, new THREE.PointsMaterial({
+    size: 0.55, map: glowTex, vertexColors: true, transparent: true, opacity: 1,
+    depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
+  }));
+  sMesh.frustumCulled = false;
+  scene.add(sMesh);
+
+  // smoke: DARK and normally blended, or it is invisible on a night sky
+  const kPos = new Float32Array(P_MAX * 3);
+  const kCol = new Float32Array(P_MAX * 3);
+  for (let i = 0; i < P_MAX; i++) { kPos[i * 3 + 1] = -999; }
+  const kGeo = new THREE.BufferGeometry();
+  kGeo.setAttribute('position', new THREE.BufferAttribute(kPos, 3));
+  kGeo.setAttribute('color', new THREE.BufferAttribute(kCol, 3));
+  const kMesh = new THREE.Points(kGeo, new THREE.PointsMaterial({
+    size: 5.5, map: glowTex, vertexColors: true, transparent: true, opacity: 0.85,
+    depthWrite: false, sizeAttenuation: true
+  }));
+  kMesh.frustumCulled = false;
+  scene.add(kMesh);
+
+  const sparkLife = new Float32Array(P_MAX), sparkMax = new Float32Array(P_MAX), sVel = new Float32Array(P_MAX * 3);
+  const smokeLife = new Float32Array(P_MAX), smokeMax = new Float32Array(P_MAX), kVel = new Float32Array(P_MAX * 3);
 
   const bits = [];
   for (let i = 0; i < P_MAX; i++) {
@@ -286,7 +320,11 @@ const ME3D = (async function () {
     });
     paintHouse();
     houseMesh.visible = true;
-    for (let i = 0; i < P_MAX; i++) { bits[i].life = 0; pPos[i * 3 + 1] = -999; pCol[i * 3] = pCol[i * 3 + 1] = pCol[i * 3 + 2] = 0; }
+    for (let i = 0; i < P_MAX; i++) {
+      bits[i].life = 0; pPos[i * 3 + 1] = -999; pCol[i * 3] = pCol[i * 3 + 1] = pCol[i * 3 + 2] = 0;
+      sparkLife[i] = 0; sPos[i * 3 + 1] = -999; sCol[i * 3] = sCol[i * 3 + 1] = sCol[i * 3 + 2] = 0;
+      smokeLife[i] = 0; kPos[i * 3 + 1] = -999; kCol[i * 3] = kCol[i * 3 + 1] = kCol[i * 3 + 2] = 0;
+    }
     flash.material.opacity = 0;
     ballMat.opacity = 0;
     ringMat.opacity = 0;
@@ -338,6 +376,41 @@ const ME3D = (async function () {
     guy.position.z = 5.2;
     armR.rotation.z = 0.5;
     armL.rotation.z = -0.5;
+
+    // sparks: fast, small, additive
+    for (let i = 0; i < 220; i++) {
+      const th = Math.random() * Math.PI * 2;
+      const ph = Math.acos(Math.random() * 2 - 1);
+      const sp = 12 + Math.random() * 26;
+      for (let j = 0; j < P_MAX; j++) {
+        if (sparkLife[j] > 0) { continue; }
+        sparkLife[j] = 0.5 + Math.random() * 0.9;
+        sparkMax[j] = sparkLife[j];
+        sPos[j * 3] = 0; sPos[j * 3 + 1] = 3; sPos[j * 3 + 2] = 0;
+        sVel[j * 3] = Math.sin(ph) * Math.cos(th) * sp;
+        sVel[j * 3 + 1] = Math.cos(ph) * sp + 6;
+        sVel[j * 3 + 2] = Math.sin(ph) * Math.sin(th) * sp;
+        break;
+      }
+    }
+    // smoke: dark, slow, lingers
+    for (let i = 0; i < 90; i++) {
+      const th = Math.random() * Math.PI * 2;
+      const sp = 0.8 + Math.random() * 4;
+      for (let j = 0; j < P_MAX; j++) {
+        if (smokeLife[j] > 0) { continue; }
+        smokeLife[j] = 2.2 + Math.random() * 2.4;
+        smokeMax[j] = smokeLife[j];
+        kPos[j * 3] = (Math.random() - 0.5) * 3;
+        kPos[j * 3 + 1] = 2.5 + Math.random() * 3;
+        kPos[j * 3 + 2] = (Math.random() - 0.5) * 3;
+        sVel[j * 3 + 0] = 0;
+        kVel[j * 3] = Math.cos(th) * sp;
+        kVel[j * 3 + 1] = 1.6 + Math.random() * 3.4;
+        kVel[j * 3 + 2] = Math.sin(th) * sp;
+        break;
+      }
+    }
 
     if (btn) { btn.textContent = 'Again'; btn.classList.remove('armed'); }
     if (cap) { cap.textContent = 'Dhurandhar.'; }
@@ -433,10 +506,48 @@ const ME3D = (async function () {
       p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
       const a = Math.max(p.life / p.max, 0);
       pPos[i * 3] = p.x; pPos[i * 3 + 1] = p.y; pPos[i * 3 + 2] = p.z;
-      pCol[i * 3] = p.r * a; pCol[i * 3 + 1] = p.g * a; pCol[i * 3 + 2] = p.b * a;
+      // a fire particle cools as it ages: white-hot, then yellow, orange, red, ember
+      const heat = a;
+      const fr = Math.min(1, heat * 1.9);
+      const fg = Math.max(0, Math.min(1, (heat - 0.22) * 1.7));
+      const fb = Math.max(0, Math.min(1, (heat - 0.62) * 2.2));
+      pCol[i * 3] = fr * p.r;
+      pCol[i * 3 + 1] = fg * p.g;
+      pCol[i * 3 + 2] = fb * p.b;
     }
     pGeo.attributes.position.needsUpdate = true;
     pGeo.attributes.color.needsUpdate = true;
+
+    // sparks
+    for (let i = 0; i < P_MAX; i++) {
+      if (sparkLife[i] <= 0) { continue; }
+      sparkLife[i] -= dt;
+      if (sparkLife[i] <= 0) { sPos[i * 3 + 1] = -999; sCol[i * 3] = sCol[i * 3 + 1] = sCol[i * 3 + 2] = 0; continue; }
+      sVel[i * 3 + 1] -= 15 * dt;
+      sPos[i * 3] += sVel[i * 3] * dt;
+      sPos[i * 3 + 1] += sVel[i * 3 + 1] * dt;
+      sPos[i * 3 + 2] += sVel[i * 3 + 2] * dt;
+      const sa = sparkLife[i] / sparkMax[i];
+      sCol[i * 3] = sa; sCol[i * 3 + 1] = sa * 0.82; sCol[i * 3 + 2] = sa * 0.45;
+    }
+    sGeo.attributes.position.needsUpdate = true;
+    sGeo.attributes.color.needsUpdate = true;
+
+    // smoke
+    for (let i = 0; i < P_MAX; i++) {
+      if (smokeLife[i] <= 0) { continue; }
+      smokeLife[i] -= dt;
+      if (smokeLife[i] <= 0) { kPos[i * 3 + 1] = -999; kCol[i * 3] = kCol[i * 3 + 1] = kCol[i * 3 + 2] = 0; continue; }
+      kVel[i * 3] *= 0.992; kVel[i * 3 + 2] *= 0.992;
+      kPos[i * 3] += kVel[i * 3] * dt;
+      kPos[i * 3 + 1] += kVel[i * 3 + 1] * dt;
+      kPos[i * 3 + 2] += kVel[i * 3 + 2] * dt;
+      const ka = smokeLife[i] / smokeMax[i];
+      const g2 = (0.10 + 0.16 * (1 - ka)) * Math.min(1, ka * 2.2);
+      kCol[i * 3] = g2; kCol[i * 3 + 1] = g2; kCol[i * 3 + 2] = g2 * 1.06;
+    }
+    kGeo.attributes.position.needsUpdate = true;
+    kGeo.attributes.color.needsUpdate = true;
 
     if (shake > 0) {
       shake = Math.max(0, shake - dt * 1.2);
