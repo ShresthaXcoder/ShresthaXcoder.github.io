@@ -21,22 +21,31 @@ const ME3D = (async function () {
   }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.4;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x060b14);
-  scene.fog = new THREE.Fog(0x0a1424, 46, 120);
+  scene.background = new THREE.Color(0x0b1626);
+  scene.fog = new THREE.Fog(0x101f33, 55, 150);
 
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400);
-  camera.position.set(6, 6.4, 20);
-  camera.lookAt(0, 3.6, 0);
+  camera.position.set(4.6, 4.4, 14.5);
+  camera.lookAt(0, 2.4, 0);
 
   /* ---------- lights ---------- */
-  scene.add(new THREE.HemisphereLight(0x4a6a92, 0x0a0f16, 0.9));
-  const moonLight = new THREE.DirectionalLight(0xbcd2ff, 1.5);
+  scene.add(new THREE.AmbientLight(0x8fb4e0, 0.85));
+  scene.add(new THREE.HemisphereLight(0x9dc0ea, 0x24301f, 2.2));
+  const moonLight = new THREE.DirectionalLight(0xcfe0ff, 3.2);
   moonLight.position.set(-14, 18, 10);
   scene.add(moonLight);
+  // warm bounce from the front so he is never a silhouette
+  const fill = new THREE.DirectionalLight(0xffd9a8, 1.6);
+  fill.position.set(8, 6, 14);
+  scene.add(fill);
+  // cold rim from behind, to separate him from the night
+  const rim = new THREE.DirectionalLight(0x7fb6ff, 1.4);
+  rim.position.set(-6, 8, -12);
+  scene.add(rim);
   const windowLight = new THREE.PointLight(0xffb85c, 9, 26, 2);
   windowLight.position.set(0, 2.6, 3.2);
   scene.add(windowLight);
@@ -86,7 +95,7 @@ const ME3D = (async function () {
   /* ---------- ground ---------- */
   const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
-    new THREE.MeshLambertMaterial({ color: 0x1b2419 })
+    new THREE.MeshLambertMaterial({ color: 0x2c3a26 })
   );
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
@@ -130,7 +139,7 @@ const ME3D = (async function () {
       for (let z = -3; z <= 3; z++) {
         const edge = Math.abs(x) === 4 || Math.abs(z) === 3;
         if (!edge) { continue; }
-        if (y <= 2 && x === 0 && z === 3) { continue; }   // doorway
+        if (y <= 3 && x === 0 && z === 3) { continue; }   // doorway
         push(x, y, z, WALL);
       }
     }
@@ -174,39 +183,85 @@ const ME3D = (async function () {
   scene.add(doorGroup);
 
   /* ---------- him ---------- */
-  const SKIN = 0xd9a06b, SUIT = 0x1a2231, SHIRT = 0xe8eef5, TIE = 0x8c2b2b;
+  const SKIN = 0xd9a06b, SUIT = 0x232d40, SUIT_D = 0x161e2c, SHIRT = 0xeaf0f7, TIE = 0x9b2f2f;
   const guy = new THREE.Group();
-  const body = [];
-  for (let y = 0; y < 3; y++) { for (let x = -1; x <= 1; x++) { body.push({ x: x, y: y, z: 0, color: SUIT }); } }
-  for (let y = 3; y < 7; y++) { for (let x = -1; x <= 1; x++) { body.push({ x: x, y: y, z: 0, color: SUIT }); } }
-  body.push({ x: 0, y: 4, z: 1, color: SHIRT }); body.push({ x: 0, y: 5, z: 1, color: TIE });
-  body.push({ x: 0, y: 3, z: 1, color: SHIRT });
-  for (let y = 7; y < 10; y++) { for (let x = -1; x <= 1; x++) { for (let z = -1; z <= 0; z++) { body.push({ x: x, y: y, z: z, color: SKIN }); } } }
-  for (let x = -1; x <= 1; x++) { for (let z = -1; z <= 0; z++) { body.push({ x: x, y: 10, z: z, color: 0x1b1410 }); } }
-  for (let x = -1; x <= 1; x++) { body.push({ x: x, y: 8, z: 1, color: 0x0b0f15 }); }
-  guy.add(blocks(body));
+  const gb = [];
+  function put(x, y, z, c) { gb.push({ x: x, y: y, z: z, color: c }); }
 
+  // shoes
+  put(-1, 0, 0, 0x090c11); put(1, 0, 0, 0x090c11);
+  put(-1, 0, 1, 0x090c11); put(1, 0, 1, 0x090c11);
+  // legs
+  for (let y = 1; y <= 4; y++) { put(-1, y, 0, SUIT_D); put(1, y, 0, SUIT_D); }
+  // hips
+  for (let x = -1; x <= 1; x++) { put(x, 5, 0, SUIT_D); }
+  // torso, with a taper
+  for (let y = 6; y <= 9; y++) {
+    const w = y >= 8 ? 2 : 1;
+    for (let x = -w; x <= w; x++) { put(x, y, 0, SUIT); }
+  }
+  // shirt + tie
+  put(0, 9, 1, SHIRT); put(0, 8, 1, SHIRT); put(0, 7, 1, SHIRT);
+  put(0, 9, 1, SHIRT); put(0, 8, 1, TIE); put(0, 7, 1, TIE);
+  // lapels
+  put(-1, 9, 1, SUIT_D); put(1, 9, 1, SUIT_D);
+  put(-1, 8, 1, SUIT_D); put(1, 8, 1, SUIT_D);
+  // shoulders
+  put(-2, 9, 0, SUIT); put(2, 9, 0, SUIT);
+  put(-2, 8, 0, SUIT); put(2, 8, 0, SUIT);
+  // neck
+  put(0, 10, 0, 0xc08f5e);
+  // head
+  for (let y = 11; y <= 13; y++) {
+    for (let x = -1; x <= 1; x++) {
+      for (let z = -1; z <= 0; z++) { put(x, y, z, SKIN); }
+    }
+  }
+  put(0, 11, 1, 0xc08f5e);
+  // hair
+  for (let x = -1; x <= 1; x++) {
+    for (let z = -1; z <= 0; z++) { put(x, 14, z, 0x1a1310); }
+    put(x, 13, -1, 0x1a1310);
+  }
+  put(-1, 13, 0, 0x1a1310); put(1, 13, 0, 0x1a1310);
+  // shades, with a glint
+  put(-1, 12, 1, 0x090c11); put(0, 12, 1, 0x14181f); put(1, 12, 1, 0x090c11);
+  put(-1, 12, 1, 0x2b3442);
+  // jaw line
+  put(-1, 11, 1, 0xc08f5e); put(1, 11, 1, 0xc08f5e);
+
+  guy.add(blocks(gb));
+
+  // right arm — shoulder, forearm, hand
   const armR = new THREE.Group();
-  armR.add(blocks([{ x: 0, y: 0, z: 0, color: SUIT }, { x: 0, y: 1, z: 0, color: SUIT }, { x: 0, y: 2, z: 0, color: SKIN }]));
-  armR.position.set(1.6, 5.6, 0);
+  armR.add(blocks([
+    { x: 0, y: 0, z: 0, color: SUIT }, { x: 0, y: -1, z: 0, color: SUIT },
+    { x: 0, y: -2, z: 0, color: SUIT_D }, { x: 0, y: -3, z: 0, color: SKIN }
+  ]));
+  armR.position.set(2.2, 9, 0);
   guy.add(armR);
 
   const piece = new THREE.Group();
   piece.add(blocks([
-    { x: 0, y: 0, z: 0, color: 0x14181e }, { x: 1, y: 0, z: 0, color: 0x1b2028 },
-    { x: 2, y: 0, z: 0, color: 0x14181e }, { x: 0, y: -1, z: 0, color: 0x0f1216 }
+    { x: 0, y: 0, z: 0, color: 0x14181e }, { x: 1, y: 0, z: 0, color: 0x1d232c },
+    { x: 2, y: 0, z: 0, color: 0x14181e }, { x: 3, y: 0, z: 0, color: 0x0f1216 },
+    { x: 0, y: -1, z: 0, color: 0x0f1216 }
   ]));
-  piece.position.set(0, 2.4, 0.4);
-  piece.scale.setScalar(0.42);
+  piece.position.set(0, -3.4, 0.5);
+  piece.scale.setScalar(0.5);
   armR.add(piece);
 
+  // left arm
   const armL = new THREE.Group();
-  armL.add(blocks([{ x: 0, y: 0, z: 0, color: SUIT }, { x: 0, y: 1, z: 0, color: SUIT }, { x: 0, y: 2, z: 0, color: SKIN }]));
-  armL.position.set(-1.6, 5.6, 0);
+  armL.add(blocks([
+    { x: 0, y: 0, z: 0, color: SUIT }, { x: 0, y: -1, z: 0, color: SUIT },
+    { x: 0, y: -2, z: 0, color: SUIT_D }, { x: 0, y: -3, z: 0, color: SKIN }
+  ]));
+  armL.position.set(-2.2, 9, 0);
   guy.add(armL);
 
   guy.position.set(0, 0, 0.6);
-  guy.scale.setScalar(0.82);
+  guy.scale.setScalar(0.34);      // half the old size, and now in proportion to the door
   scene.add(guy);
 
   /* ---------- particles ---------- */
@@ -462,7 +517,7 @@ const ME3D = (async function () {
 
     // smoke curling from his free hand
     if (armsP > 0.5 && !blown && Math.random() > 0.75) {
-      spawn(-1.4, 5.4, guy.position.z + 0.3,
+      spawn(-0.9, 3.3, guy.position.z + 0.2,
         (Math.random() - 0.5) * 0.4, 0.7 + Math.random() * 0.6, (Math.random() - 0.5) * 0.4,
         1.3 + Math.random() * 0.8, 0.5, 0.5, 0.52, -0.3, 0.985);
     }
@@ -552,11 +607,11 @@ const ME3D = (async function () {
     if (shake > 0) {
       shake = Math.max(0, shake - dt * 1.2);
       const s = shake * shake;
-      camera.position.set(6 + (Math.random() - 0.5) * s * 2.4, 6.4 + (Math.random() - 0.5) * s * 1.8, 20 + (Math.random() - 0.5) * s * 1.8);
-      camera.lookAt(0, 3.6, 0);
+      camera.position.set(4.6 + (Math.random() - 0.5) * s * 2.4, 4.4 + (Math.random() - 0.5) * s * 1.8, 14.5 + (Math.random() - 0.5) * s * 1.8);
+      camera.lookAt(0, 2.4, 0);
     } else {
-      camera.position.set(6, 6.4, 20);
-      camera.lookAt(0, 3.6, 0);
+      camera.position.set(4.6, 4.4, 14.5);
+      camera.lookAt(0, 2.4, 0);
     }
 
     renderer.render(scene, camera);
