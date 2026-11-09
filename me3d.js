@@ -406,13 +406,14 @@ const ME3D = (async function () {
     try { song.pause(); } catch (e) {}
   }
 
-  // browsers need one gesture before audio may play; the moment they touch
-  // anything we start it if the card is still on screen
-  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
-    document.addEventListener(ev, function () {
-      if (wantSong && songBlocked) { songBlocked = false; startSong(); }
-    }, { passive: true });
-  });
+  // browsers block audio until the visitor has interacted once. Rather than
+  // guess, just keep asking: the first attempt after a gesture will succeed.
+  setInterval(function () {
+    if (!wantSong) { return; }
+    if (!song.paused) { return; }
+    const p = song.play();
+    if (p && p.catch) { p.catch(function () {}); }
+  }, 700);
 
   /* ---------- state ---------- */
   const btn = document.getElementById('meButton');
@@ -717,7 +718,7 @@ const ME3D = (async function () {
           stopSong();
         }
       });
-    }, { threshold: 0.4 });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
     io.observe(canvas.parentNode);
   } else {
     start();
