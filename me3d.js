@@ -425,7 +425,7 @@ const ME3D = (async function () {
     boomTimer = setTimeout(function () {
       boomTimer = null;
       boom();
-    }, 3500);           // three and a half seconds after you start watching
+    }, 5000);           // five seconds after you start watching
   }
 
   /* ---------- state ---------- */
@@ -434,8 +434,8 @@ const ME3D = (async function () {
   let t = 0, started = false, running = false, blown = false, blowAt = 0, shake = 0;
 
   const OPEN_AT = 0.3, WALK_AT = 1.2, STOP_AT = 3.2;
-  const AUTO_BOOM_AT = 3.5;       // it goes off on its own, three and a half seconds in
-  const LOOP_AT = 9.0;            // then it starts over
+  const AUTO_BOOM_AT = 5.0;       // it goes off on its own, five seconds in
+  const LOOP_AT = 11.0;           // then it starts over
 
   function paintHouse() {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(1, 1, 1);
