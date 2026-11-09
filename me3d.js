@@ -425,7 +425,7 @@ const ME3D = (async function () {
     boomTimer = setTimeout(function () {
       boomTimer = null;
       boom();
-    }, 9500);           // nine and a half seconds after you start watching
+    }, 3500);           // three and a half seconds after you start watching
   }
 
   /* ---------- state ---------- */
@@ -434,8 +434,8 @@ const ME3D = (async function () {
   let t = 0, started = false, running = false, blown = false, blowAt = 0, shake = 0;
 
   const OPEN_AT = 0.3, WALK_AT = 1.2, STOP_AT = 3.2;
-  const AUTO_BOOM_AT = 9.5;       // it goes off on its own, about ten seconds in
-  const LOOP_AT = 16.0;           // then it starts over
+  const AUTO_BOOM_AT = 3.5;       // it goes off on its own, three and a half seconds in
+  const LOOP_AT = 9.0;            // then it starts over
 
   function paintHouse() {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(1, 1, 1);
@@ -609,10 +609,7 @@ const ME3D = (async function () {
 
     if (btn && started && !blown && armsP >= 1 && !btn.classList.contains('armed')) {
       btn.classList.add('armed');
-    }
-    if (cap && started && running && !blown && armsP >= 1) {
-      const left = Math.max(0, Math.ceil(AUTO_BOOM_AT - t));
-      cap.textContent = 'Blows in ' + left + '\u2026';
+      if (cap) { cap.textContent = 'Any second now.'; }
     }
 
     // it fires by itself, no tap needed
