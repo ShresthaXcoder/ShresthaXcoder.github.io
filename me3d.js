@@ -384,12 +384,39 @@ const ME3D = (async function () {
   ring.position.set(0, 0.4, 0);
   scene.add(ring);
 
+  /* ---------- the song ---------- */
+  const song = new Audio('assets/me-theme.mp3');
+  song.loop = true;
+  song.volume = 0.9;
+  song.preload = 'auto';
+  let wantSong = false;
+  let songBlocked = false;
+
+  function trySong() {
+    if (!wantSong) { return; }
+    const p = song.play();
+    if (p && p.catch) {
+      p.catch(function () {
+        // the browser wants a gesture first — wait for one
+        songBlocked = true;
+      });
+    }
+  }
+  function startSong() { wantSong = true; trySong(); }
+  function stopSong() { wantSong = false; trySong(); }
+
+  document.addEventListener('pointerdown', function () {
+    if (songBlocked && wantSong) { songBlocked = false; trySong(); }
+  }, { once: false });
+
   /* ---------- state ---------- */
   const btn = document.getElementById('meButton');
   const cap = document.getElementById('meCaption');
   let t = 0, started = false, blown = false, blowAt = 0, shake = 0;
 
-  const OPEN_AT = 0.2, WALK_AT = 1.0, STOP_AT = 2.5;
+  const OPEN_AT = 0.3, WALK_AT = 1.2, STOP_AT = 3.2;
+  const AUTO_BOOM_AT = 11.0;      // it goes off on its own
+  const LOOP_AT = 16.0;           // then it starts over
 
   function paintHouse() {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(1, 1, 1);
@@ -563,8 +590,14 @@ const ME3D = (async function () {
 
     if (btn && started && !blown && armsP >= 1 && !btn.classList.contains('armed')) {
       btn.classList.add('armed');
-      if (cap) { cap.textContent = 'Your call.'; }
+      if (cap) { cap.textContent = 'Any second now.'; }
     }
+
+    // it fires by itself, no tap needed
+    if (started && !blown && t >= AUTO_BOOM_AT) { boom(); }
+
+    // and once the sixteen seconds are up it runs again
+    if (started && t >= LOOP_AT) { reset(); t = 0; }
 
     if (blown) {
       for (let i = 0; i < houseBlocks.length; i++) {
@@ -667,12 +700,27 @@ const ME3D = (async function () {
 
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(function (en) {
-      en.forEach(function (e) { if (e.isIntersecting) { start(); io.disconnect(); } });
-    }, { threshold: 0.3 });
+      en.forEach(function (e) {
+        if (e.isIntersecting) {
+          start();
+          startSong();
+        } else {
+          // scrolled away, or looking at another part of the page
+          stopSong();
+        }
+      });
+    }, { threshold: 0.4 });
     io.observe(canvas.parentNode);
   } else {
     start();
+    startSong();
   }
+
+  // silence it if the tab goes to the background
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { song.pause(); }
+    else if (wantSong) { trySong(); }
+  });
 
   window.__meReplay = function () { reset(); start(); };
 })();
