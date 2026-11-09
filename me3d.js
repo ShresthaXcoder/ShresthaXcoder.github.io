@@ -29,8 +29,8 @@ const ME3D = (async function () {
   scene.fog = new THREE.Fog(0x101f33, 55, 150);
 
   const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400);
-  camera.position.set(4.6, 4.4, 14.5);
-  camera.lookAt(0, 2.4, 0);
+  camera.position.set(4.8, 5.0, 18.5);
+  camera.lookAt(0, 2.6, 1.6);
 
   /* ---------- lights ---------- */
   scene.add(new THREE.AmbientLight(0x8fb4e0, 0.85));
@@ -428,7 +428,7 @@ const ME3D = (async function () {
     ball.scale.setScalar(0.6);
     ringMat.opacity = 0.9;
     ring.scale.setScalar(1);
-    guy.position.z = 5.2;
+    guy.position.z = 8.2;
     armR.rotation.z = 0.5;
     armL.rotation.z = -0.5;
 
@@ -504,7 +504,7 @@ const ME3D = (async function () {
 
     const walkP = Math.min(Math.max((t - WALK_AT) / 1.4, 0), 1);
     if (!blown) {
-      guy.position.z = 0.6 + walkP * 3.6;
+      guy.position.z = 0.6 + walkP * 6.6;
       guy.position.y = Math.abs(Math.sin(t * 15)) * 0.14 * (1 - walkP);
       guy.rotation.y = -0.18;
     }
@@ -607,11 +607,11 @@ const ME3D = (async function () {
     if (shake > 0) {
       shake = Math.max(0, shake - dt * 1.2);
       const s = shake * shake;
-      camera.position.set(4.6 + (Math.random() - 0.5) * s * 2.4, 4.4 + (Math.random() - 0.5) * s * 1.8, 14.5 + (Math.random() - 0.5) * s * 1.8);
-      camera.lookAt(0, 2.4, 0);
+      camera.position.set(4.8 + (Math.random() - 0.5) * s * 2.4, 5.0 + (Math.random() - 0.5) * s * 1.8, 18.5 + (Math.random() - 0.5) * s * 1.8);
+      camera.lookAt(0, 2.6, 1.6);
     } else {
-      camera.position.set(4.6, 4.4, 14.5);
-      camera.lookAt(0, 2.4, 0);
+      camera.position.set(4.8, 5.0, 18.5);
+      camera.lookAt(0, 2.6, 1.6);
     }
 
     renderer.render(scene, camera);
