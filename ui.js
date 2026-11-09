@@ -1255,8 +1255,22 @@ window.__PROJECTS = PROJECTS;
     const stage = $('#meStage');
     const btn = $('#meButton');
     const cap = $('#meCaption');
+    const fx = $('#meFx');
+    const stars = $('#meStars');
     let started = false;
     let blown = false;
+
+    // a scatter of stars, so the sky is not empty
+    if (stars) {
+      let s = '';
+      for (let i = 0; i < 46; i++) {
+        const x = Math.random() * 800;
+        const y = Math.random() * 210;
+        const r = Math.random() * 1.1 + 0.3;
+        s += '<circle cx="' + x.toFixed(0) + '" cy="' + y.toFixed(0) + '" r="' + r.toFixed(1) + '" opacity="' + (0.25 + Math.random() * 0.6).toFixed(2) + '"/>';
+      }
+      stars.innerHTML = s;
+    }
 
     function play() {
       if (started) { return; }
@@ -1266,53 +1280,83 @@ window.__PROJECTS = PROJECTS;
       setTimeout(function () {
         stage.classList.add('walk');
         if (cap) { cap.textContent = 'He came out to say hello.'; }
-      }, 780);
+      }, 820);
       setTimeout(function () {
         if (cap) { cap.textContent = 'Your call.'; }
         if (btn && !blown) { btn.classList.add('armed'); }
-      }, 2200);
+      }, 2400);
     }
 
-    function fire() {
-      const rect = stage.getBoundingClientRect();
-      const cx = rect.width / 2;
-      const cy = rect.height * 0.62;
+    function rand(a, b) { return a + Math.random() * (b - a); }
 
-      // embers
-      for (let i = 0; i < 46; i++) {
+    function fire() {
+      const w = stage.clientWidth;
+      const h = stage.clientHeight;
+      const cx = w * 0.5;
+      const cy = h * 0.70;
+
+      // 1. embers — fast, bright, thrown far
+      for (let i = 0; i < 60; i++) {
         const el = document.createElement('div');
         el.className = 'me-ember';
+        const size = rand(3, 11);
         const hot = Math.random();
-        el.style.background = hot > 0.6 ? '#fff2b0' : (hot > 0.3 ? '#ffb03a' : '#ff5a1f');
-        el.style.boxShadow = '0 0 12px 3px rgba(255,140,40,.85)';
+        const col = hot > 0.72 ? '#fff6cc' : (hot > 0.4 ? '#ffb23a' : '#ff5a1f');
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.style.background = 'radial-gradient(circle, ' + col + ' 0%, rgba(255,120,30,.65) 55%, rgba(255,90,20,0) 100%)';
         el.style.left = cx + 'px';
         el.style.top = cy + 'px';
-        stage.appendChild(el);
-        const ang = Math.random() * Math.PI * 2;
-        const dist = 60 + Math.random() * 190;
+        fx.appendChild(el);
+        const ang = rand(0, Math.PI * 2);
+        const dist = rand(70, 260);
         const dx = Math.cos(ang) * dist;
-        const dy = Math.sin(ang) * dist - 40 - Math.random() * 60;
+        const dy = Math.sin(ang) * dist - rand(30, 120);
         el.animate([
           { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
-          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.2)', opacity: 0 }
-        ], { duration: 700 + Math.random() * 700, easing: 'cubic-bezier(.15,.7,.3,1)' })
+          { transform: 'translate(calc(-50% + ' + dx * 0.55 + 'px), calc(-50% + ' + dy * 0.55 + 'px)) scale(.75)', opacity: .95, offset: 0.45 },
+          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 140) + 'px)) scale(.15)', opacity: 0 }
+        ], { duration: rand(800, 1600), easing: 'cubic-bezier(.15,.72,.25,1)' })
           .onfinish = function () { el.remove(); };
       }
 
-      // chunks of the house
-      for (let i = 0; i < 22; i++) {
+      // 2. chunks of the house, spinning away
+      for (let i = 0; i < 30; i++) {
         const el = document.createElement('div');
         el.className = 'me-shard';
-        el.style.background = i % 3 === 0 ? '#c4463a' : '#f7ecd9';
-        el.style.left = cx + (Math.random() - 0.5) * 130 + 'px';
-        el.style.top = (cy - 40) + (Math.random() - 0.5) * 70 + 'px';
-        stage.appendChild(el);
-        const dx = (Math.random() - 0.5) * 320;
-        const dy = -60 - Math.random() * 160;
+        const ww = rand(6, 20);
+        const hh = rand(5, 16);
+        el.style.width = ww + 'px';
+        el.style.height = hh + 'px';
+        el.style.background = i % 3 === 0 ? '#8f2f24' : (i % 3 === 1 ? '#d9c9ae' : '#efe3cd');
+        el.style.left = (cx + rand(-90, 90)) + 'px';
+        el.style.top = (cy - rand(20, 90)) + 'px';
+        fx.appendChild(el);
+        const dx = rand(-260, 260);
+        const dy = -rand(60, 200);
         el.animate([
           { transform: 'translate(-50%,-50%) rotate(0deg)', opacity: 1 },
-          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 220) + 'px)) rotate(' + ((Math.random() - 0.5) * 720) + 'deg)', opacity: 0 }
-        ], { duration: 900 + Math.random() * 600, easing: 'cubic-bezier(.2,.6,.4,1)' })
+          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 210) + 'px)) rotate(' + rand(-900, 900) + 'deg)', opacity: 0 }
+        ], { duration: rand(950, 1700), easing: 'cubic-bezier(.2,.6,.35,1)' })
+          .onfinish = function () { el.remove(); };
+      }
+
+      // 3. a column of smoke that keeps rising
+      for (let i = 0; i < 16; i++) {
+        const el = document.createElement('div');
+        el.className = 'me-puff';
+        const size = rand(50, 130);
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.style.left = (cx + rand(-40, 40)) + 'px';
+        el.style.top = (cy - 40) + 'px';
+        fx.appendChild(el);
+        const dx = rand(-70, 70);
+        el.animate([
+          { transform: 'translate(-50%,-50%) scale(.3)', opacity: 0 },
+          { transform: 'translate(calc(-50% + ' + dx * 0.5 + 'px), calc(-50% - 60px)) scale(1)', opacity: .8, offset: 0.35 },
+          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% - 210px)) scale(1.7)', opacity: 0 }
+        ], { duration: rand(1700, 2900), easing: 'ease-out', delay: rand(0, 220) })
           .onfinish = function () { el.remove(); };
       }
     }
@@ -1321,14 +1365,13 @@ window.__PROJECTS = PROJECTS;
       btn.addEventListener('click', function () {
         if (!started) { play(); return; }
         if (blown) {
-          // run it again
           blown = false;
           stage.classList.remove('boom', 'walk', 'open');
           if (cap) { cap.textContent = 'He is not here to talk.'; }
           btn.textContent = 'Blow it up';
           btn.classList.remove('armed');
           started = false;
-          setTimeout(play, 60);
+          setTimeout(play, 80);
           return;
         }
         blown = true;

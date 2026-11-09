@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=64" />
+<link rel="stylesheet" href="style.css?v=65" />
 </head>
 <body>
 
@@ -221,41 +221,135 @@ setTimeout(function () {
 
       <div class="me-card" id="meCard">
         <div class="me-stage" id="meStage">
-          <svg viewBox="112 26 200 200" preserveAspectRatio="xMidYMid meet" class="me-svg">
+          <svg viewBox="0 0 800 430" preserveAspectRatio="xMidYMid slice" class="me-svg">
+            <defs>
+              <linearGradient id="meSky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#070d18"/>
+                <stop offset="0.42" stop-color="#12233d"/>
+                <stop offset="0.72" stop-color="#2b4a6b"/>
+                <stop offset="1" stop-color="#7d5a4a"/>
+              </linearGradient>
+              <radialGradient id="meMoon" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0" stop-color="#fff6e0" stop-opacity="0.95"/>
+                <stop offset="0.35" stop-color="#ffe9c4" stop-opacity="0.35"/>
+                <stop offset="1" stop-color="#ffe9c4" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="meWall" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#efe3cd"/>
+                <stop offset="0.6" stop-color="#d9c9ae"/>
+                <stop offset="1" stop-color="#b6a488"/>
+              </linearGradient>
+              <linearGradient id="meRoof" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#b8453a"/>
+                <stop offset="1" stop-color="#7d2a22"/>
+              </linearGradient>
+              <linearGradient id="meGround" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#2f3a2a"/>
+                <stop offset="1" stop-color="#14180f"/>
+              </linearGradient>
+              <radialGradient id="meWindowGlow" cx="0.5" cy="0.5" r="0.5">
+                <stop offset="0" stop-color="#ffd98a" stop-opacity="0.95"/>
+                <stop offset="0.55" stop-color="#ffbe5c" stop-opacity="0.35"/>
+                <stop offset="1" stop-color="#ffbe5c" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="meFire" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0" stop-color="#fff3c4"/>
+                <stop offset="0.35" stop-color="#ffb43a"/>
+                <stop offset="0.7" stop-color="#ff5a1f"/>
+                <stop offset="1" stop-color="#8c1c08" stop-opacity="0"/>
+              </linearGradient>
+              <filter id="meSoft"><feGaussianBlur stdDeviation="6"/></filter>
+              <filter id="meSofter"><feGaussianBlur stdDeviation="16"/></filter>
+            </defs>
+
+            <rect width="800" height="430" fill="url(#meSky)"/>
+            <circle cx="648" cy="96" r="120" fill="url(#meMoon)"/>
+            <g id="meStars" fill="#ffffff" opacity="0.75"></g>
+
+            <!-- distant tree line -->
+            <g id="meTrees" fill="#0d1726" opacity="0.9">
+              <polygon points="0,360 0,300 40,330 80,286 120,332 160,300 200,338 240,306 280,340 320,308 360,342 400,312 440,344 480,310 520,342 560,306 600,340 640,304 680,338 720,300 760,336 800,306 800,360"/>
+            </g>
+
+            <rect y="356" width="800" height="74" fill="url(#meGround)"/>
+            <ellipse cx="400" cy="392" rx="250" ry="16" fill="#000" opacity="0.35" filter="url(#meSofter)"/>
+
+            <!-- the house -->
             <g id="meHouse">
-              <rect x="150" y="96" width="120" height="94" fill="#f7ecd9"/>
-              <polygon points="138,98 210,52 282,98" fill="#c4463a"/>
-              <polygon points="138,98 210,52 210,58 148,98" fill="#d4544a" opacity=".7"/>
-              <rect x="164" y="118" width="22" height="20" fill="#9fd6ff" stroke="#e3d6bf" stroke-width="2"/>
-              <rect x="234" y="118" width="22" height="20" fill="#9fd6ff" stroke="#e3d6bf" stroke-width="2"/>
-              <rect x="196" y="138" width="28" height="52" fill="#2a1d12"/>
+              <rect x="286" y="232" width="228" height="132" fill="url(#meWall)"/>
+              <g stroke="#b6a488" stroke-width="1.2" opacity="0.5">
+                <line x1="286" y1="258" x2="514" y2="258"/>
+                <line x1="286" y1="284" x2="514" y2="284"/>
+                <line x1="286" y1="310" x2="514" y2="310"/>
+                <line x1="286" y1="336" x2="514" y2="336"/>
+              </g>
+              <polygon points="262,236 400,150 538,236" fill="url(#meRoof)"/>
+              <polygon points="262,236 400,150 400,160 272,236" fill="#d2584a" opacity="0.55"/>
+              <polygon points="400,150 538,236 522,236 400,162" fill="#5e1f19" opacity="0.5"/>
+              <rect x="262" y="232" width="276" height="8" fill="#4a201a"/>
+
+              <rect x="318" y="272" width="54" height="44" rx="2" fill="#121c2a" stroke="#8d7c62" stroke-width="3"/>
+              <rect x="318" y="272" width="54" height="44" rx="2" fill="url(#meWindowGlow)" opacity="0.9"/>
+              <line x1="345" y1="272" x2="345" y2="316" stroke="#8d7c62" stroke-width="3"/>
+              <line x1="318" y1="294" x2="372" y2="294" stroke="#8d7c62" stroke-width="3"/>
+
+              <rect x="428" y="272" width="54" height="44" rx="2" fill="#121c2a" stroke="#8d7c62" stroke-width="3"/>
+              <rect x="428" y="272" width="54" height="44" rx="2" fill="url(#meWindowGlow)" opacity="0.9"/>
+              <line x1="455" y1="272" x2="455" y2="316" stroke="#8d7c62" stroke-width="3"/>
+              <line x1="428" y1="294" x2="482" y2="294" stroke="#8d7c62" stroke-width="3"/>
+
+              <rect x="386" y="300" width="28" height="64" fill="#0c1219"/>
               <g id="meDoor">
-                <rect x="197" y="139" width="26" height="51" fill="#6b4526"/>
-                <circle cx="218" cy="166" r="2" fill="#d9b06a"/>
+                <rect x="387" y="301" width="26" height="63" fill="#5a3a22"/>
+                <rect x="391" y="308" width="18" height="18" fill="#482d19"/>
+                <rect x="391" y="332" width="18" height="24" fill="#482d19"/>
+                <circle cx="409" cy="334" r="1.8" fill="#e0b871"/>
               </g>
+              <rect x="380" y="360" width="40" height="6" fill="#8d7c62"/>
+              <rect x="374" y="366" width="52" height="6" fill="#7a6a52"/>
+
+              <circle cx="400" cy="292" r="26" fill="url(#meWindowGlow)" opacity="0.55" filter="url(#meSoft)"/>
+              <rect x="396" y="284" width="8" height="10" fill="#ffe6b0" opacity="0.9"/>
             </g>
+
+            <!-- him -->
             <g id="meGuy">
-              <g transform="translate(212,190) scale(1.55) translate(-212,-190)">
-              <rect x="204" y="150" width="14" height="22" fill="#1d2b3f"/>
-              <rect x="205" y="172" width="12" height="18" fill="#22303f"/>
-              <rect x="204" y="132" width="14" height="18" fill="#d9a06b"/>
-              <rect x="204" y="130" width="14" height="5" fill="#241c16"/>
-              <rect x="205" y="139" width="12" height="3" fill="#101418"/>
-              <rect x="216" y="150" width="5" height="16" fill="#d9a06b"/>
-              <rect x="201" y="150" width="5" height="16" fill="#d9a06b"/>
-              <g id="mePiece">
-                <rect x="219" y="146" width="11" height="4" fill="#1b1f26"/>
-                <rect x="219" y="150" width="4" height="6" fill="#14171c"/>
+              <ellipse cx="400" cy="380" rx="26" ry="6" fill="#000" opacity="0.45"/>
+              <rect x="388" y="344" width="10" height="34" fill="#1a222e"/>
+              <rect x="402" y="344" width="10" height="34" fill="#1a222e"/>
+              <rect x="386" y="376" width="14" height="5" fill="#0b0f15"/>
+              <rect x="400" y="376" width="14" height="5" fill="#0b0f15"/>
+              <rect x="384" y="296" width="32" height="52" rx="3" fill="#20293a"/>
+              <rect x="396" y="296" width="8" height="46" fill="#e8eef5"/>
+              <rect x="398" y="302" width="4" height="30" fill="#8c2b2b"/>
+              <rect x="386" y="286" width="28" height="26" rx="7" fill="#d9a06b"/>
+              <path d="M384 290 q16 -16 32 0 l0 -6 q-16 -12 -32 0 z" fill="#1b1410"/>
+              <rect x="386" y="294" width="28" height="7" rx="2" fill="#0b0f15"/>
+              <rect x="384" y="300" width="32" height="4" fill="#0b0f15" opacity="0.6"/>
+              <g id="mePiece" transform="rotate(-14 424 330)">
+                <rect x="420" y="322" width="26" height="7" rx="1.5" fill="#171b21"/>
+                <rect x="420" y="329" width="9" height="12" rx="2" fill="#0f1216"/>
+                <rect x="443" y="322" width="5" height="7" fill="#2b3138"/>
               </g>
-              <g id="meSmoke">
-                <circle cx="199" cy="146" r="3" fill="#cfd4d8" opacity=".8"/>
-                <circle cx="196" cy="142" r="4" fill="#c3c9ce" opacity=".55"/>
-                </g>
+              <rect x="418" y="300" width="9" height="30" rx="3" fill="#20293a"/>
+              <rect x="373" y="300" width="9" height="30" rx="3" fill="#20293a"/>
+              <circle cx="424" cy="316" r="10" fill="#ffb45c" opacity="0.25" filter="url(#meSoft)"/>
+              <g id="meSmoke" opacity="0.55">
+                <circle cx="376" cy="322" r="7" fill="#b9c2c9" opacity="0.5" filter="url(#meSoft)"/>
+                <circle cx="372" cy="312" r="10" fill="#aab4bc" opacity="0.35" filter="url(#meSoft)"/>
+                <circle cx="368" cy="298" r="13" fill="#9aa4ad" opacity="0.22" filter="url(#meSoft)"/>
+              </g>
             </g>
+
+            <!-- the fireball, hidden until the button -->
+            <g id="meBlast" opacity="0">
+              <circle id="meBall" cx="400" cy="300" r="10" fill="url(#meFire)"/>
+              <circle id="meCore" cx="400" cy="300" r="6" fill="#fffdf2"/>
+              <circle id="meRing" cx="400" cy="300" r="10" fill="none" stroke="#ffd08a" stroke-width="6" opacity="0"/>
             </g>
-            <g id="meFire"></g>
           </svg>
-          <div class="me-flash" id="meFlash"></div>
+          <div class="me-vignette"></div>
+          <div class="me-fx" id="meFx"></div>
         </div>
         <div class="me-bar">
           <p id="meCaption">He is not here to talk.</p>
@@ -798,9 +892,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=64"></script>
-<script type="module" src="intro.js?v=64"></script>
+<script type="module" src="world.js?v=65"></script>
+<script type="module" src="intro.js?v=65"></script>
 
-<script src="ui.js?v=64"></script>
+<script src="ui.js?v=65"></script>
 </body>
 </html>
