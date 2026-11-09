@@ -415,6 +415,19 @@ const ME3D = (async function () {
     if (p && p.catch) { p.catch(function () {}); }
   }, 700);
 
+  /* ---------- the auto blast ---------- */
+  let boomTimer = null;
+  function clearBoom() {
+    if (boomTimer) { clearTimeout(boomTimer); boomTimer = null; }
+  }
+  function armBoom() {
+    clearBoom();
+    boomTimer = setTimeout(function () {
+      boomTimer = null;
+      boom();
+    }, 9500);           // nine and a half seconds after you start watching
+  }
+
   /* ---------- state ---------- */
   const btn = document.getElementById('meButton');
   const cap = document.getElementById('meCaption');
@@ -600,10 +613,10 @@ const ME3D = (async function () {
     }
 
     // it fires by itself, no tap needed
-    if (started && !blown && t >= AUTO_BOOM_AT) { boom(); }
+    if (started && running && !blown && t >= AUTO_BOOM_AT) { boom(); }
 
     // and once the sixteen seconds are up it runs again
-    if (started && t >= LOOP_AT) { reset(); t = 0; }
+    if (started && t >= LOOP_AT) { reset(); t = 0; if (running) { armBoom(); } }
 
     if (blown) {
       for (let i = 0; i < houseBlocks.length; i++) {
@@ -711,11 +724,11 @@ const ME3D = (async function () {
           start();
           running = true;
           startSong();
+          if (!blown) { armBoom(); }
         } else {
-          // scrolled away — the film and the song both stop, and pick up
-          // exactly where they left off when you come back
           running = false;
           stopSong();
+          clearBoom();
         }
       });
     }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
@@ -724,6 +737,7 @@ const ME3D = (async function () {
     start();
     running = true;
     startSong();
+    armBoom();
   }
 
   // silence it if the tab goes to the background
