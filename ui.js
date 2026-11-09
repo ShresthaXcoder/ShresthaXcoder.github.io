@@ -837,7 +837,21 @@ window.__PROJECTS = PROJECTS;
   }
 
   function countView(){
-    /* every load counts as a view, the same way a page view works anywhere else */
+    /* one view per device: the first time this browser opens the site it is
+       counted, after that it only reads the shared number */
+    const SEEN_KEY = 'shrestha-view-counted';
+    let seen = false;
+    try { seen = localStorage.getItem(SEEN_KEY) === '1'; } catch (e) {}
+
+    if (seen) {
+      counter('get', 'views').then(function(n){
+        if (n !== null) { views = n; writeNum(VIEW_KEY, n); }
+        paintStats();
+      });
+      return;
+    }
+
+    try { localStorage.setItem(SEEN_KEY, '1'); } catch (e) {}
     counter('hit', 'views').then(function(n){
       if (n !== null) {
         views = n;
