@@ -392,30 +392,35 @@ const ME3D = (async function () {
   let wantSong = false;
   let songBlocked = false;
 
-  function trySong() {
-    if (!wantSong) { return; }
+  function startSong() {
+    wantSong = true;
+    song.loop = true;
+    if (songBlocked) { return; }
     const p = song.play();
     if (p && p.catch) {
-      p.catch(function () {
-        // the browser wants a gesture first — wait for one
-        songBlocked = true;
-      });
+      p.catch(function () { songBlocked = true; });
     }
   }
-  function startSong() { wantSong = true; trySong(); }
-  function stopSong() { wantSong = false; trySong(); }
+  function stopSong() {
+    wantSong = false;
+    try { song.pause(); } catch (e) {}
+  }
 
-  document.addEventListener('pointerdown', function () {
-    if (songBlocked && wantSong) { songBlocked = false; trySong(); }
-  }, { once: false });
+  // browsers need one gesture before audio may play; the moment they touch
+  // anything we start it if the card is still on screen
+  ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (wantSong && songBlocked) { songBlocked = false; startSong(); }
+    }, { passive: true });
+  });
 
   /* ---------- state ---------- */
   const btn = document.getElementById('meButton');
   const cap = document.getElementById('meCaption');
-  let t = 0, started = false, blown = false, blowAt = 0, shake = 0;
+  let t = 0, started = false, running = false, blown = false, blowAt = 0, shake = 0;
 
   const OPEN_AT = 0.3, WALK_AT = 1.2, STOP_AT = 3.2;
-  const AUTO_BOOM_AT = 11.0;      // it goes off on its own
+  const AUTO_BOOM_AT = 9.5;       // it goes off on its own, about ten seconds in
   const LOOP_AT = 16.0;           // then it starts over
 
   function paintHouse() {
@@ -563,7 +568,7 @@ const ME3D = (async function () {
   function step(now) {
     const dt = Math.min(Math.max((now - last) / 1000, 0), 0.05);
     last = now;
-    if (started) { t += dt; }
+    if (started && running) { t += dt; }
 
     const doorP = Math.min(Math.max((t - OPEN_AT) / 0.85, 0), 1);
     doorGroup.position.x = doorP * 2.4;
@@ -703,9 +708,12 @@ const ME3D = (async function () {
       en.forEach(function (e) {
         if (e.isIntersecting) {
           start();
+          running = true;
           startSong();
         } else {
-          // scrolled away, or looking at another part of the page
+          // scrolled away — the film and the song both stop, and pick up
+          // exactly where they left off when you come back
+          running = false;
           stopSong();
         }
       });
@@ -713,6 +721,7 @@ const ME3D = (async function () {
     io.observe(canvas.parentNode);
   } else {
     start();
+    running = true;
     startSong();
   }
 
