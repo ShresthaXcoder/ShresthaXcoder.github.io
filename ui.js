@@ -1156,11 +1156,27 @@ window.__PROJECTS = PROJECTS;
     lines.push('');
     lines.push('Sent from shresthaxcoder.github.io');
     const subject = 'New review from ' + review.name + ' \u2014 ' + stars;
-    const url = 'mailto:' + REVIEW_EMAIL +
+    const body = lines.join('\n');
+
+    const mailtoUrl = 'mailto:' + REVIEW_EMAIL +
       '?subject=' + encodeURIComponent(subject) +
-      '&body=' + encodeURIComponent(lines.join('\n'));
-    window.location.href = url;
-    return url;
+      '&body=' + encodeURIComponent(body);
+
+    // phones have a mail app; desktops often do not, so send them to Gmail
+    const touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+    if (touch) {
+      window.location.href = mailtoUrl;
+    } else {
+      const gmail = 'https://mail.google.com/mail/?view=cm&fs=1' +
+        '&to=' + encodeURIComponent(REVIEW_EMAIL) +
+        '&su=' + encodeURIComponent(subject) +
+        '&body=' + encodeURIComponent(body);
+      const win = window.open(gmail, '_blank', 'noopener');
+      if (!win) { window.location.href = mailtoUrl; }
+    }
+
+    return mailtoUrl;
   }
 
   function rvStarsText(n){
@@ -1174,7 +1190,7 @@ window.__PROJECTS = PROJECTS;
     const avgEl = $('#reviewAvg');
     const noteEl = $('#rvNote');
     if (noteEl) {
-      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : 'opens your mail app';
+      noteEl.textContent = REVIEW_URL ? 'shared with everyone' : (window.matchMedia && window.matchMedia('(pointer: coarse)').matches ? 'opens your mail app' : 'opens Gmail, ready to send');
     }
     if (avgEl) {
       if (!list.length) {
