@@ -609,7 +609,10 @@ const ME3D = (async function () {
 
     if (btn && started && !blown && armsP >= 1 && !btn.classList.contains('armed')) {
       btn.classList.add('armed');
-      if (cap) { cap.textContent = 'Any second now.'; }
+    }
+    if (cap && started && running && !blown && armsP >= 1) {
+      const left = Math.max(0, Math.ceil(AUTO_BOOM_AT - t));
+      cap.textContent = 'Blows in ' + left + '\u2026';
     }
 
     // it fires by itself, no tap needed
