@@ -870,142 +870,6 @@ function build(THREE, PP){
   const lanData=[]; for(let i=0;i<LAN;i++) lanData.push({x:(Math.random()-0.5)*34, y:Math.random()*28, z:-22+Math.random()*28, s:0.35+Math.random()*0.45, ph:Math.random()*6.28});
   scene.add(lanterns); WORLD_EXTRA.push(lanterns);
 
-  /* 5. Diwali rockets */
-  /* rockets launch from the ground, trail up, then burst in the sky */
-  const FW_MAX = 900;
-  const fwPosArr = new Float32Array(FW_MAX * 3);
-  const fwColArr = new Float32Array(FW_MAX * 3);
-  for (let i = 0; i < FW_MAX; i++) { fwPosArr[i * 3 + 1] = -999; }
-
-  const fwGeo = new THREE.BufferGeometry();
-  fwGeo.setAttribute('position', new THREE.BufferAttribute(fwPosArr, 3));
-  fwGeo.setAttribute('color', new THREE.BufferAttribute(fwColArr, 3));
-
-  const fwTex = (function () {
-    const S = 64;
-    const c = document.createElement('canvas');
-    c.width = c.height = S;
-    const g = c.getContext('2d');
-    const grad = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
-    grad.addColorStop(0, 'rgba(255,255,255,1)');
-    grad.addColorStop(0.32, 'rgba(255,255,255,0.82)');
-    grad.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = grad;
-    g.fillRect(0, 0, S, S);
-    return new THREE.CanvasTexture(c);
-  })();
-
-  const fwMesh = new THREE.Points(fwGeo, new THREE.PointsMaterial({
-    size: 3.0, map: fwTex, vertexColors: true, transparent: true, opacity: 1,
-    depthWrite: false, blending: THREE.NormalBlending, sizeAttenuation: true
-  }));
-  fwMesh.frustumCulled = false;   // points move every frame; the cached bounds lie
-  scene.add(fwMesh);
-
-  const fwBits = [];
-  for (let i = 0; i < FW_MAX; i++) {
-    fwBits.push({ life: 0, x: 0, y: -999, z: 0, vx: 0, vy: 0, vz: 0,
-      max: 1, r: 1, g: 1, b: 1, grav: 4, drag: 0.98 });
-  }
-
-  const fwPalette = [
-    [1.00, 0.80, 0.35], [1.00, 0.48, 0.22], [1.00, 0.32, 0.50],
-    [0.45, 0.90, 0.50], [0.40, 0.82, 1.00], [0.72, 0.52, 1.00], [1.00, 1.00, 0.95]
-  ];
-
-  const rockets = [];
-  let fwLaunchWait = 0.15;
-
-  function fwSpawn(x, y, z, vx, vy, vz, life, r, g, b, grav, drag) {
-    for (let i = 0; i < FW_MAX; i++) {
-      const p = fwBits[i];
-      if (p.life > 0) { continue; }
-      p.x = x; p.y = y; p.z = z;
-      p.vx = vx; p.vy = vy; p.vz = vz;
-      p.life = life; p.max = life;
-      p.r = r; p.g = g; p.b = b;
-      p.grav = grav; p.drag = drag;
-      return;
-    }
-  }
-
-  function fwLaunch() {
-    const col = fwPalette[Math.floor(Math.random() * fwPalette.length)];
-    rockets.push({
-      x: -14 + Math.random() * 28,
-      y: 0.6,
-      z: -9 + Math.random() * 11,
-      vy: 12 + Math.random() * 4.5,
-      target: 16 + Math.random() * 9,
-      r: col[0], g: col[1], b: col[2],
-      trail: 0
-    });
-  }
-
-  function fwUpdate(dt) {
-    fwLaunchWait -= dt;
-    if (fwLaunchWait <= 0 && rockets.length < 5) {
-      fwLaunch();
-      fwLaunchWait = 0.3 + Math.random() * 0.75;
-    }
-
-    for (let i = rockets.length - 1; i >= 0; i--) {
-      const rk = rockets[i];
-      rk.vy -= 6.2 * dt;
-      rk.y += rk.vy * dt;
-
-      // the bright head of the rocket
-      fwSpawn(rk.x, rk.y, rk.z, 0, 0, 0, 0.09, 1, 0.98, 0.9, 0, 1);
-
-      // its trail
-      rk.trail += dt;
-      if (rk.trail > 0.016) {
-        rk.trail = 0;
-        fwSpawn(rk.x + (Math.random() - 0.5) * 0.25, rk.y, rk.z + (Math.random() - 0.5) * 0.25,
-          (Math.random() - 0.5) * 0.7, -1.2 - Math.random() * 1.4, (Math.random() - 0.5) * 0.7,
-          0.5, rk.r, rk.g, rk.b, 3, 0.94);
-      }
-
-      if (rk.vy <= 0 || rk.y >= rk.target) {
-        const n = 72 + Math.floor(Math.random() * 30);
-        for (let k = 0; k < n; k++) {
-          const th = Math.random() * Math.PI * 2;
-          const ph = Math.acos(Math.random() * 2 - 1);
-          const sp = 5.5 + Math.random() * 3.6;
-          fwSpawn(rk.x, rk.y, rk.z,
-            Math.sin(ph) * Math.cos(th) * sp,
-            Math.cos(ph) * sp,
-            Math.sin(ph) * Math.sin(th) * sp,
-            1.2 + Math.random() * 0.7, rk.r, rk.g, rk.b, 3.6, 0.975);
-        }
-        rockets.splice(i, 1);
-      }
-    }
-
-    for (let i = 0; i < FW_MAX; i++) {
-      const p = fwBits[i];
-      if (p.life <= 0) { continue; }
-      p.life -= dt;
-      if (p.life <= 0) {
-        fwPosArr[i * 3 + 1] = -999;
-        fwColArr[i * 3] = 0; fwColArr[i * 3 + 1] = 0; fwColArr[i * 3 + 2] = 0;
-        continue;
-      }
-      p.vy -= p.grav * dt;
-      p.vx *= p.drag; p.vy *= p.drag; p.vz *= p.drag;
-      p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
-      const a = Math.max(p.life / p.max, 0);
-      fwPosArr[i * 3] = p.x;
-      fwPosArr[i * 3 + 1] = p.y;
-      fwPosArr[i * 3 + 2] = p.z;
-      fwColArr[i * 3] = p.r * a;
-      fwColArr[i * 3 + 1] = p.g * a;
-      fwColArr[i * 3 + 2] = p.b * a;
-    }
-    fwGeo.attributes.position.needsUpdate = true;
-    fwGeo.attributes.color.needsUpdate = true;
-  }
-
   /* 6. airplane with motion trail */
   const plane = new THREE.Group();
   { const c=[];
@@ -1516,7 +1380,7 @@ function build(THREE, PP){
 
   /* ---------- world scale ---------- */
   const world = new THREE.Group();
-  const wparts = [island, clouds, nameGroup, stars, leafMesh, fwMesh, sparkles, sunSprite, sunDisc].concat(birds, WORLD_EXTRA);
+  const wparts = [island, clouds, nameGroup, stars, leafMesh, sparkles, sunSprite, sunDisc].concat(birds, WORLD_EXTRA);
   wparts.forEach(o=>scene.remove(o));
   wparts.forEach(o=>world.add(o));
   scene.add(world);
@@ -2022,7 +1886,6 @@ function build(THREE, PP){
         m.makeTranslation(l.x + Math.sin(t*0.5+l.ph)*0.6, l.y, l.z); lanterns.setMatrixAt(i,m); });
       lanterns.instanceMatrix.needsUpdate = true; }
 
-    fwUpdate(0.016);
 
     // airplane circles the sky
     plane.userData.a += 0.0035;
