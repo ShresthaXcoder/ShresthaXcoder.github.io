@@ -183,85 +183,124 @@ const ME3D = (async function () {
   scene.add(doorGroup);
 
   /* ---------- him ---------- */
-  const SKIN = 0xd9a06b, SUIT = 0x232d40, SUIT_D = 0x161e2c, SHIRT = 0xeaf0f7, TIE = 0x9b2f2f;
+  /* ---------- him ----------
+     Built on a grid twice as fine as the house, then scaled down, so he
+     carries twice the detail at the same height. */
+  const SKIN = 0xd9a06b, SKIN_D = 0xbe8452, SUIT = 0x222c3e, SUIT_D = 0x151c28;
+  const SUIT_L = 0x2e3a50, SHIRT = 0xeef3f9, TIE = 0xa33232, GOLD = 0xd8a94a;
+
   const guy = new THREE.Group();
   const gb = [];
   function put(x, y, z, c) { gb.push({ x: x, y: y, z: z, color: c }); }
-
-  // shoes
-  put(-1, 0, 0, 0x090c11); put(1, 0, 0, 0x090c11);
-  put(-1, 0, 1, 0x090c11); put(1, 0, 1, 0x090c11);
-  // legs
-  for (let y = 1; y <= 4; y++) { put(-1, y, 0, SUIT_D); put(1, y, 0, SUIT_D); }
-  // hips
-  for (let x = -1; x <= 1; x++) { put(x, 5, 0, SUIT_D); }
-  // torso, with a taper
-  for (let y = 6; y <= 9; y++) {
-    const w = y >= 8 ? 2 : 1;
-    for (let x = -w; x <= w; x++) { put(x, y, 0, SUIT); }
-  }
-  // shirt + tie
-  put(0, 9, 1, SHIRT); put(0, 8, 1, SHIRT); put(0, 7, 1, SHIRT);
-  put(0, 9, 1, SHIRT); put(0, 8, 1, TIE); put(0, 7, 1, TIE);
-  // lapels
-  put(-1, 9, 1, SUIT_D); put(1, 9, 1, SUIT_D);
-  put(-1, 8, 1, SUIT_D); put(1, 8, 1, SUIT_D);
-  // shoulders
-  put(-2, 9, 0, SUIT); put(2, 9, 0, SUIT);
-  put(-2, 8, 0, SUIT); put(2, 8, 0, SUIT);
-  // neck
-  put(0, 10, 0, 0xc08f5e);
-  // head
-  for (let y = 11; y <= 13; y++) {
-    for (let x = -1; x <= 1; x++) {
-      for (let z = -1; z <= 0; z++) { put(x, y, z, SKIN); }
+  function box(x0, x1, y0, y1, z0, z1, c) {
+    for (let x = x0; x <= x1; x++) {
+      for (let y = y0; y <= y1; y++) {
+        for (let z = z0; z <= z1; z++) { put(x, y, z, c); }
+      }
     }
   }
-  put(0, 11, 1, 0xc08f5e);
+
+  // ---- shoes ----
+  box(-4, -1, 0, 1, -2, 2, 0x0a0d12);
+  box(1, 4, 0, 1, -2, 2, 0x0a0d12);
+  box(-4, -1, 0, 0, -3, 2, 0x05070a);
+  box(1, 4, 0, 0, -3, 2, 0x05070a);
+
+  // ---- trousers ----
+  box(-4, -1, 2, 12, -2, 1, 0x1b2230);
+  box(1, 4, 2, 12, -2, 1, 0x1b2230);
+  box(-1, 1, 2, 11, -1, 0, 0x141a25);          // the gap between the legs
+  box(-4, -1, 12, 12, -2, 1, 0x252d3d);
+  box(1, 4, 12, 12, -2, 1, 0x252d3d);
+  put(0, 12, 2, 0x2b3444);                      // crease
+  // belt
+  box(-4, 4, 13, 13, -2, 2, 0x0f141c);
+  box(-1, 1, 13, 13, 2, 2, GOLD);
+  put(0, 13, 3, 0x9c7a2e);
+
+  // ---- jacket ----
+  box(-4, 4, 14, 20, -2, 1, SUIT);
+  box(-5, -5, 15, 20, -1, 1, SUIT_D);           // sides, slightly darker
+  box(5, 5, 15, 20, -1, 1, SUIT_D);
+  // shirt V
+  box(-1, 1, 15, 20, 2, 2, SHIRT);
+  box(-2, 2, 20, 20, 2, 2, SHIRT);
+  // tie
+  box(0, 0, 15, 19, 3, 3, TIE);
+  box(-1, 1, 19, 19, 3, 3, TIE);
+  // lapels
+  box(-2, -1, 16, 20, 2, 2, SUIT_L);
+  box(1, 2, 16, 20, 2, 2, SUIT_L);
+  box(-3, -2, 20, 20, 1, 2, SUIT_L);
+  box(2, 3, 20, 20, 1, 2, SUIT_L);
+  // buttons + pocket square
+  put(0, 17, 3, 0x0d1118);
+  put(0, 15, 3, 0x0d1118);
+  put(-3, 18, 3, SHIRT);
+
+  // ---- shoulders ----
+  box(-5, 5, 21, 21, -2, 1, SUIT_L);
+
+  // ---- neck ----
+  box(-1, 1, 22, 22, -1, 1, SKIN_D);
+  box(-2, 2, 22, 22, -2, 2, SHIRT);             // collar
+
+  // ---- head ----
+  box(-3, 3, 23, 27, -2, 1, SKIN);
+  box(-3, 3, 23, 23, 2, 2, SKIN_D);             // jaw shadow
+  box(-1, 1, 23, 23, 2, 2, SKIN_D);             // chin
+  put(-3, 25, 2, SKIN_D); put(3, 25, 2, SKIN_D); // cheeks
+  put(-4, 25, 0, SKIN); put(4, 25, 0, SKIN);     // ears
+  put(0, 24, 3, SKIN_D);                         // nose
+  // shades
+  box(-3, -1, 26, 26, 2, 2, 0x090c11);
+  box(1, 3, 26, 26, 2, 2, 0x090c11);
+  put(0, 26, 2, 0x141a22);
+  put(-2, 26, 2, 0x3a4a5e);                      // glint
+  box(-4, -3, 26, 26, 1, 1, 0x090c11);
+  box(3, 4, 26, 26, 1, 1, 0x090c11);
   // hair
-  for (let x = -1; x <= 1; x++) {
-    for (let z = -1; z <= 0; z++) { put(x, 14, z, 0x1a1310); }
-    put(x, 13, -1, 0x1a1310);
-  }
-  put(-1, 13, 0, 0x1a1310); put(1, 13, 0, 0x1a1310);
-  // shades, with a glint
-  put(-1, 12, 1, 0x090c11); put(0, 12, 1, 0x14181f); put(1, 12, 1, 0x090c11);
-  put(-1, 12, 1, 0x2b3442);
-  // jaw line
-  put(-1, 11, 1, 0xc08f5e); put(1, 11, 1, 0xc08f5e);
+  box(-3, 3, 28, 28, -2, 1, 0x1a1310);
+  box(-3, 3, 27, 27, -2, -1, 0x1a1310);
+  box(-4, -3, 27, 27, -1, 1, 0x1a1310);
+  box(3, 4, 27, 27, -1, 1, 0x1a1310);
+  box(-3, 3, 26, 27, -3, -2, 0x120d0b);
 
   guy.add(blocks(gb));
 
-  // right arm — shoulder, forearm, hand
-  const armR = new THREE.Group();
-  armR.add(blocks([
-    { x: 0, y: 0, z: 0, color: SUIT }, { x: 0, y: -1, z: 0, color: SUIT },
-    { x: 0, y: -2, z: 0, color: SUIT_D }, { x: 0, y: -3, z: 0, color: SKIN }
-  ]));
-  armR.position.set(2.2, 9, 0);
+  /* ---- arms ---- */
+  function makeArm() {
+    const arm = new THREE.Group();
+    const ab = [];
+    const push2 = function (x, y, z, c) { ab.push({ x: x, y: y, z: z, color: c }); };
+    for (let y = 0; y >= -3; y--) { for (let x = -1; x <= 1; x++) { for (let z = -1; z <= 1; z++) { push2(x, y, z, SUIT); } } }
+    for (let y = -4; y >= -6; y--) { for (let x = -1; x <= 1; x++) { for (let z = -1; z <= 1; z++) { push2(x, y, z, SUIT_D); } } }
+    for (let y = -7; y >= -8; y--) { for (let x = -1; x <= 1; x++) { for (let z = -1; z <= 1; z++) { push2(x, y, z, SKIN); } } }
+    push2(0, -8, 2, SKIN_D);
+    arm.add(blocks(ab));
+    return arm;
+  }
+
+  const armR = makeArm();
+  armR.position.set(6, 20, 0);
   guy.add(armR);
 
   const piece = new THREE.Group();
   piece.add(blocks([
     { x: 0, y: 0, z: 0, color: 0x14181e }, { x: 1, y: 0, z: 0, color: 0x1d232c },
     { x: 2, y: 0, z: 0, color: 0x14181e }, { x: 3, y: 0, z: 0, color: 0x0f1216 },
-    { x: 0, y: -1, z: 0, color: 0x0f1216 }
+    { x: 4, y: 0, z: 0, color: 0x0b0e12 },
+    { x: 0, y: -1, z: 0, color: 0x0f1216 }, { x: 0, y: -2, z: 0, color: 0x0b0e12 }
   ]));
-  piece.position.set(0, -3.4, 0.5);
-  piece.scale.setScalar(0.5);
+  piece.position.set(0, -8.6, 1);
   armR.add(piece);
 
-  // left arm
-  const armL = new THREE.Group();
-  armL.add(blocks([
-    { x: 0, y: 0, z: 0, color: SUIT }, { x: 0, y: -1, z: 0, color: SUIT },
-    { x: 0, y: -2, z: 0, color: SUIT_D }, { x: 0, y: -3, z: 0, color: SKIN }
-  ]));
-  armL.position.set(-2.2, 9, 0);
+  const armL = makeArm();
+  armL.position.set(-6, 20, 0);
   guy.add(armL);
 
   guy.position.set(0, 0, 0.6);
-  guy.scale.setScalar(0.34);      // half the old size, and now in proportion to the door
+  guy.scale.setScalar(0.17);
   scene.add(guy);
 
   /* ---------- particles ---------- */
@@ -517,7 +556,7 @@ const ME3D = (async function () {
 
     // smoke curling from his free hand
     if (armsP > 0.5 && !blown && Math.random() > 0.75) {
-      spawn(-0.9, 3.3, guy.position.z + 0.2,
+      spawn(-1.0, 2.0, guy.position.z + 0.2,
         (Math.random() - 0.5) * 0.4, 0.7 + Math.random() * 0.6, (Math.random() - 0.5) * 0.4,
         1.3 + Math.random() * 0.8, 0.5, 0.5, 0.52, -0.3, 0.985);
     }
