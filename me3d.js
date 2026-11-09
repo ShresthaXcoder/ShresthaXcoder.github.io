@@ -729,9 +729,13 @@ const ME3D = (async function () {
           running = false;
           stopSong();
           clearBoom();
+          // rewind, so next time it plays from the beginning
+          reset();
+          t = 0;
+          started = false;
         }
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.55 });
     io.observe(canvas.parentNode);
   } else {
     start();
