@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=62" />
+<link rel="stylesheet" href="style.css?v=64" />
 </head>
 <body>
 
@@ -217,6 +217,50 @@ setTimeout(function () {
         <div class="meta-cell"><div class="k" data-hi="लिंग">Gender</div><div class="v" data-hi="पुरुष">Male</div></div>
         <div class="meta-cell"><div class="k">Base</div><div class="v">Darbhanga, India</div></div>
         <div class="meta-cell"><div class="k">Status</div><div class="v ok">Building</div></div>
+      </div>
+
+      <div class="me-card" id="meCard">
+        <div class="me-stage" id="meStage">
+          <svg viewBox="112 26 200 200" preserveAspectRatio="xMidYMid meet" class="me-svg">
+            <g id="meHouse">
+              <rect x="150" y="96" width="120" height="94" fill="#f7ecd9"/>
+              <polygon points="138,98 210,52 282,98" fill="#c4463a"/>
+              <polygon points="138,98 210,52 210,58 148,98" fill="#d4544a" opacity=".7"/>
+              <rect x="164" y="118" width="22" height="20" fill="#9fd6ff" stroke="#e3d6bf" stroke-width="2"/>
+              <rect x="234" y="118" width="22" height="20" fill="#9fd6ff" stroke="#e3d6bf" stroke-width="2"/>
+              <rect x="196" y="138" width="28" height="52" fill="#2a1d12"/>
+              <g id="meDoor">
+                <rect x="197" y="139" width="26" height="51" fill="#6b4526"/>
+                <circle cx="218" cy="166" r="2" fill="#d9b06a"/>
+              </g>
+            </g>
+            <g id="meGuy">
+              <g transform="translate(212,190) scale(1.55) translate(-212,-190)">
+              <rect x="204" y="150" width="14" height="22" fill="#1d2b3f"/>
+              <rect x="205" y="172" width="12" height="18" fill="#22303f"/>
+              <rect x="204" y="132" width="14" height="18" fill="#d9a06b"/>
+              <rect x="204" y="130" width="14" height="5" fill="#241c16"/>
+              <rect x="205" y="139" width="12" height="3" fill="#101418"/>
+              <rect x="216" y="150" width="5" height="16" fill="#d9a06b"/>
+              <rect x="201" y="150" width="5" height="16" fill="#d9a06b"/>
+              <g id="mePiece">
+                <rect x="219" y="146" width="11" height="4" fill="#1b1f26"/>
+                <rect x="219" y="150" width="4" height="6" fill="#14171c"/>
+              </g>
+              <g id="meSmoke">
+                <circle cx="199" cy="146" r="3" fill="#cfd4d8" opacity=".8"/>
+                <circle cx="196" cy="142" r="4" fill="#c3c9ce" opacity=".55"/>
+                </g>
+            </g>
+            </g>
+            <g id="meFire"></g>
+          </svg>
+          <div class="me-flash" id="meFlash"></div>
+        </div>
+        <div class="me-bar">
+          <p id="meCaption">He is not here to talk.</p>
+          <button class="me-btn" id="meButton" type="button">Blow it up</button>
+        </div>
       </div>
     </div>
     <div class="terminal reveal">
@@ -754,9 +798,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=62"></script>
-<script type="module" src="intro.js?v=62"></script>
+<script type="module" src="world.js?v=64"></script>
+<script type="module" src="intro.js?v=64"></script>
 
-<script src="ui.js?v=62"></script>
+<script src="ui.js?v=64"></script>
 </body>
 </html>

@@ -1248,6 +1248,108 @@ window.__PROJECTS = PROJECTS;
     rvRefresh();
   }
 
+  /* ---------- "this is me, arriving" ---------- */
+  (function () {
+    const card = $('#meCard');
+    if (!card) { return; }
+    const stage = $('#meStage');
+    const btn = $('#meButton');
+    const cap = $('#meCaption');
+    let started = false;
+    let blown = false;
+
+    function play() {
+      if (started) { return; }
+      started = true;
+      if (cap) { cap.textContent = 'The door is opening.'; }
+      stage.classList.add('open');
+      setTimeout(function () {
+        stage.classList.add('walk');
+        if (cap) { cap.textContent = 'He came out to say hello.'; }
+      }, 780);
+      setTimeout(function () {
+        if (cap) { cap.textContent = 'Your call.'; }
+        if (btn && !blown) { btn.classList.add('armed'); }
+      }, 2200);
+    }
+
+    function fire() {
+      const rect = stage.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height * 0.62;
+
+      // embers
+      for (let i = 0; i < 46; i++) {
+        const el = document.createElement('div');
+        el.className = 'me-ember';
+        const hot = Math.random();
+        el.style.background = hot > 0.6 ? '#fff2b0' : (hot > 0.3 ? '#ffb03a' : '#ff5a1f');
+        el.style.boxShadow = '0 0 12px 3px rgba(255,140,40,.85)';
+        el.style.left = cx + 'px';
+        el.style.top = cy + 'px';
+        stage.appendChild(el);
+        const ang = Math.random() * Math.PI * 2;
+        const dist = 60 + Math.random() * 190;
+        const dx = Math.cos(ang) * dist;
+        const dy = Math.sin(ang) * dist - 40 - Math.random() * 60;
+        el.animate([
+          { transform: 'translate(-50%,-50%) scale(1)', opacity: 1 },
+          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(.2)', opacity: 0 }
+        ], { duration: 700 + Math.random() * 700, easing: 'cubic-bezier(.15,.7,.3,1)' })
+          .onfinish = function () { el.remove(); };
+      }
+
+      // chunks of the house
+      for (let i = 0; i < 22; i++) {
+        const el = document.createElement('div');
+        el.className = 'me-shard';
+        el.style.background = i % 3 === 0 ? '#c4463a' : '#f7ecd9';
+        el.style.left = cx + (Math.random() - 0.5) * 130 + 'px';
+        el.style.top = (cy - 40) + (Math.random() - 0.5) * 70 + 'px';
+        stage.appendChild(el);
+        const dx = (Math.random() - 0.5) * 320;
+        const dy = -60 - Math.random() * 160;
+        el.animate([
+          { transform: 'translate(-50%,-50%) rotate(0deg)', opacity: 1 },
+          { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + (dy + 220) + 'px)) rotate(' + ((Math.random() - 0.5) * 720) + 'deg)', opacity: 0 }
+        ], { duration: 900 + Math.random() * 600, easing: 'cubic-bezier(.2,.6,.4,1)' })
+          .onfinish = function () { el.remove(); };
+      }
+    }
+
+    if (btn) {
+      btn.addEventListener('click', function () {
+        if (!started) { play(); return; }
+        if (blown) {
+          // run it again
+          blown = false;
+          stage.classList.remove('boom', 'walk', 'open');
+          if (cap) { cap.textContent = 'He is not here to talk.'; }
+          btn.textContent = 'Blow it up';
+          btn.classList.remove('armed');
+          started = false;
+          setTimeout(play, 60);
+          return;
+        }
+        blown = true;
+        btn.classList.remove('armed');
+        btn.textContent = 'Again';
+        stage.classList.add('boom');
+        if (cap) { cap.textContent = 'Dhurandhar.'; }
+        fire();
+      });
+    }
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { play(); io.disconnect(); } });
+      }, { threshold: 0.35 });
+      io.observe(stage);
+    } else {
+      play();
+    }
+  })();
+
   /* ---------- the Rubik's cube cursor ---------- */
   const voxelCur = $('#voxelCursor');
   if (voxelCur && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
