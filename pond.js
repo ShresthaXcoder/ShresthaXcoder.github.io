@@ -24,8 +24,8 @@
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x14506e);
-  scene.fog = new THREE.FogExp2(0x14506e, 0.038);
+  scene.background = new THREE.Color(0x1d6a90);
+  scene.fog = new THREE.FogExp2(0x1d6a90, 0.030);
 
   const camera = new THREE.PerspectiveCamera(48, 2, 0.1, 200);
   camera.position.set(0, 1.4, 13);
@@ -56,7 +56,7 @@
   /* ---------- the bottom ---------- */
   const floorGeo = new THREE.PlaneGeometry(70, 44, 40, 24);
   floorGeo.rotateX(-Math.PI / 2);
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a5b78, roughness: 1 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x134b64, roughness: 1 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.y = -5.5;
   scene.add(floor);
@@ -66,7 +66,7 @@
   for (let i = 0; i < 6; i++) {
     const g = new THREE.PlaneGeometry(1.6, 14);
     const m = new THREE.MeshBasicMaterial({
-      color: 0xcdeeff, transparent: true, opacity: 0.10,
+      color: 0xcdeeff, transparent: true, opacity: 0.035,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
     });
     const s = new THREE.Mesh(g, m);
@@ -112,12 +112,12 @@
 
   /* ---------- one fish ---------- */
   const COLOURS = [
-    { back: 0x2f6f96, body: 0x6fa8c4, belly: 0xe8f2f7, fin: 0x4d7f9e },   // silver-blue
-    { back: 0xc25a1c, body: 0xee8b45, belly: 0xffd9b5, fin: 0xd9732f },   // orange
-    { back: 0xa8891f, body: 0xe0bf4e, belly: 0xfff0bd, fin: 0xc0a33c },   // gold
-    { back: 0x7a3b52, body: 0xb8697f, belly: 0xf6dbe2, fin: 0x95506a },   // rose
-    { back: 0x3a5c74, body: 0x6f8fa3, belly: 0xe4eef3, fin: 0x4f6e82 },   // slate
-    { back: 0x2f6b4a, body: 0x62a97c, belly: 0xe2f4e8, fin: 0x468063 }    // green
+    { back: 0x1f5f86, body: 0x59a8d6, belly: 0xeaf5fb, fin: 0x3d7fa8 },   // blue
+    { back: 0xb84f12, body: 0xf58a35, belly: 0xffd9b5, fin: 0xd96a20 },   // orange
+    { back: 0xa8861a, body: 0xf0c93f, belly: 0xfff2c0, fin: 0xcaa52c },   // gold
+    { back: 0x8f2f4a, body: 0xe06a86, belly: 0xffdce4, fin: 0xb84b68 },   // rose
+    { back: 0x2c5a72, body: 0x7ba3b8, belly: 0xeaf2f6, fin: 0x4e7b93 },   // slate
+    { back: 0x1f6b48, body: 0x4fbf8a, belly: 0xdff7ea, fin: 0x359a6b }    // green
   ];
 
   function makeFish(colour, size) {
@@ -147,32 +147,35 @@
     const bodyGeo = new THREE.LatheGeometry(profile, 32);
     bodyGeo.rotateZ(Math.PI / 2);
 
+    // a deep, rounded body — this is the fish you see
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.scale.set(1, 0.94, 0.62);
+    body.scale.set(1, 1.02, 0.78);
     g.add(body);
 
+    // the dark back sits proud of the top only
     const back = new THREE.Mesh(bodyGeo.clone(), backMat);
-    back.scale.set(0.99, 0.96, 0.63);
-    back.position.y = 0.045;
+    back.scale.set(0.998, 1.00, 0.775);
+    back.position.y = 0.085;
     g.add(back);
 
+    // the pale belly sits proud of the bottom only
     const belly = new THREE.Mesh(bodyGeo.clone(), bellyMat);
-    belly.scale.set(0.97, 0.80, 0.55);
-    belly.position.y = -0.075;
+    belly.scale.set(0.995, 0.95, 0.77);
+    belly.position.y = -0.105;
     g.add(belly);
 
     /* forked tail */
     const tailShape = new THREE.Shape();
     tailShape.moveTo(0, 0);
-    tailShape.quadraticCurveTo(-0.40, 0.26, -0.86, 0.56);
-    tailShape.quadraticCurveTo(-0.62, 0.14, -0.72, 0);
-    tailShape.quadraticCurveTo(-0.62, -0.14, -0.86, -0.56);
-    tailShape.quadraticCurveTo(-0.40, -0.26, 0, 0);
+    tailShape.quadraticCurveTo(-0.30, 0.20, -0.62, 0.42);
+    tailShape.quadraticCurveTo(-0.46, 0.11, -0.54, 0);
+    tailShape.quadraticCurveTo(-0.46, -0.11, -0.62, -0.42);
+    tailShape.quadraticCurveTo(-0.30, -0.20, 0, 0);
 
     const tailPivot = new THREE.Group();
     tailPivot.position.x = -0.94;
     const tail = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(tailShape, { depth: 0.035, bevelEnabled: false }),
+      new THREE.ExtrudeGeometry(tailShape, { depth: 0.07, bevelEnabled: false }),
       finMat
     );
     tailPivot.add(tail);
@@ -180,9 +183,9 @@
 
     /* dorsal fin */
     const dorsalShape = new THREE.Shape();
-    dorsalShape.moveTo(0.38, 0);
-    dorsalShape.quadraticCurveTo(0.06, 0.54, -0.44, 0.30);
-    dorsalShape.quadraticCurveTo(-0.14, 0.10, 0.38, 0);
+    dorsalShape.moveTo(0.30, 0);
+    dorsalShape.quadraticCurveTo(0.02, 0.38, -0.36, 0.22);
+    dorsalShape.quadraticCurveTo(-0.10, 0.08, 0.30, 0);
     const dorsal = new THREE.Mesh(
       new THREE.ExtrudeGeometry(dorsalShape, { depth: 0.03, bevelEnabled: false }),
       finMat
@@ -195,8 +198,8 @@
     [-1, 1].forEach(function (side) {
       const finShape = new THREE.Shape();
       finShape.moveTo(0, 0);
-      finShape.quadraticCurveTo(0.16, 0.20, 0.40, 0.08);
-      finShape.quadraticCurveTo(0.20, -0.09, 0, 0);
+      finShape.quadraticCurveTo(0.12, 0.15, 0.28, 0.06);
+      finShape.quadraticCurveTo(0.14, -0.07, 0, 0);
       const fin = new THREE.Mesh(
         new THREE.ExtrudeGeometry(finShape, { depth: 0.02, bevelEnabled: false }),
         finMat
@@ -232,7 +235,7 @@
   const COUNT = 10;
   for (let i = 0; i < COUNT; i++) {
     const c = COLOURS[i % COLOURS.length];
-    const size = 0.55 + Math.random() * 0.55;
+    const size = 0.75 + Math.random() * 0.65;
     const f = makeFish(c, size);
     const dir = Math.random() > 0.5 ? 1 : -1;
     f.position.set(
