@@ -24,19 +24,19 @@
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x070f22);
-  scene.fog = new THREE.FogExp2(0x070f22, 0.048);
+  scene.background = new THREE.Color(0x14506e);
+  scene.fog = new THREE.FogExp2(0x14506e, 0.038);
 
   const camera = new THREE.PerspectiveCamera(48, 2, 0.1, 200);
   camera.position.set(0, 1.4, 13);
   camera.lookAt(0, 0, 0);
 
   /* ---------- light ---------- */
-  scene.add(new THREE.HemisphereLight(0x5fa8ff, 0x050a16, 1.1));
-  const sun = new THREE.DirectionalLight(0xa8e8ff, 1.5);
+  scene.add(new THREE.HemisphereLight(0xd6f0ff, 0x0d3348, 2.4));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.6);
   sun.position.set(3, 14, 6);
   scene.add(sun);
-  const fill = new THREE.DirectionalLight(0xff5fd0, 0.8);
+  const fill = new THREE.DirectionalLight(0x8fc4e8, 1.1);
   fill.position.set(-8, 2, -6);
   scene.add(fill);
 
@@ -44,7 +44,7 @@
   const surfGeo = new THREE.PlaneGeometry(46, 26, 60, 34);
   surfGeo.rotateX(Math.PI / 2);
   const surfMat = new THREE.MeshStandardMaterial({
-    color: 0x2f9fd0, transparent: true, opacity: 0.16,
+    color: 0x9fdcf5, transparent: true, opacity: 0.22,
     roughness: 0.15, metalness: 0.35, side: THREE.DoubleSide
   });
   const surface = new THREE.Mesh(surfGeo, surfMat);
@@ -56,7 +56,7 @@
   /* ---------- the bottom ---------- */
   const floorGeo = new THREE.PlaneGeometry(70, 44, 40, 24);
   floorGeo.rotateX(-Math.PI / 2);
-  const floorMat = new THREE.MeshStandardMaterial({ color: 0x08172c, roughness: 1 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x1a5b78, roughness: 1 });
   const floor = new THREE.Mesh(floorGeo, floorMat);
   floor.position.y = -5.5;
   scene.add(floor);
@@ -66,7 +66,7 @@
   for (let i = 0; i < 6; i++) {
     const g = new THREE.PlaneGeometry(1.6, 14);
     const m = new THREE.MeshBasicMaterial({
-      color: 0x6fd0ff, transparent: true, opacity: 0.07,
+      color: 0xcdeeff, transparent: true, opacity: 0.10,
       blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
     });
     const s = new THREE.Mesh(g, m);
@@ -112,168 +112,116 @@
 
   /* ---------- one fish ---------- */
   const COLOURS = [
-    { glow: 0x4fe6ff, patch: 0xff3fb0, fin: 0x7fe8ff },   // cyan / magenta
-    { glow: 0x7f9bff, patch: 0xff5ad0, fin: 0xa8b8ff },   // periwinkle / rose
-    { glow: 0x3ff2c8, patch: 0xff4f8a, fin: 0x7fffd8 },   // aqua / coral
-    { glow: 0xb07cff, patch: 0x4fe6ff, fin: 0xc8a0ff },   // violet / cyan
-    { glow: 0x4fd0ff, patch: 0xff9a3f, fin: 0x8fe0ff },   // blue / amber
-    { glow: 0x5fffd0, patch: 0xb04fff, fin: 0x9fffe4 }    // mint / violet
+    { back: 0x2f6f96, body: 0x6fa8c4, belly: 0xe8f2f7, fin: 0x4d7f9e },   // silver-blue
+    { back: 0xc25a1c, body: 0xee8b45, belly: 0xffd9b5, fin: 0xd9732f },   // orange
+    { back: 0xa8891f, body: 0xe0bf4e, belly: 0xfff0bd, fin: 0xc0a33c },   // gold
+    { back: 0x7a3b52, body: 0xb8697f, belly: 0xf6dbe2, fin: 0x95506a },   // rose
+    { back: 0x3a5c74, body: 0x6f8fa3, belly: 0xe4eef3, fin: 0x4f6e82 },   // slate
+    { back: 0x2f6b4a, body: 0x62a97c, belly: 0xe2f4e8, fin: 0x468063 }    // green
   ];
-
-  /* a soft glowing blotch texture, so the body is not one flat colour */
-  function makeSkin(glow, patch) {
-    const c = document.createElement('canvas');
-    c.width = 256; c.height = 128;
-    const g = c.getContext('2d');
-
-    const base = '#' + glow.toString(16).padStart(6, '0');
-    const hot = '#' + patch.toString(16).padStart(6, '0');
-
-    const grad = g.createLinearGradient(0, 0, 0, 128);
-    grad.addColorStop(0, base);
-    grad.addColorStop(0.45, '#ffffff');
-    grad.addColorStop(0.72, base);
-    grad.addColorStop(1, hot);
-    g.fillStyle = grad;
-    g.fillRect(0, 0, 256, 128);
-
-    for (let i = 0; i < 22; i++) {
-      const x = Math.random() * 256;
-      const y = Math.random() * 128;
-      const r = 8 + Math.random() * 26;
-      const rg = g.createRadialGradient(x, y, 0, x, y, r);
-      rg.addColorStop(0, 'rgba(255,60,180,.55)');
-      rg.addColorStop(1, 'rgba(255,60,180,0)');
-      g.fillStyle = rg;
-      g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
-    }
-
-    const t = new THREE.CanvasTexture(c);
-    t.colorSpace = THREE.SRGBColorSpace;
-    return t;
-  }
 
   function makeFish(colour, size) {
     const g = new THREE.Group();
-    const skin = makeSkin(colour.glow, colour.patch);
 
     const bodyMat = new THREE.MeshStandardMaterial({
-      map: skin, color: 0xffffff,
-      emissive: new THREE.Color(colour.glow), emissiveIntensity: 0.55,
-      roughness: 0.22, metalness: 0.35,
-      transparent: true, opacity: 0.88
+      color: colour.body, roughness: 0.42, metalness: 0.18
+    });
+    const backMat = new THREE.MeshStandardMaterial({
+      color: colour.back, roughness: 0.45, metalness: 0.15
+    });
+    const bellyMat = new THREE.MeshStandardMaterial({
+      color: colour.belly, roughness: 0.55, metalness: 0.05
+    });
+    const finMat = new THREE.MeshStandardMaterial({
+      color: colour.fin, roughness: 0.6, metalness: 0.05,
+      side: THREE.DoubleSide
     });
 
-    const finMat = new THREE.MeshBasicMaterial({
-      color: colour.fin, transparent: true, opacity: 0.42,
-      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
-    });
-
-    /* a long, deep body like a koi */
+    /* body: a clean fish silhouette, revolved */
     const profile = [
-      [0.02, -1.02], [0.08, -0.92], [0.16, -0.76], [0.26, -0.54],
-      [0.36, -0.28], [0.42, 0.00], [0.42, 0.26], [0.36, 0.50],
-      [0.27, 0.70], [0.16, 0.86], [0.05, 0.98]
+      [0.02, -0.96], [0.09, -0.84], [0.18, -0.66], [0.30, -0.42],
+      [0.41, -0.14], [0.46, 0.10], [0.44, 0.32], [0.36, 0.52],
+      [0.25, 0.70], [0.14, 0.85], [0.04, 0.96]
     ].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
 
-    const bodyGeo = new THREE.LatheGeometry(profile, 28);
+    const bodyGeo = new THREE.LatheGeometry(profile, 32);
     bodyGeo.rotateZ(Math.PI / 2);
+
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.scale.set(1, 0.92, 0.60);
+    body.scale.set(1, 0.94, 0.62);
     g.add(body);
 
-    /* a faint outer shell — the light bleeding off the skin */
-    const haloMat = new THREE.MeshBasicMaterial({
-      color: colour.glow, transparent: true, opacity: 0.16,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-      side: THREE.BackSide
-    });
-    const halo = new THREE.Mesh(bodyGeo.clone(), haloMat);
-    halo.scale.set(1.10, 1.03, 0.70);
-    g.add(halo);
+    const back = new THREE.Mesh(bodyGeo.clone(), backMat);
+    back.scale.set(0.99, 0.96, 0.63);
+    back.position.y = 0.045;
+    g.add(back);
 
-    /* long flowing tail */
+    const belly = new THREE.Mesh(bodyGeo.clone(), bellyMat);
+    belly.scale.set(0.97, 0.80, 0.55);
+    belly.position.y = -0.075;
+    g.add(belly);
+
+    /* forked tail */
     const tailShape = new THREE.Shape();
     tailShape.moveTo(0, 0);
-    tailShape.bezierCurveTo(-0.35, 0.20, -0.75, 0.46, -1.28, 0.72);
-    tailShape.bezierCurveTo(-0.95, 0.26, -1.05, 0.06, -1.18, 0.0);
-    tailShape.bezierCurveTo(-1.05, -0.06, -0.95, -0.26, -1.28, -0.72);
-    tailShape.bezierCurveTo(-0.75, -0.46, -0.35, -0.20, 0, 0);
+    tailShape.quadraticCurveTo(-0.40, 0.26, -0.86, 0.56);
+    tailShape.quadraticCurveTo(-0.62, 0.14, -0.72, 0);
+    tailShape.quadraticCurveTo(-0.62, -0.14, -0.86, -0.56);
+    tailShape.quadraticCurveTo(-0.40, -0.26, 0, 0);
 
     const tailPivot = new THREE.Group();
     tailPivot.position.x = -0.94;
     const tail = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(tailShape, { depth: 0.03, bevelEnabled: false }),
+      new THREE.ExtrudeGeometry(tailShape, { depth: 0.035, bevelEnabled: false }),
       finMat
     );
-    tail.scale.set(1.1, 1.1, 1);
     tailPivot.add(tail);
     g.add(tailPivot);
 
-    /* tall flowing dorsal */
+    /* dorsal fin */
     const dorsalShape = new THREE.Shape();
-    dorsalShape.moveTo(0.40, 0);
-    dorsalShape.bezierCurveTo(0.22, 0.52, -0.20, 0.78, -0.62, 0.60);
-    dorsalShape.bezierCurveTo(-0.30, 0.34, -0.02, 0.14, 0.40, 0);
+    dorsalShape.moveTo(0.38, 0);
+    dorsalShape.quadraticCurveTo(0.06, 0.54, -0.44, 0.30);
+    dorsalShape.quadraticCurveTo(-0.14, 0.10, 0.38, 0);
     const dorsal = new THREE.Mesh(
       new THREE.ExtrudeGeometry(dorsalShape, { depth: 0.03, bevelEnabled: false }),
       finMat
     );
-    dorsal.position.set(0, 0.26, 0);
+    dorsal.position.set(0, 0.28, 0);
     dorsal.rotation.y = Math.PI / 2;
     g.add(dorsal);
 
-    /* anal fin */
-    const analShape = new THREE.Shape();
-    analShape.moveTo(0.16, 0);
-    analShape.bezierCurveTo(-0.02, -0.34, -0.30, -0.44, -0.52, -0.30);
-    analShape.bezierCurveTo(-0.28, -0.16, -0.08, -0.06, 0.16, 0);
-    const anal = new THREE.Mesh(
-      new THREE.ExtrudeGeometry(analShape, { depth: 0.025, bevelEnabled: false }),
-      finMat
-    );
-    anal.position.set(0, -0.26, 0);
-    anal.rotation.y = Math.PI / 2;
-    g.add(anal);
-
-    /* wide pectoral fins */
+    /* pectoral fins */
     [-1, 1].forEach(function (side) {
       const finShape = new THREE.Shape();
       finShape.moveTo(0, 0);
-      finShape.bezierCurveTo(0.18, 0.26, 0.46, 0.30, 0.66, 0.06);
-      finShape.bezierCurveTo(0.44, -0.10, 0.20, -0.10, 0, 0);
+      finShape.quadraticCurveTo(0.16, 0.20, 0.40, 0.08);
+      finShape.quadraticCurveTo(0.20, -0.09, 0, 0);
       const fin = new THREE.Mesh(
         new THREE.ExtrudeGeometry(finShape, { depth: 0.02, bevelEnabled: false }),
         finMat
       );
-      fin.position.set(0.24, -0.06, side * 0.22);
-      fin.rotation.set(side * 0.8, side * 0.3, side * 0.15);
+      fin.position.set(0.22, -0.06, side * 0.24);
+      fin.rotation.set(side * 0.85, side * 0.2, side * 0.1);
       g.add(fin);
     });
 
-    /* the eye: a bright bead with a catchlight */
+    /* eye */
     [-1, 1].forEach(function (side) {
-      const pupil = new THREE.Mesh(
-        new THREE.SphereGeometry(0.085, 12, 10),
-        new THREE.MeshBasicMaterial({ color: 0x101a2e })
+      const ring = new THREE.Mesh(
+        new THREE.SphereGeometry(0.105, 12, 10),
+        new THREE.MeshStandardMaterial({ color: 0xf6fafc, roughness: 0.3 })
       );
-      pupil.position.set(0.60, 0.10, side * 0.24);
-      g.add(pupil);
-      const glint = new THREE.Mesh(
-        new THREE.SphereGeometry(0.028, 8, 6),
-        new THREE.MeshBasicMaterial({ color: 0xffffff })
-      );
-      glint.position.set(0.63, 0.13, side * 0.26);
-      g.add(glint);
-    });
+      ring.position.set(0.54, 0.11, side * 0.22);
+      g.add(ring);
 
-    /* the aura around it */
-    const aura = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: bubbleTex, color: colour.glow, transparent: true, opacity: 0.30,
-      blending: THREE.AdditiveBlending, depthWrite: false
-    }));
-    aura.scale.setScalar(3.4);
-    g.add(aura);
+      const pupil = new THREE.Mesh(
+        new THREE.SphereGeometry(0.070, 12, 10),
+        new THREE.MeshStandardMaterial({ color: 0x0d141c, roughness: 0.2 })
+      );
+      pupil.position.set(0.585, 0.115, side * 0.255);
+      g.add(pupil);
+    });
 
     g.scale.setScalar(size);
     g.userData = { tailPivot: tailPivot };
@@ -281,7 +229,7 @@
   }
 
   const fish = [];
-  const COUNT = 9;
+  const COUNT = 10;
   for (let i = 0; i < COUNT; i++) {
     const c = COLOURS[i % COLOURS.length];
     const size = 0.55 + Math.random() * 0.55;
