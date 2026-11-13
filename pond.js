@@ -112,14 +112,14 @@
 
   /* ---------- one fish ---------- */
   const COLOURS = [
-    { top: 0xd4560f, body: 0xff8a3c, belly: 0xffd9b8, fin: 0xffb877, eye: 0x101820 },
-    { top: 0x1d6fa5, body: 0x4ea8e0, belly: 0xcbe9fb, fin: 0x8fd0f2, eye: 0x0a1018 },
-    { top: 0xb8891c, body: 0xf2c14e, belly: 0xfff0c2, fin: 0xffe08a, eye: 0x141008 },
-    { top: 0x9c2438, body: 0xe0576b, belly: 0xffd2d9, fin: 0xff9aa8, eye: 0x140a0c },
-    { top: 0x4a3bc4, body: 0x7b6cf6, belly: 0xddd8ff, fin: 0xb3a9ff, eye: 0x0c0a1a },
-    { top: 0x1c7a5c, body: 0x46c99a, belly: 0xd2f7ea, fin: 0x8fe6c6, eye: 0x081410 },
-    { top: 0x9a2f6e, body: 0xe25fa8, belly: 0xffd6ec, fin: 0xff9ecd, eye: 0x140812 },
-    { top: 0x8a5a1e, body: 0xc98a3f, belly: 0xf0dcc0, fin: 0xe0b077, eye: 0x100c08 }
+    { top: 0xe2641f, body: 0xffa04a, belly: 0xffe3c8, fin: 0xffc48c, eye: 0x12181f },  // clownfish
+    { top: 0x1b6fa8, body: 0x4fa9e4, belly: 0xd6eefc, fin: 0x96d4f4, eye: 0x0a1018 },  // blue tang
+    { top: 0xc79a20, body: 0xf7cf62, belly: 0xfff2cd, fin: 0xffe59a, eye: 0x141008 },  // yellow tang
+    { top: 0xa32b3f, body: 0xec6c7e, belly: 0xffdade, fin: 0xffa6b2, eye: 0x140a0c },  // anthias
+    { top: 0x4b3fcf, body: 0x8b7cf8, belly: 0xe2ddff, fin: 0xbdb3ff, eye: 0x0c0a1a },  // royal gramma
+    { top: 0x1d7f61, body: 0x4fd3a6, belly: 0xd8f9ef, fin: 0x96ebd0, eye: 0x081410 },  // wrasse
+    { top: 0xa8347a, body: 0xea6cb2, belly: 0xffdcef, fin: 0xffa8d3, eye: 0x140812 },  // magenta dottyback
+    { top: 0x8f6a2c, body: 0xd6a55c, belly: 0xf5e5c8, fin: 0xe8bf8a, eye: 0x100c08 }   // copper
   ];
 
   function makeFish(colour, size) {
@@ -134,25 +134,26 @@
     });
 
     /* body: a real fish profile, revolved */
+    // a round, friendly little fish: full through the middle, short snout
     const profile = [
-      [0.02, -1.00], [0.09, -0.86], [0.17, -0.66], [0.30, -0.40],
-      [0.42, -0.10], [0.47, 0.14], [0.44, 0.38], [0.35, 0.58],
-      [0.23, 0.76], [0.12, 0.90], [0.03, 1.00]
+      [0.02, -0.92], [0.10, -0.80], [0.20, -0.62], [0.34, -0.40],
+      [0.48, -0.14], [0.55, 0.10], [0.53, 0.32], [0.44, 0.52],
+      [0.31, 0.70], [0.17, 0.84], [0.04, 0.94]
     ].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
 
     const bodyGeo = new THREE.LatheGeometry(profile, 24);
     bodyGeo.rotateZ(Math.PI / 2);
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.scale.set(1, 0.92, 0.56);
+    body.scale.set(1, 0.96, 0.70);
     g.add(body);
 
     const back = new THREE.Mesh(bodyGeo.clone(), topMat);
-    back.scale.set(0.985, 0.90, 0.55);
+    back.scale.set(0.985, 0.94, 0.69);
     back.position.y = 0.05;
     g.add(back);
 
     const belly = new THREE.Mesh(bodyGeo.clone(), bellyMat);
-    belly.scale.set(0.96, 0.78, 0.50);
+    belly.scale.set(0.96, 0.84, 0.64);
     belly.position.y = -0.09;
     g.add(belly);
 
@@ -212,21 +213,40 @@
       g.add(fin);
     });
 
-    /* eyes */
+    /* big friendly eyes */
     [-1, 1].forEach(function (side) {
       const white = new THREE.Mesh(
-        new THREE.SphereGeometry(0.115, 12, 10),
-        new THREE.MeshStandardMaterial({ color: 0xf4f8fb, roughness: 0.3 })
+        new THREE.SphereGeometry(0.165, 14, 12),
+        new THREE.MeshStandardMaterial({ color: 0xfbfdff, roughness: 0.22 })
       );
-      white.position.set(0.58, 0.10, side * 0.24);
+      white.position.set(0.52, 0.16, side * 0.28);
+      white.scale.set(1, 1, 0.85);
       g.add(white);
+
       const pupil = new THREE.Mesh(
-        new THREE.SphereGeometry(0.062, 10, 8),
+        new THREE.SphereGeometry(0.098, 12, 10),
         new THREE.MeshBasicMaterial({ color: colour.eye })
       );
-      pupil.position.set(0.64, 0.11, side * 0.27);
+      pupil.position.set(0.60, 0.17, side * 0.33);
       g.add(pupil);
+
+      // catchlight, the thing that makes it look alive
+      const glint = new THREE.Mesh(
+        new THREE.SphereGeometry(0.034, 8, 6),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      glint.position.set(0.63, 0.215, side * 0.35);
+      g.add(glint);
     });
+
+    /* a small mouth */
+    const mouth = new THREE.Mesh(
+      new THREE.TorusGeometry(0.075, 0.022, 8, 14, Math.PI),
+      new THREE.MeshStandardMaterial({ color: colour.top, roughness: 0.6 })
+    );
+    mouth.position.set(0.84, -0.02, 0);
+    mouth.rotation.set(0, Math.PI / 2, Math.PI);
+    g.add(mouth);
 
     g.scale.setScalar(size);
     g.userData = { tailPivot: tailPivot };
