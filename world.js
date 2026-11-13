@@ -350,7 +350,7 @@ function build(THREE, PP){
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.1, 800);
-  camera.position.set(0, 6, 46);
+  camera.position.set(0, 6, 70);
   camera.lookAt(0, 4, 0);
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9fb6c9, 1.15));
@@ -1385,11 +1385,19 @@ function build(THREE, PP){
   wparts.forEach(o=>world.add(o));
   scene.add(world);
 
+  // how far back the camera sits: wide screens keep their distance,
+  // narrow ones pull back further so the whole island still fits
+  function baseDist(){
+    const a = camera.aspect || 1.6;
+    return Math.max(70, 72 / a);
+  }
+
   function fitScale(){
     const vFov = camera.fov*Math.PI/180;
-    const visH = 2*Math.tan(vFov/2)*camera.position.z;
+    const visH = 2*Math.tan(vFov/2)*baseDist();
     const visW = visH*camera.aspect;
-    return Math.max(0.15, Math.min(1.5, visW/(camera.aspect<0.9?58:68)));
+    // a big divisor keeps the island small in the frame
+    return Math.max(0.12, Math.min(1.5, visW/150));
   }
   function applyFit(){ const f=fitScale(); world.scale.setScalar(f); world.position.y = 10.9 - NAME_Y*f; }
   applyFit();
@@ -2110,10 +2118,10 @@ function build(THREE, PP){
       rideLook.set(rideCam.x + tanX * 10, rideCam.y - 0.8, rideCam.z + tanZ * 10);
       camera.lookAt(rideLook);
     } else {
-      camera.position.x = mouse.x*2.4;
-      camera.position.y = 6 - mouse.y*1.8;
-      camera.position.z = 46 - pageP*8;
-      camera.lookAt(0, 4 - pageP*6, 0);
+      camera.position.x = mouse.x*1.2;
+      camera.position.y = 6 - mouse.y*1.0;
+      camera.position.z = baseDist();
+      camera.lookAt(0, 4 - pageP*3, 0);
     }
 
 
