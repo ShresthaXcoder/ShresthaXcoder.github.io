@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=81" />
+<link rel="stylesheet" href="style.css?v=82" />
 </head>
 <body>
 
@@ -560,6 +560,13 @@ setTimeout(function () {
       </div>
     </div>
   </div>
+  <div class="pond" id="pond">
+    <canvas id="pondCanvas"></canvas>
+    <div class="pond-cap">
+      <span data-hi="द्वीप के पानी में कुछ मछलियाँ">a few fish in the water</span>
+    </div>
+  </div>
+
   <footer><div class="wrap foot">
     <span>&copy; 2026 Shrestha &middot; built by hand</span>
     <span>Darbhanga, India &middot; <span class="accent" data-hi="काम के लिए उपलब्ध">available for work</span></span>
@@ -893,11 +900,12 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=81"></script>
-<script type="module" src="intro.js?v=81"></script>
-<script type="module" src="me3d.js?v=81"></script>
+<script type="module" src="world.js?v=82"></script>
+<script type="module" src="intro.js?v=82"></script>
+<script type="module" src="me3d.js?v=82"></script>
+<script type="module" src="pond.js?v=82"></script>
 
 
-<script src="ui.js?v=81"></script>
+<script src="ui.js?v=82"></script>
 </body>
 </html>

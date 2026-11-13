@@ -1328,3 +1328,17 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
   .me-bar p { font-size: 10px; }
   .me-btn { padding: 10px 16px; font-size: 10px; }
 }
+
+/* ---------- the pond ---------- */
+.pond { position: relative; width: 100%; height: 260px; margin-top: 34px;
+  border-radius: 18px; overflow: hidden;
+  border: 1px solid rgba(120,200,240,.22);
+  box-shadow: 0 24px 60px rgba(4,20,34,.35), 0 0 0 1px rgba(255,255,255,.04) inset; }
+#pondCanvas { display: block; width: 100%; height: 100%; }
+.pond-cap { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .34em; text-transform: uppercase;
+  color: rgba(200,240,255,.55); pointer-events: none; }
+@media (max-width: 640px) {
+  .pond { height: 190px; margin-top: 26px; border-radius: 14px; }
+  .pond-cap { font-size: 8.5px; letter-spacing: .24em; }
+}
