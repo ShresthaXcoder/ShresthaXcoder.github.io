@@ -1027,6 +1027,7 @@ function build(THREE, PP){
     if(!dragging) return;
     const dx=e.clientX-lastPX, dy=e.clientY-lastPY;
     dragDist += Math.abs(dx)+Math.abs(dy);
+    if(dragDist < 10) return;   // a tap is not a drag
     orbitY += dx*0.006; orbitX += dy*0.004;
     orbitY = Math.max(-0.85, Math.min(0.85, orbitY));
     orbitX = Math.max(-0.55, Math.min(0.6, orbitX));
@@ -1423,7 +1424,11 @@ function build(THREE, PP){
     renderer.setSize(innerWidth,innerHeight); if(composer&&composer.setSize) composer.setSize(innerWidth,innerHeight); applyFit(); });
 
   let scatter = 0, scatterDir = 0;
-  addEventListener('pointerdown', e=>{ if(e.target===canvas){ scatter=1; scatterDir=Math.random()>0.5?1:-1; } });
+  addEventListener('pointerdown', e=>{
+    // the scatter is a desktop toy; on a phone a tap is just a tap
+    if(e.pointerType === 'touch') return;
+    if(e.target===canvas){ scatter=1; scatterDir=Math.random()>0.5?1:-1; }
+  });
 
   /* ---------- the time machine: the island grows into a future ---------- */
   let era = 0.43;
@@ -2133,13 +2138,13 @@ function build(THREE, PP){
 
     // orbit / zoom camera offsets (applied after the base framing)
     if(Math.abs(orbitY)>0.001 || Math.abs(orbitX)>0.001 || zoomOff!==0){
-      const camR = (46 - pageP*8 - zoomOff);
+      const camR = (baseDist() - pageP*8 - zoomOff);
       const bx = camera.position.x, bz = camera.position.z;
       camera.position.x = bx*Math.cos(orbitY) + bz*Math.sin(orbitY);
       camera.position.z = -bx*Math.sin(orbitY) + bz*Math.cos(orbitY);
       camera.position.y += orbitX*9;
       const rad = Math.hypot(camera.position.x, camera.position.z) || 1;
-      const want = Math.max(24, Math.min(80, camR));
+      const want = Math.max(24, Math.min(baseDist() * 1.15, camR));
       camera.position.x *= want/rad; camera.position.z *= want/rad;
       camera.lookAt(0, 4 - pageP*6, 0);
     }
