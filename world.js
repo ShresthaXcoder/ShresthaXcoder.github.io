@@ -1397,7 +1397,7 @@ function build(THREE, PP){
     const visH = 2*Math.tan(vFov/2)*baseDist();
     const visW = visH*camera.aspect;
     // a big divisor keeps the island small in the frame
-    return Math.max(0.12, Math.min(1.5, visW/150));
+    return Math.max(0.12, Math.min(1.5, visW/100));
   }
   function applyFit(){ const f=fitScale(); world.scale.setScalar(f); world.position.y = 10.9 - NAME_Y*f; }
   applyFit();
