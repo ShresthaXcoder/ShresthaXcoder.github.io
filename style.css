@@ -1355,3 +1355,34 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
 .me-start svg { flex: none; }
 .me-start.done { background: #2f8f5b; border-color: #3fae72; color: #fff;
   box-shadow: 0 8px 22px rgba(50,160,100,.35); pointer-events: none; }
+
+/* ---------- the door in ---------- */
+html.gated, html.gated body { overflow: hidden; height: 100%; }
+.gate { position: fixed; inset: 0; z-index: 99999; display: grid; place-items: center;
+  background: radial-gradient(ellipse at 50% 40%, #12314d 0%, #081726 55%, #040a12 100%);
+  transition: opacity .8s ease, transform .8s ease; }
+.gate.gone { opacity: 0; transform: scale(1.04); pointer-events: none; }
+.gate-inner { text-align: center; padding: 30px 24px; }
+.gate-mark { display: grid; grid-template-columns: repeat(2, 26px); gap: 6px;
+  justify-content: center; margin-bottom: 26px; }
+.gate-mark span { width: 26px; height: 26px; border-radius: 7px; display: block;
+  animation: gateFloat 3.4s ease-in-out infinite; }
+.gate-mark .g1 { background: #ff8a3c; animation-delay: 0s; }
+.gate-mark .g2 { background: #4ea8e0; animation-delay: .18s; }
+.gate-mark .g3 { background: #46c99a; animation-delay: .36s; }
+.gate-mark .g4 { background: #f2c14e; animation-delay: .54s; }
+@keyframes gateFloat { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-7px) rotate(6deg); } }
+.gate h1 { margin: 0; font-size: clamp(34px, 7vw, 62px); letter-spacing: .04em; color: #f2f7fb;
+  font-weight: 800; text-shadow: 0 6px 40px rgba(0,0,0,.6); }
+.gate p { margin: 10px 0 30px; font-family: var(--mono); font-size: 11px; letter-spacing: .34em;
+  text-transform: uppercase; color: #7f9ab4; }
+.gate-btn { display: inline-flex; align-items: center; gap: 10px; padding: 16px 32px;
+  border-radius: 999px; cursor: pointer; border: 1px solid #ffc76a;
+  background: linear-gradient(#ffd27a, #ffb43a); color: #1a1206;
+  font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+  font-weight: 700; box-shadow: 0 18px 50px rgba(255,170,50,.35);
+  transition: transform .16s, box-shadow .25s; }
+.gate-btn:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 24px 62px rgba(255,170,50,.5); }
+.gate-btn:active { transform: scale(.97); }
+.gate-note { display: block; margin-top: 16px; font-family: var(--mono); font-size: 9.5px;
+  letter-spacing: .2em; text-transform: uppercase; color: #5d7791; }

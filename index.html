@@ -85,9 +85,25 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=94" />
+<link rel="stylesheet" href="style.css?v=95" />
 </head>
 <body>
+
+<div class="gate" id="gate">
+  <div class="gate-inner">
+    <div class="gate-mark">
+      <span class="g1"></span><span class="g2"></span><span class="g3"></span><span class="g4"></span>
+    </div>
+    <h1>Shrestha</h1>
+    <p>a small island, built by hand</p>
+    <button class="gate-btn" id="gateBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="15" height="15"><path d="M8 5v14l11-7z"/></svg>
+      Enter with sound
+    </button>
+    <span class="gate-note">tapping lets the music play</span>
+  </div>
+</div>
+
 
 <!-- loader: the logo draws itself -->
 <div class="loader" id="loader">
@@ -354,10 +370,6 @@ setTimeout(function () {
         </div>
         <div class="me-bar">
           <p id="meCaption">He is not here to talk.</p>
-          <button class="me-start" id="meStart" type="button">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13"><path d="M8 5v14l11-7z"/></svg>
-            Tap to start with sound
-          </button>
           <button class="me-btn" id="meButton" type="button">Blow it up</button>
         </div>
       </div>
@@ -904,12 +916,39 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=94"></script>
-<script type="module" src="intro.js?v=94"></script>
-<script type="module" src="me3d.js?v=94"></script>
-<script type="module" src="pond.js?v=94"></script>
+<script type="module" src="world.js?v=95"></script>
+<script type="module" src="intro.js?v=95"></script>
+<script type="module" src="me3d.js?v=95"></script>
+<script>
+(function () {
+  var gate = document.getElementById('gate');
+  var btn = document.getElementById('gateBtn');
+  if (!gate || !btn) { return; }
+
+  // keep the page still behind the gate
+  document.documentElement.classList.add('gated');
+
+  btn.addEventListener('click', function () {
+    // this tap is the gesture browsers need before they allow sound
+    try {
+      var a = new Audio('assets/me-theme.mp3');
+      a.volume = 0;
+      var p = a.play();
+      if (p && p.catch) { p.catch(function () {}); }
+      setTimeout(function () { try { a.pause(); } catch (e) {} }, 60);
+    } catch (e) {}
+    window.__audioUnlocked = true;
+
+    gate.classList.add('gone');
+    document.documentElement.classList.remove('gated');
+    setTimeout(function () { gate.remove(); }, 900);
+    window.scrollTo(0, 0);
+  });
+})();
+</script>
+<script type="module" src="pond.js?v=95"></script>
 
 
-<script src="ui.js?v=94"></script>
+<script src="ui.js?v=95"></script>
 </body>
 </html>
