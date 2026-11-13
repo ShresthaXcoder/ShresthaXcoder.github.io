@@ -1,223 +1,267 @@
 /* =========================================================
-   The pond at the end of the page.
-   Water, light, and a few fish that have nowhere to be.
+   The pond at the end of the page — in 3D.
+   A rippling surface above, depth and light below, and fish
+   with bodies that turn as they swim.
    ========================================================= */
-(function () {
+(async function () {
   const wrap = document.getElementById('pond');
   const canvas = document.getElementById('pondCanvas');
   if (!wrap || !canvas) { return; }
 
-  const ctx = canvas.getContext('2d');
-  let W = 800, H = 260, DPR = 1;
-  let running = false, visible = false, raf = 0, last = 0, time = 0;
+  let THREE;
+  try { THREE = await import('three'); } catch (e) { fallback2D(); return; }
 
-  function fit() {
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = wrap.clientWidth || 800;
-    H = wrap.clientHeight || 260;
-    canvas.width = Math.floor(W * DPR);
-    canvas.height = Math.floor(H * DPR);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    buildFish();
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+  } catch (e) {
+    fallback2D();
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.15;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a3d5c);
+  scene.fog = new THREE.FogExp2(0x0a3d5c, 0.055);
+
+  const camera = new THREE.PerspectiveCamera(48, 2, 0.1, 200);
+  camera.position.set(0, 1.4, 13);
+  camera.lookAt(0, 0, 0);
+
+  /* ---------- light ---------- */
+  scene.add(new THREE.HemisphereLight(0xbfeaff, 0x06202f, 2.0));
+  const sun = new THREE.DirectionalLight(0xd8f4ff, 2.2);
+  sun.position.set(3, 14, 6);
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0x2f7fa8, 0.9);
+  fill.position.set(-8, 2, -6);
+  scene.add(fill);
+
+  /* ---------- the water surface, seen from below ---------- */
+  const surfGeo = new THREE.PlaneGeometry(46, 26, 60, 34);
+  surfGeo.rotateX(Math.PI / 2);
+  const surfMat = new THREE.MeshStandardMaterial({
+    color: 0x6fd2f2, transparent: true, opacity: 0.30,
+    roughness: 0.15, metalness: 0.35, side: THREE.DoubleSide
+  });
+  const surface = new THREE.Mesh(surfGeo, surfMat);
+  surface.position.y = 4.2;
+  scene.add(surface);
+
+  const surfBase = surfGeo.attributes.position.array.slice(0);
+
+  /* ---------- the bottom ---------- */
+  const floorGeo = new THREE.PlaneGeometry(70, 44, 40, 24);
+  floorGeo.rotateX(-Math.PI / 2);
+  const floorMat = new THREE.MeshStandardMaterial({ color: 0x0d3a4f, roughness: 1 });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.position.y = -5.5;
+  scene.add(floor);
+
+  /* ---------- shafts of light ---------- */
+  const shafts = [];
+  for (let i = 0; i < 6; i++) {
+    const g = new THREE.PlaneGeometry(1.6, 14);
+    const m = new THREE.MeshBasicMaterial({
+      color: 0x9fe4ff, transparent: true, opacity: 0.10,
+      blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide
+    });
+    const s = new THREE.Mesh(g, m);
+    s.position.set(-14 + i * 5.4, -1.5, -2 - (i % 3) * 3);
+    s.rotation.z = 0.12;
+    scene.add(s);
+    shafts.push(s);
   }
 
-  /* ---------- the cast ---------- */
-  const PALETTE = [
-    { body: '#ff8a3c', fin: '#ffb877', belly: '#ffd7b0' },
-    { body: '#4ea8e0', fin: '#8fd0f2', belly: '#cbe9fb' },
-    { body: '#f2c14e', fin: '#ffe08a', belly: '#fff0c2' },
-    { body: '#e0576b', fin: '#ff9aa8', belly: '#ffd2d9' },
-    { body: '#7b6cf6', fin: '#b3a9ff', belly: '#ddd8ff' }
-  ];
+  /* ---------- bubbles ---------- */
+  const bubbleTex = (function () {
+    const S = 64;
+    const c = document.createElement('canvas');
+    c.width = c.height = S;
+    const g = c.getContext('2d');
+    const gr = g.createRadialGradient(S * 0.4, S * 0.35, 1, S / 2, S / 2, S / 2);
+    gr.addColorStop(0, 'rgba(255,255,255,.95)');
+    gr.addColorStop(0.55, 'rgba(200,240,255,.28)');
+    gr.addColorStop(0.85, 'rgba(180,230,255,.16)');
+    gr.addColorStop(1, 'rgba(180,230,255,0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, S, S);
+    return new THREE.CanvasTexture(c);
+  })();
 
-  let fish = [];
-  let bubbles = [];
-
-  function buildFish() {
-    fish = [];
-    const n = W < 520 ? 4 : 6;
-    for (let i = 0; i < n; i++) {
-      const p = PALETTE[i % PALETTE.length];
-      const size = 14 + Math.random() * 16;
-      fish.push({
-        x: Math.random() * W,
-        y: H * 0.30 + Math.random() * H * 0.52,
-        size: size,
-        dir: Math.random() > 0.5 ? 1 : -1,
-        speed: 18 + Math.random() * 26,
-        wob: Math.random() * 6.283,
-        wobAmp: 6 + Math.random() * 10,
-        wobSpd: 0.7 + Math.random() * 0.9,
-        phase: Math.random() * 6.283,
-        body: p.body, fin: p.fin, belly: p.belly,
-        depth: 0.5 + Math.random() * 0.5
-      });
-    }
-    bubbles = [];
-    for (let i = 0; i < 18; i++) {
-      bubbles.push({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: 1 + Math.random() * 3,
-        v: 10 + Math.random() * 22,
-        ph: Math.random() * 6.283
-      });
-    }
+  const BUB = 90;
+  const bPos = new Float32Array(BUB * 3);
+  const bVel = [];
+  for (let i = 0; i < BUB; i++) {
+    bPos[i * 3] = (Math.random() - 0.5) * 26;
+    bPos[i * 3 + 1] = -5 + Math.random() * 9;
+    bPos[i * 3 + 2] = (Math.random() - 0.5) * 14;
+    bVel.push(0.25 + Math.random() * 0.6);
   }
+  const bGeo = new THREE.BufferGeometry();
+  bGeo.setAttribute('position', new THREE.BufferAttribute(bPos, 3));
+  const bMat = new THREE.PointsMaterial({
+    size: 0.30, map: bubbleTex, transparent: true, opacity: 0.75,
+    depthWrite: false, blending: THREE.AdditiveBlending
+  });
+  const bubbles = new THREE.Points(bGeo, bMat);
+  scene.add(bubbles);
 
   /* ---------- one fish ---------- */
-  function drawFish(f) {
-    const s = f.size;
-    const wag = Math.sin(time * 5 + f.phase) * 0.42;
-    const tilt = Math.sin(time * f.wobSpd + f.wob) * 0.10;
+  const COLOURS = [
+    { body: 0xff8a3c, fin: 0xffb877 },
+    { body: 0x4ea8e0, fin: 0x8fd0f2 },
+    { body: 0xf2c14e, fin: 0xffe08a },
+    { body: 0xe0576b, fin: 0xff9aa8 },
+    { body: 0x7b6cf6, fin: 0xb3a9ff }
+  ];
 
-    ctx.save();
-    ctx.translate(f.x, f.y);
-    ctx.scale(f.dir, 1);
-    ctx.rotate(tilt);
-    ctx.globalAlpha = 0.55 + f.depth * 0.45;
+  function makeFish(colour, size) {
+    const g = new THREE.Group();
+    const bodyMat = new THREE.MeshStandardMaterial({ color: colour.body, roughness: 0.45, metalness: 0.15 });
+    const finMat = new THREE.MeshStandardMaterial({ color: colour.fin, roughness: 0.6, side: THREE.DoubleSide });
 
-    // tail
-    ctx.fillStyle = f.fin;
-    ctx.beginPath();
-    ctx.moveTo(-s * 0.95, 0);
-    ctx.quadraticCurveTo(-s * 1.5, -s * 0.62 + wag * s, -s * 1.75, wag * s * 1.4);
-    ctx.quadraticCurveTo(-s * 1.5, s * 0.62 + wag * s, -s * 0.95, 0);
-    ctx.closePath();
-    ctx.fill();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), bodyMat);
+    body.scale.set(1.0, 0.62, 0.46);
+    g.add(body);
 
-    // top fin
-    ctx.beginPath();
-    ctx.moveTo(-s * 0.25, -s * 0.42);
-    ctx.quadraticCurveTo(-s * 0.05, -s * 0.95, s * 0.35, -s * 0.40);
-    ctx.closePath();
-    ctx.fill();
+    // tail, on its own pivot so it can beat
+    const tailPivot = new THREE.Group();
+    tailPivot.position.x = -0.92;
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.46, 0.95, 10), finMat);
+    tail.rotation.z = Math.PI / 2;
+    tail.scale.set(1, 1, 0.22);
+    tail.position.x = -0.42;
+    tailPivot.add(tail);
+    g.add(tailPivot);
 
-    // body
-    ctx.fillStyle = f.body;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, s, s * 0.58, 0, 0, 6.283);
-    ctx.fill();
+    // dorsal fin
+    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.62, 8), finMat);
+    dorsal.position.set(-0.05, 0.55, 0);
+    dorsal.scale.set(1, 1, 0.18);
+    g.add(dorsal);
 
-    // belly
-    ctx.fillStyle = f.belly;
-    ctx.globalAlpha *= 0.55;
-    ctx.beginPath();
-    ctx.ellipse(s * 0.05, s * 0.18, s * 0.72, s * 0.30, 0, 0, 6.283);
-    ctx.fill();
-    ctx.globalAlpha = 0.55 + f.depth * 0.45;
+    // side fins
+    [-1, 1].forEach(function (side) {
+      const fin = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 6), finMat);
+      fin.position.set(0.12, -0.18, side * 0.34);
+      fin.rotation.x = side * 1.1;
+      fin.scale.set(1, 1, 0.16);
+      g.add(fin);
+    });
 
-    // side fin
-    ctx.fillStyle = f.fin;
-    ctx.beginPath();
-    ctx.ellipse(s * 0.05, s * 0.10, s * 0.30, s * 0.16, 0.5, 0, 6.283);
-    ctx.fill();
+    // eyes
+    [-1, 1].forEach(function (side) {
+      const eye = new THREE.Mesh(
+        new THREE.SphereGeometry(0.11, 10, 8),
+        new THREE.MeshBasicMaterial({ color: 0x0a1018 })
+      );
+      eye.position.set(0.62, 0.14, side * 0.30);
+      g.add(eye);
+    });
 
-    // eye
-    ctx.fillStyle = '#0d1620';
-    ctx.beginPath();
-    ctx.arc(s * 0.55, -s * 0.12, s * 0.12, 0, 6.283);
-    ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.85)';
-    ctx.beginPath();
-    ctx.arc(s * 0.59, -s * 0.16, s * 0.045, 0, 6.283);
-    ctx.fill();
-
-    ctx.restore();
+    g.scale.setScalar(size);
+    g.userData = { tailPivot: tailPivot };
+    return g;
   }
 
-  /* ---------- the water ---------- */
-  function drawWater() {
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    g.addColorStop(0, '#1a6f9c');
-    g.addColorStop(0.35, '#12587f');
-    g.addColorStop(1, '#072a41');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-
-    // light shafts from the surface
-    ctx.save();
-    ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < 7; i++) {
-      const x = (i / 7) * W + Math.sin(time * 0.3 + i) * 40;
-      const w = W * 0.06 + Math.sin(time * 0.5 + i * 2) * 12;
-      const lg = ctx.createLinearGradient(x, 0, x + w * 0.6, H);
-      lg.addColorStop(0, 'rgba(160,230,255,.16)');
-      lg.addColorStop(1, 'rgba(160,230,255,0)');
-      ctx.fillStyle = lg;
-      ctx.beginPath();
-      ctx.moveTo(x - w / 2, 0);
-      ctx.lineTo(x + w / 2, 0);
-      ctx.lineTo(x + w * 1.1, H);
-      ctx.lineTo(x - w * 0.4, H);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.restore();
-
-    // caustic ripples near the surface
-    ctx.strokeStyle = 'rgba(180,240,255,.10)';
-    ctx.lineWidth = 1.5;
-    for (let i = 0; i < 9; i++) {
-      const y = (i / 9) * H * 0.5;
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 14) {
-        const yy = y + Math.sin(x * 0.02 + time * 1.1 + i) * 5;
-        if (x === 0) { ctx.moveTo(x, yy); } else { ctx.lineTo(x, yy); }
-      }
-      ctx.stroke();
-    }
-  }
-
-  function drawBubbles(dt) {
-    bubbles.forEach(function (b) {
-      b.y -= b.v * dt;
-      b.x += Math.sin(time * 1.6 + b.ph) * 0.35;
-      if (b.y < -6) { b.y = H + 6; b.x = Math.random() * W; }
-      ctx.strokeStyle = 'rgba(200,240,255,.35)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.r, 0, 6.283);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(200,240,255,.12)';
-      ctx.fill();
+  const fish = [];
+  const COUNT = 9;
+  for (let i = 0; i < COUNT; i++) {
+    const c = COLOURS[i % COLOURS.length];
+    const size = 0.55 + Math.random() * 0.55;
+    const f = makeFish(c, size);
+    const dir = Math.random() > 0.5 ? 1 : -1;
+    f.position.set(
+      (Math.random() - 0.5) * 24,
+      -3.2 + Math.random() * 6,
+      (Math.random() - 0.5) * 9
+    );
+    f.rotation.y = dir > 0 ? 0 : Math.PI;
+    scene.add(f);
+    fish.push({
+      mesh: f,
+      dir: dir,
+      speed: 0.8 + Math.random() * 1.5,
+      phase: Math.random() * 6.283,
+      amp: 0.35 + Math.random() * 0.7,
+      bob: 0.6 + Math.random() * 1.2,
+      tailRate: 5 + Math.random() * 4
     });
   }
 
+  /* ---------- size ---------- */
+  function fit() {
+    const w = wrap.clientWidth || 800;
+    const h = wrap.clientHeight || 260;
+    if (w < 2 || h < 2) { return; }
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
   /* ---------- loop ---------- */
+  let running = false, raf = 0, t = 0, last = 0;
+
   function frame(now) {
     if (!running) { return; }
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
-    time += dt;
+    t += dt;
 
-    ctx.clearRect(0, 0, W, H);
-    drawWater();
+    // ripple the surface
+    const pos = surfGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = surfBase[i * 3];
+      const z = surfBase[i * 3 + 2];
+      pos.array[i * 3 + 1] = Math.sin(x * 0.55 + t * 1.6) * 0.22
+                           + Math.cos(z * 0.7 - t * 1.1) * 0.16
+                           + Math.sin((x + z) * 0.35 + t * 2.2) * 0.10;
+    }
+    pos.needsUpdate = true;
 
-    drawBubbles(dt);
-
-    // deeper fish first
-    const order = fish.slice().sort(function (a, b) { return a.depth - b.depth; });
-    order.forEach(function (f) {
-      f.x += f.speed * f.dir * dt;
-      f.y += Math.sin(time * f.wobSpd + f.wob) * f.wobAmp * dt;
-      if (f.dir > 0 && f.x > W + f.size * 2) { f.x = -f.size * 2; f.y = H * 0.30 + Math.random() * H * 0.52; }
-      if (f.dir < 0 && f.x < -f.size * 2) { f.x = W + f.size * 2; f.y = H * 0.30 + Math.random() * H * 0.52; }
-      drawFish(f);
+    // shafts sway
+    shafts.forEach(function (s, i) {
+      s.rotation.z = 0.12 + Math.sin(t * 0.5 + i) * 0.06;
+      s.material.opacity = 0.07 + 0.05 * Math.abs(Math.sin(t * 0.7 + i));
     });
 
-    // surface shimmer
-    ctx.strokeStyle = 'rgba(220,250,255,.30)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let x = 0; x <= W; x += 10) {
-      const y = Math.sin(x * 0.03 + time * 2) * 3 + Math.sin(x * 0.011 - time * 1.3) * 4;
-      if (x === 0) { ctx.moveTo(x, y + 2); } else { ctx.lineTo(x, y + 2); }
+    // bubbles rise
+    const bp = bGeo.attributes.position;
+    for (let i = 0; i < BUB; i++) {
+      bp.array[i * 3 + 1] += bVel[i] * dt;
+      bp.array[i * 3] += Math.sin(t * 1.5 + i) * 0.004;
+      if (bp.array[i * 3 + 1] > 4.2) {
+        bp.array[i * 3 + 1] = -5;
+        bp.array[i * 3] = (Math.random() - 0.5) * 26;
+        bp.array[i * 3 + 2] = (Math.random() - 0.5) * 14;
+      }
     }
-    ctx.stroke();
+    bp.needsUpdate = true;
 
+    // swim
+    fish.forEach(function (f) {
+      const m = f.mesh;
+      m.position.x += f.speed * f.dir * dt;
+      m.position.y += Math.sin(t * f.bob + f.phase) * 0.006;
+      m.rotation.z = Math.sin(t * f.bob + f.phase) * 0.10;
+      m.userData.tailPivot.rotation.y = Math.sin(t * f.tailRate + f.phase) * 0.55;
+
+      if (f.dir > 0 && m.position.x > 15) { m.position.x = -15; }
+      if (f.dir < 0 && m.position.x < -15) { m.position.x = 15; }
+    });
+
+    // a slow drift of the camera, so it never sits still
+    camera.position.x = Math.sin(t * 0.18) * 1.6;
+    camera.position.y = 1.4 + Math.sin(t * 0.3) * 0.35;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
     raf = requestAnimationFrame(frame);
   }
 
@@ -232,13 +276,10 @@
     cancelAnimationFrame(raf);
   }
 
-  window.addEventListener('resize', function () { fit(); if (visible) { start(); } });
-
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) {
-        visible = e.isIntersecting;
-        if (visible) { start(); } else { stop(); }
+        if (e.isIntersecting) { start(); } else { stop(); }
       });
     }, { threshold: 0.05 });
     io.observe(wrap);
@@ -246,15 +287,137 @@
     start();
   }
 
-  fit();
-
-  // test hook
-  window.__pondFrame = function (tt) {
+  window.__pondDraw = function (tt) {
     fit();
-    time = tt;
-    ctx.clearRect(0, 0, W, H);
-    drawWater();
-    drawBubbles(0);
-    fish.slice().sort(function (a, b) { return a.depth - b.depth; }).forEach(drawFish);
+    t = tt;
+    renderer.render(scene, camera);
   };
+
+  /* ---------- if 3D cannot start, draw it instead ---------- */
+  function fallback2D() {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) { return; }
+    let W = 800, H = 260, DPR = 1, raf = 0, running = false, last = 0, time = 0;
+
+    function fit2() {
+      DPR = Math.min(window.devicePixelRatio || 1, 2);
+      W = wrap.clientWidth || 800;
+      H = wrap.clientHeight || 260;
+      canvas.width = Math.floor(W * DPR);
+      canvas.height = Math.floor(H * DPR);
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    }
+
+    const PAL = [
+      ['#ff8a3c', '#ffb877'], ['#4ea8e0', '#8fd0f2'], ['#f2c14e', '#ffe08a'],
+      ['#e0576b', '#ff9aa8'], ['#7b6cf6', '#b3a9ff']
+    ];
+    const fish = [];
+    for (let i = 0; i < 6; i++) {
+      const p = PAL[i % PAL.length];
+      fish.push({
+        x: Math.random() * 800, y: 0.3 + Math.random() * 0.5,
+        s: 14 + Math.random() * 16, dir: Math.random() > 0.5 ? 1 : -1,
+        sp: 18 + Math.random() * 26, ph: Math.random() * 6.283,
+        c: p[0], f: p[1]
+      });
+    }
+    const bub = [];
+    for (let i = 0; i < 18; i++) {
+      bub.push({ x: Math.random() * 800, y: Math.random() * 260, r: 1 + Math.random() * 3, v: 10 + Math.random() * 22 });
+    }
+
+    function drawFish(f) {
+      const s = f.s, wag = Math.sin(time * 5 + f.ph) * 0.42;
+      ctx.save();
+      ctx.translate(f.x, f.y * H);
+      ctx.scale(f.dir, 1);
+      ctx.rotate(Math.sin(time + f.ph) * 0.08);
+      ctx.fillStyle = f.f;
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.95, 0);
+      ctx.quadraticCurveTo(-s * 1.5, -s * 0.62 + wag * s, -s * 1.75, wag * s * 1.4);
+      ctx.quadraticCurveTo(-s * 1.5, s * 0.62 + wag * s, -s * 0.95, 0);
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-s * 0.25, -s * 0.42);
+      ctx.quadraticCurveTo(-s * 0.05, -s * 0.95, s * 0.35, -s * 0.40);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = f.c;
+      ctx.beginPath(); ctx.ellipse(0, 0, s, s * 0.58, 0, 0, 6.283); ctx.fill();
+      ctx.fillStyle = '#0d1620';
+      ctx.beginPath(); ctx.arc(s * 0.55, -s * 0.12, s * 0.12, 0, 6.283); ctx.fill();
+      ctx.restore();
+    }
+
+    function frame2(now) {
+      if (!running) { return; }
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now; time += dt;
+
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0, '#1a6f9c'); g.addColorStop(0.35, '#12587f'); g.addColorStop(1, '#072a41');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+      ctx.strokeStyle = 'rgba(180,240,255,.10)';
+      ctx.lineWidth = 1.5;
+      for (let i = 0; i < 9; i++) {
+        const y = (i / 9) * H * 0.5;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 14) {
+          const yy = y + Math.sin(x * 0.02 + time * 1.1 + i) * 5;
+          if (x === 0) { ctx.moveTo(x, yy); } else { ctx.lineTo(x, yy); }
+        }
+        ctx.stroke();
+      }
+
+      bub.forEach(function (b) {
+        b.y -= b.v * dt;
+        if (b.y < -6) { b.y = H + 6; b.x = Math.random() * W; }
+        ctx.strokeStyle = 'rgba(200,240,255,.35)';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 6.283); ctx.stroke();
+      });
+
+      fish.forEach(function (f) {
+        f.x += f.sp * f.dir * dt;
+        if (f.dir > 0 && f.x > W + f.s * 2) { f.x = -f.s * 2; }
+        if (f.dir < 0 && f.x < -f.s * 2) { f.x = W + f.s * 2; }
+        drawFish(f);
+      });
+
+      ctx.strokeStyle = 'rgba(220,250,255,.30)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 10) {
+        const y = Math.sin(x * 0.03 + time * 2) * 3 + Math.sin(x * 0.011 - time * 1.3) * 4;
+        if (x === 0) { ctx.moveTo(x, y + 2); } else { ctx.lineTo(x, y + 2); }
+      }
+      ctx.stroke();
+
+      raf = requestAnimationFrame(frame2);
+    }
+
+    function start2() {
+      if (running) { return; }
+      running = true; last = performance.now();
+      raf = requestAnimationFrame(frame2);
+    }
+
+    window.addEventListener('resize', fit2);
+    fit2();
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(function (en) {
+        en.forEach(function (e) {
+          if (e.isIntersecting) { start2(); }
+          else { running = false; cancelAnimationFrame(raf); }
+        });
+      }, { threshold: 0.05 });
+      io.observe(wrap);
+    } else {
+      start2();
+    }
+  }
 })();
