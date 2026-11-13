@@ -112,55 +112,120 @@
 
   /* ---------- one fish ---------- */
   const COLOURS = [
-    { body: 0xff8a3c, fin: 0xffb877 },
-    { body: 0x4ea8e0, fin: 0x8fd0f2 },
-    { body: 0xf2c14e, fin: 0xffe08a },
-    { body: 0xe0576b, fin: 0xff9aa8 },
-    { body: 0x7b6cf6, fin: 0xb3a9ff }
+    { top: 0xd4560f, body: 0xff8a3c, belly: 0xffd9b8, fin: 0xffb877, eye: 0x101820 },
+    { top: 0x1d6fa5, body: 0x4ea8e0, belly: 0xcbe9fb, fin: 0x8fd0f2, eye: 0x0a1018 },
+    { top: 0xb8891c, body: 0xf2c14e, belly: 0xfff0c2, fin: 0xffe08a, eye: 0x141008 },
+    { top: 0x9c2438, body: 0xe0576b, belly: 0xffd2d9, fin: 0xff9aa8, eye: 0x140a0c },
+    { top: 0x4a3bc4, body: 0x7b6cf6, belly: 0xddd8ff, fin: 0xb3a9ff, eye: 0x0c0a1a },
+    { top: 0x1c7a5c, body: 0x46c99a, belly: 0xd2f7ea, fin: 0x8fe6c6, eye: 0x081410 },
+    { top: 0x9a2f6e, body: 0xe25fa8, belly: 0xffd6ec, fin: 0xff9ecd, eye: 0x140812 },
+    { top: 0x8a5a1e, body: 0xc98a3f, belly: 0xf0dcc0, fin: 0xe0b077, eye: 0x100c08 }
   ];
 
   function makeFish(colour, size) {
     const g = new THREE.Group();
-    const bodyMat = new THREE.MeshStandardMaterial({ color: colour.body, roughness: 0.45, metalness: 0.15 });
-    const finMat = new THREE.MeshStandardMaterial({ color: colour.fin, roughness: 0.6, side: THREE.DoubleSide });
 
-    const body = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), bodyMat);
-    body.scale.set(1.0, 0.62, 0.46);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: colour.body, roughness: 0.35, metalness: 0.25 });
+    const topMat = new THREE.MeshStandardMaterial({ color: colour.top, roughness: 0.4, metalness: 0.2 });
+    const bellyMat = new THREE.MeshStandardMaterial({ color: colour.belly, roughness: 0.5, metalness: 0.1 });
+    const finMat = new THREE.MeshStandardMaterial({
+      color: colour.fin, roughness: 0.55, metalness: 0.05,
+      side: THREE.DoubleSide, transparent: true, opacity: 0.92
+    });
+
+    /* body: a real fish profile, revolved */
+    const profile = [
+      [0.02, -1.00], [0.09, -0.86], [0.17, -0.66], [0.30, -0.40],
+      [0.42, -0.10], [0.47, 0.14], [0.44, 0.38], [0.35, 0.58],
+      [0.23, 0.76], [0.12, 0.90], [0.03, 1.00]
+    ].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+
+    const bodyGeo = new THREE.LatheGeometry(profile, 24);
+    bodyGeo.rotateZ(Math.PI / 2);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.scale.set(1, 0.92, 0.56);
     g.add(body);
 
-    // tail, on its own pivot so it can beat
+    const back = new THREE.Mesh(bodyGeo.clone(), topMat);
+    back.scale.set(0.985, 0.90, 0.55);
+    back.position.y = 0.05;
+    g.add(back);
+
+    const belly = new THREE.Mesh(bodyGeo.clone(), bellyMat);
+    belly.scale.set(0.96, 0.78, 0.50);
+    belly.position.y = -0.09;
+    g.add(belly);
+
+    /* forked tail */
+    const tailShape = new THREE.Shape();
+    tailShape.moveTo(0, 0);
+    tailShape.quadraticCurveTo(-0.42, 0.30, -0.92, 0.62);
+    tailShape.quadraticCurveTo(-0.66, 0.16, -0.78, 0.0);
+    tailShape.quadraticCurveTo(-0.66, -0.16, -0.92, -0.62);
+    tailShape.quadraticCurveTo(-0.42, -0.30, 0, 0);
+    const tailGeo = new THREE.ExtrudeGeometry(tailShape, { depth: 0.045, bevelEnabled: false });
     const tailPivot = new THREE.Group();
-    tailPivot.position.x = -0.92;
-    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.46, 0.95, 10), finMat);
-    tail.rotation.z = Math.PI / 2;
-    tail.scale.set(1, 1, 0.22);
-    tail.position.x = -0.42;
+    tailPivot.position.x = -0.98;
+    const tail = new THREE.Mesh(tailGeo, finMat);
+    tail.scale.set(1.15, 1.15, 1);
     tailPivot.add(tail);
     g.add(tailPivot);
 
-    // dorsal fin
-    const dorsal = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.62, 8), finMat);
-    dorsal.position.set(-0.05, 0.55, 0);
-    dorsal.scale.set(1, 1, 0.18);
+    /* dorsal sail */
+    const dorsalShape = new THREE.Shape();
+    dorsalShape.moveTo(0.42, 0);
+    dorsalShape.quadraticCurveTo(0.10, 0.62, -0.42, 0.34);
+    dorsalShape.quadraticCurveTo(-0.16, 0.10, 0.42, 0);
+    const dorsal = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(dorsalShape, { depth: 0.04, bevelEnabled: false }),
+      finMat
+    );
+    dorsal.position.set(0, 0.30, -0.02);
+    dorsal.rotation.y = Math.PI / 2;
     g.add(dorsal);
 
-    // side fins
+    /* anal fin */
+    const analShape = new THREE.Shape();
+    analShape.moveTo(0.20, 0);
+    analShape.quadraticCurveTo(-0.05, -0.34, -0.40, -0.20);
+    analShape.quadraticCurveTo(-0.18, -0.06, 0.20, 0);
+    const anal = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(analShape, { depth: 0.035, bevelEnabled: false }),
+      finMat
+    );
+    anal.position.set(0, -0.30, -0.02);
+    anal.rotation.y = Math.PI / 2;
+    g.add(anal);
+
+    /* pectoral fins */
     [-1, 1].forEach(function (side) {
-      const fin = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.5, 6), finMat);
-      fin.position.set(0.12, -0.18, side * 0.34);
-      fin.rotation.x = side * 1.1;
-      fin.scale.set(1, 1, 0.16);
+      const finShape = new THREE.Shape();
+      finShape.moveTo(0, 0);
+      finShape.quadraticCurveTo(0.16, 0.24, 0.42, 0.10);
+      finShape.quadraticCurveTo(0.22, -0.10, 0, 0);
+      const fin = new THREE.Mesh(
+        new THREE.ExtrudeGeometry(finShape, { depth: 0.025, bevelEnabled: false }),
+        finMat
+      );
+      fin.position.set(0.26, -0.08, side * 0.24);
+      fin.rotation.set(side * 0.9, side * 0.25, side * 0.2);
       g.add(fin);
     });
 
-    // eyes
+    /* eyes */
     [-1, 1].forEach(function (side) {
-      const eye = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0x0a1018 })
+      const white = new THREE.Mesh(
+        new THREE.SphereGeometry(0.115, 12, 10),
+        new THREE.MeshStandardMaterial({ color: 0xf4f8fb, roughness: 0.3 })
       );
-      eye.position.set(0.62, 0.14, side * 0.30);
-      g.add(eye);
+      white.position.set(0.58, 0.10, side * 0.24);
+      g.add(white);
+      const pupil = new THREE.Mesh(
+        new THREE.SphereGeometry(0.062, 10, 8),
+        new THREE.MeshBasicMaterial({ color: colour.eye })
+      );
+      pupil.position.set(0.64, 0.11, side * 0.27);
+      g.add(pupil);
     });
 
     g.scale.setScalar(size);
@@ -169,7 +234,7 @@
   }
 
   const fish = [];
-  const COUNT = 9;
+  const COUNT = 11;
   for (let i = 0; i < COUNT; i++) {
     const c = COLOURS[i % COLOURS.length];
     const size = 0.55 + Math.random() * 0.55;
