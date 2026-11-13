@@ -1342,3 +1342,16 @@ body.lang-hi .eyebrow, body.lang-hi .set-lbl { letter-spacing: .08em; }
   .pond { height: 240px; margin-top: 26px; border-radius: 14px; }
   .pond-cap { font-size: 8.5px; letter-spacing: .24em; }
 }
+
+/* the one tap that lets the sound through */
+.me-start { display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 18px; border-radius: 999px; cursor: pointer;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+  color: #0b1622; background: #ffd27a; border: 1px solid #ffbe4d;
+  box-shadow: 0 8px 22px rgba(255,190,70,.35);
+  transition: transform .14s, box-shadow .2s, background .2s; }
+.me-start:hover { background: #ffe19b; box-shadow: 0 10px 28px rgba(255,190,70,.5); }
+.me-start:active { transform: scale(.96); }
+.me-start svg { flex: none; }
+.me-start.done { background: #2f8f5b; border-color: #3fae72; color: #fff;
+  box-shadow: 0 8px 22px rgba(50,160,100,.35); pointer-events: none; }

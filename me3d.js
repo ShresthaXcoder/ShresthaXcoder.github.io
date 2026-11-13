@@ -408,6 +408,22 @@ const ME3D = (async function () {
 
   // browsers block audio until the visitor has interacted once. Rather than
   // guess, just keep asking: the first attempt after a gesture will succeed.
+  // one tap on the start button is all the browser needs
+  const startBtn = document.getElementById('meStart');
+  let audioUnlocked = false;
+  if (startBtn) {
+    startBtn.addEventListener('click', function () {
+      audioUnlocked = true;
+      songBlocked = false;
+      wantSong = true;
+      song.currentTime = 0;
+      const p = song.play();
+      if (p && p.catch) { p.catch(function () {}); }
+      startBtn.classList.add('done');
+      startBtn.textContent = 'Sound on';
+    });
+  }
+
   setInterval(function () {
     if (!wantSong) { return; }
     if (!song.paused) { return; }
