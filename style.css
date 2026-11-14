@@ -1481,3 +1481,13 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 .desk-open:hover { transform: translateY(-1px); border-color: var(--accent);
   box-shadow: 0 12px 28px rgba(20,40,70,.18); }
 .desk-open:active { transform: scale(.97); }
+
+/* the pointer that lives inside the monitor */
+.desk-cursor { position: absolute; left: 50%; top: 50%; z-index: 5; pointer-events: none;
+  transform: translate(-2px, -2px); opacity: 0; transition: opacity .25s;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+.desk-cursor.on { opacity: 1; }
+
+/* the mouse wants to be dragged, not hovered */
+.desk-mouse { cursor: grab; touch-action: none; }
+.desk-mouse:active { cursor: grabbing; }

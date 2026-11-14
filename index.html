@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=99" />
+<link rel="stylesheet" href="style.css?v=100" />
 </head>
 <body>
 
@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var l = screen.querySelector('.desk-load');
         if (l) { l.remove(); }
         scale();
+        centreCursor();
         // hand the keyboard to the page inside the monitor
         try { frame.contentWindow.focus(); } catch (e) {}
       });
@@ -166,6 +167,82 @@ document.addEventListener('DOMContentLoaded', function () {
   btn.addEventListener('click', open);
   if (exit) { exit.addEventListener('click', close); }
 
+  /* ---------- the drawn mouse actually drives the page ---------- */
+  var mouseEl = document.querySelector('.desk-mouse');
+  var cursorEl = document.getElementById('deskCursor');
+  var dragY = 0, moved = 0, dragging = false;
+
+  function innerDoc() {
+    try { return frame && frame.contentDocument; } catch (e) { return null; }
+  }
+  function innerWin() {
+    try { return frame && frame.contentWindow; } catch (e) { return null; }
+  }
+
+  function placeCursor(px, py) {
+    if (!cursorEl) { return; }
+    cursorEl.style.left = px + 'px';
+    cursorEl.style.top = py + 'px';
+  }
+
+  function centreCursor() {
+    var r = screen.getBoundingClientRect();
+    placeCursor(r.width * 0.5, r.height * 0.5);
+  }
+
+  if (mouseEl) {
+    mouseEl.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      moved = 0;
+      dragY = e.clientY;
+      mouseEl.setPointerCapture(e.pointerId);
+      if (cursorEl) { cursorEl.classList.add('on'); }
+    });
+
+    mouseEl.addEventListener('pointermove', function (e) {
+      if (!dragging) { return; }
+      var dy = e.clientY - dragY;
+      dragY = e.clientY;
+      moved += Math.abs(dy);
+
+      var win = innerWin();
+      if (win) { win.scrollBy(0, -dy * 3); }
+
+      // nudge the pointer along with the drag
+      if (cursorEl) {
+        var r = screen.getBoundingClientRect();
+        var top = parseFloat(cursorEl.style.top) || r.height / 2;
+        var y = Math.max(8, Math.min(r.height - 12, top - dy * 0.6));
+        placeCursor(parseFloat(cursorEl.style.left) || r.width / 2, y);
+      }
+    });
+
+    mouseEl.addEventListener('pointerup', function (e) {
+      if (!dragging) { return; }
+      dragging = false;
+      if (cursorEl) { cursorEl.classList.remove('on'); }
+      if (moved > 12) { return; }   // that was a scroll, not a click
+
+      // a tap on the mouse clicks whatever the pointer is over
+      var doc = innerDoc();
+      var r = screen.getBoundingClientRect();
+      var x = parseFloat(cursorEl && cursorEl.style.left) || r.width / 2;
+      var y = parseFloat(cursorEl && cursorEl.style.top) || r.height / 2;
+
+      var innerW = frame ? frame.clientWidth : r.width;
+      var innerH = frame ? frame.clientHeight : r.height;
+      var kx = innerW / r.width;
+      var ky = innerH / r.height;
+
+      if (doc) {
+        var el = doc.elementFromPoint(x * kx, y * ky);
+        if (el) {
+          el.click();
+        }
+      }
+    });
+  }
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && desk.classList.contains('on')) { close(); }
   });
@@ -181,6 +258,9 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="desk-monitor">
       <div class="desk-screen" id="deskScreen">
         <div class="desk-load">booting the island…</div>
+        <div class="desk-cursor" id="deskCursor" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path d="M5 3l14 8-6.2 1.6L10 19z" fill="#0d1620" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </div>
       </div>
       <div class="desk-chin"><span class="desk-led"></span></div>
     </div>
@@ -1038,9 +1118,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=99"></script>
-<script type="module" src="intro.js?v=99"></script>
-<script type="module" src="me3d.js?v=99"></script>
+<script type="module" src="world.js?v=100"></script>
+<script type="module" src="intro.js?v=100"></script>
+<script type="module" src="me3d.js?v=100"></script>
 <script>
 (function () {
   var gate = document.getElementById('gate');
@@ -1076,9 +1156,9 @@ setTimeout(function () {
   });
 })();
 </script>
-<script type="module" src="pond.js?v=99"></script>
+<script type="module" src="pond.js?v=100"></script>
 
 
-<script src="ui.js?v=99"></script>
+<script src="ui.js?v=100"></script>
 </body>
 </html>
