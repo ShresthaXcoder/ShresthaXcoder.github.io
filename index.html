@@ -85,9 +85,92 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=95" />
+<link rel="stylesheet" href="style.css?v=97" />
 </head>
 <body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // never inside the monitor itself, or it would nest forever
+  if (window.self !== window.top) { return; }
+  var desk = document.getElementById('desk');
+  var btn = document.getElementById('deskBtn');
+  var exit = document.getElementById('deskExit');
+  var screen = document.getElementById('deskScreen');
+  if (!desk || !btn || !screen) { return; }
+
+  var frame = null;
+  var W = 1440, H = 900;
+
+  function scale() {
+    if (!frame) { return; }
+    var r = screen.getBoundingClientRect();
+    var k = Math.min(r.width / W, r.height / H);
+    frame.style.width = W + 'px';
+    frame.style.height = H + 'px';
+    frame.style.transform = 'scale(' + k + ')';
+    frame.style.left = Math.max(0, (r.width - W * k) / 2) + 'px';
+    frame.style.top = Math.max(0, (r.height - H * k) / 2) + 'px';
+  }
+
+  function open() {
+    desk.classList.add('on');
+    desk.setAttribute('aria-hidden', 'false');
+    document.documentElement.style.overflow = 'hidden';
+    if (!frame) {
+      frame = document.createElement('iframe');
+      frame.title = 'The island, on a desktop';
+      frame.src = location.pathname + '?desk=1&v=' + Date.now();
+      frame.setAttribute('allow', 'autoplay');
+      screen.appendChild(frame);
+      frame.addEventListener('load', function () {
+        var l = screen.querySelector('.desk-load');
+        if (l) { l.remove(); }
+        scale();
+        // hand the keyboard to the page inside the monitor
+        try { frame.contentWindow.focus(); } catch (e) {}
+      });
+    }
+    scale();
+    if (exit) { exit.focus(); }
+  }
+
+  function close() {
+    desk.classList.remove('on');
+    desk.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+    if (btn) { btn.focus(); }
+  }
+
+  btn.addEventListener('click', open);
+  if (exit) { exit.addEventListener('click', close); }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && desk.classList.contains('on')) { close(); }
+  });
+
+  window.addEventListener('resize', function () {
+    if (desk.classList.contains('on')) { scale(); }
+  });
+});
+</script>
+
+<div class="desk" id="desk" aria-hidden="true">
+  <div class="desk-scene">
+    <div class="desk-monitor">
+      <div class="desk-screen" id="deskScreen">
+        <div class="desk-load">booting the island…</div>
+      </div>
+      <div class="desk-chin"><span class="desk-led"></span></div>
+    </div>
+    <div class="desk-neck"></div>
+    <div class="desk-base"></div>
+    <div class="desk-desk"></div>
+    <div class="desk-keyboard" aria-hidden="true"></div>
+    <div class="desk-mouse" aria-hidden="true"></div>
+  </div>
+  <button class="desk-exit" id="deskExit" type="button">Exit desktop · Esc</button>
+</div>
 
 <div class="gate" id="gate">
   <div class="gate-inner">
@@ -187,6 +270,11 @@ setTimeout(function () {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="#contact" class="btn btn-ghost" data-hi="संपर्क करें">Get in touch</a>
       <button class="btn btn-ghost" id="buildBtn" data-hi="अपना बनाएं">Build your own</button>
+      <button class="btn btn-ghost" id="deskBtn" type="button" data-hi="डेस्कटॉप मोड">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px">
+          <rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/></svg>
+        Desktop mode
+      </button>
     </div>
 
     <div class="stats-strip">
@@ -916,9 +1004,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=95"></script>
-<script type="module" src="intro.js?v=95"></script>
-<script type="module" src="me3d.js?v=95"></script>
+<script type="module" src="world.js?v=97"></script>
+<script type="module" src="intro.js?v=97"></script>
+<script type="module" src="me3d.js?v=97"></script>
 <script>
 (function () {
   var gate = document.getElementById('gate');
@@ -926,6 +1014,14 @@ setTimeout(function () {
   if (!gate || !btn) { return; }
 
   // keep the page still behind the gate
+  var inDesk = location.search.indexOf('desk=1') > -1;
+  if (inDesk) {
+    gate.remove();
+    document.documentElement.classList.remove('gated');
+    window.__audioUnlocked = true;
+    return;
+  }
+
   document.documentElement.classList.add('gated');
 
   btn.addEventListener('click', function () {
@@ -946,9 +1042,9 @@ setTimeout(function () {
   });
 })();
 </script>
-<script type="module" src="pond.js?v=95"></script>
+<script type="module" src="pond.js?v=97"></script>
 
 
-<script src="ui.js?v=95"></script>
+<script src="ui.js?v=97"></script>
 </body>
 </html>

@@ -1386,3 +1386,60 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 .gate-btn:active { transform: scale(.97); }
 .gate-note { display: block; margin-top: 16px; font-family: var(--mono); font-size: 9.5px;
   letter-spacing: .2em; text-transform: uppercase; color: #5d7791; }
+
+/* ---------- desktop mode ---------- */
+.desk { position: fixed; inset: 0; z-index: 99990; display: none;
+  background: radial-gradient(ellipse at 50% 30%, #1b2434 0%, #0d131d 55%, #05080d 100%); }
+.desk.on { display: block; animation: deskIn .5s ease; }
+@keyframes deskIn { from { opacity: 0; } to { opacity: 1; } }
+.desk-scene { position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; padding: 2vh 2vw 0; }
+
+.desk-monitor { width: min(88vw, 1180px); border-radius: 14px; padding: 12px 12px 0;
+  background: linear-gradient(#2a3444, #161d29);
+  box-shadow: 0 40px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset;
+  position: relative; }
+.desk-screen { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden;
+  border-radius: 8px; background: #05080d; }
+.desk-screen iframe { position: absolute; top: 0; left: 0; border: 0;
+  transform-origin: top left; background: #05080d; }
+.desk-load { position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .3em; text-transform: uppercase;
+  color: #4f6376; }
+.desk-chin { height: 26px; display: flex; align-items: center; justify-content: center; }
+.desk-led { width: 7px; height: 7px; border-radius: 50%; background: #3fd07a;
+  box-shadow: 0 0 10px 2px rgba(63,208,122,.7); animation: deskLed 2.4s ease-in-out infinite; }
+@keyframes deskLed { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+.desk-neck { width: 90px; height: 26px; background: linear-gradient(#1c2531, #10161f); }
+.desk-base { width: 220px; height: 12px; border-radius: 0 0 10px 10px;
+  background: linear-gradient(#232d3b, #0f151d); }
+.desk-desk { width: min(96vw, 1400px); height: 16px; margin-top: -2px;
+  border-radius: 6px; background: linear-gradient(#2b3648, #131a24);
+  box-shadow: 0 18px 40px rgba(0,0,0,.5); }
+
+.desk-keyboard { width: min(52vw, 620px); height: 54px; margin-top: 18px; border-radius: 8px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 26px, rgba(0,0,0,.22) 26px 29px),
+    linear-gradient(#2a3444, #131a24);
+  box-shadow: 0 12px 28px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05) inset; }
+
+.desk-mouse { position: absolute; right: max(6vw, 30px); bottom: 16vh; width: 46px; height: 74px;
+  border-radius: 24px; background: linear-gradient(#2a3444, #12181f);
+  box-shadow: 0 12px 26px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05) inset; }
+.desk-mouse::after { content: ''; position: absolute; left: 50%; top: 12px; width: 2px; height: 16px;
+  transform: translateX(-50%); background: rgba(255,255,255,.18); border-radius: 2px; }
+
+.desk-exit { position: absolute; top: 18px; left: 20px; padding: 10px 18px; border-radius: 999px;
+  cursor: pointer; font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
+  text-transform: uppercase; color: #cfdbe8; background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px);
+  transition: background .2s, color .2s; z-index: 3; }
+.desk-exit:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+@media (max-width: 760px) {
+  .desk-monitor { width: 96vw; padding: 7px 7px 0; }
+  .desk-keyboard { width: 78vw; height: 38px; margin-top: 10px; }
+  .desk-mouse { display: none; }
+  .desk-desk { width: 100vw; }
+}
