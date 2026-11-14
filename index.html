@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="style.css?v=97" />
+<link rel="stylesheet" href="style.css?v=99" />
 </head>
 <body>
 
@@ -101,6 +101,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var frame = null;
   var W = 1440, H = 900;
+
+  // draw the keyboard: five rows of keys, with a wide space bar
+  (function drawKeys() {
+    var rows = document.querySelector('.kb-rows');
+    if (!rows) { return; }
+    var layout = [
+      [14], [14], [13], [12], [7]
+    ];
+    layout.forEach(function (r, ri) {
+      var line = document.createElement('div');
+      line.className = 'kb-row';
+      var n = r[0];
+      for (var i = 0; i < n; i++) {
+        var k = document.createElement('span');
+        k.className = 'kb-key';
+        if (ri === 4 && i === 3) { k.className += ' kb-space'; }
+        line.appendChild(k);
+      }
+      rows.appendChild(line);
+    });
+  })();
 
   function scale() {
     if (!frame) { return; }
@@ -166,8 +187,21 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="desk-neck"></div>
     <div class="desk-base"></div>
     <div class="desk-desk"></div>
-    <div class="desk-keyboard" aria-hidden="true"></div>
-    <div class="desk-mouse" aria-hidden="true"></div>
+
+    <div class="desk-inputs" aria-hidden="true">
+      <div class="desk-keyboard">
+        <div class="kb-rows"></div>
+      </div>
+
+      <div class="desk-mouse">
+        <div class="ms-body">
+          <span class="ms-btn ms-l"></span>
+          <span class="ms-btn ms-r"></span>
+          <span class="ms-wheel"></span>
+        </div>
+        <span class="ms-cord"></span>
+      </div>
+    </div>
   </div>
   <button class="desk-exit" id="deskExit" type="button">Exit desktop · Esc</button>
 </div>
@@ -270,11 +304,6 @@ setTimeout(function () {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <a href="#contact" class="btn btn-ghost" data-hi="संपर्क करें">Get in touch</a>
       <button class="btn btn-ghost" id="buildBtn" data-hi="अपना बनाएं">Build your own</button>
-      <button class="btn btn-ghost" id="deskBtn" type="button" data-hi="डेस्कटॉप मोड">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:15px;height:15px">
-          <rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/></svg>
-        Desktop mode
-      </button>
     </div>
 
     <div class="stats-strip">
@@ -309,6 +338,11 @@ setTimeout(function () {
         <button type="button" data-pose="back">Looking away</button>
         <button type="button" class="boy-shot" id="boyShot">Save photo</button>
       </div>
+      <button class="desk-open" id="deskBtn" type="button" data-hi="डेस्कटॉप मोड में देखें">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <rect x="2.5" y="4" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 16.5v4"/></svg>
+        See this on a desktop
+      </button>
     </div>
     <div class="about-copy reveal">
       <div class="eyebrow" data-hi="01 &mdash; पहचान">01 &mdash; Identity</div>
@@ -1004,9 +1038,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="world.js?v=97"></script>
-<script type="module" src="intro.js?v=97"></script>
-<script type="module" src="me3d.js?v=97"></script>
+<script type="module" src="world.js?v=99"></script>
+<script type="module" src="intro.js?v=99"></script>
+<script type="module" src="me3d.js?v=99"></script>
 <script>
 (function () {
   var gate = document.getElementById('gate');
@@ -1042,9 +1076,9 @@ setTimeout(function () {
   });
 })();
 </script>
-<script type="module" src="pond.js?v=97"></script>
+<script type="module" src="pond.js?v=99"></script>
 
 
-<script src="ui.js?v=97"></script>
+<script src="ui.js?v=99"></script>
 </body>
 </html>

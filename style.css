@@ -1393,9 +1393,9 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 .desk.on { display: block; animation: deskIn .5s ease; }
 @keyframes deskIn { from { opacity: 0; } to { opacity: 1; } }
 .desk-scene { position: absolute; inset: 0; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; padding: 2vh 2vw 0; }
+  align-items: center; justify-content: center; padding: 1.5vh 2vw 1.5vh; }
 
-.desk-monitor { width: min(88vw, 1180px); border-radius: 14px; padding: 12px 12px 0;
+.desk-monitor { width: min(70vw, 960px); border-radius: 14px; padding: 12px 12px 0;
   background: linear-gradient(#2a3444, #161d29);
   box-shadow: 0 40px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.06) inset;
   position: relative; }
@@ -1418,19 +1418,39 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
   border-radius: 6px; background: linear-gradient(#2b3648, #131a24);
   box-shadow: 0 18px 40px rgba(0,0,0,.5); }
 
-.desk-keyboard { width: min(52vw, 620px); height: 54px; margin-top: 18px; border-radius: 8px;
-  background:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 26px, rgba(0,0,0,.22) 26px 29px),
-    linear-gradient(#2a3444, #131a24);
-  box-shadow: 0 12px 28px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.05) inset; }
+.desk-inputs { display: flex; align-items: flex-end; gap: min(4vw, 52px);
+  margin-top: 12px; }
 
-.desk-mouse { position: absolute; right: max(6vw, 30px); bottom: 16vh; width: 46px; height: 74px;
-  border-radius: 24px; background: linear-gradient(#2a3444, #12181f);
-  box-shadow: 0 12px 26px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.05) inset; }
-.desk-mouse::after { content: ''; position: absolute; left: 50%; top: 12px; width: 2px; height: 16px;
-  transform: translateX(-50%); background: rgba(255,255,255,.18); border-radius: 2px; }
+/* a drawn keyboard */
+.desk-keyboard { width: min(46vw, 560px); padding: 9px 11px 11px; border-radius: 10px;
+  background: linear-gradient(#39455a, #1d2532 55%, #141a24);
+  box-shadow: 0 16px 34px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.06) inset,
+              0 -2px 0 rgba(255,255,255,.06) inset; }
+.kb-rows { display: flex; flex-direction: column; gap: 5px; }
+.kb-row { display: flex; gap: 5px; justify-content: center; }
+.kb-key { flex: 1 1 0; height: 13px; border-radius: 3px;
+  background: linear-gradient(#4a586f, #2a3444);
+  box-shadow: 0 1.5px 0 rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.12) inset; }
+.kb-key.kb-space { flex: 4 1 0; }
 
-.desk-exit { position: absolute; top: 18px; left: 20px; padding: 10px 18px; border-radius: 999px;
+/* a drawn mouse */
+.desk-mouse { position: relative; flex: none; width: 44px; padding-bottom: 16px; }
+.ms-body { position: relative; width: 44px; height: 68px; border-radius: 22px 22px 20px 20px;
+  background: linear-gradient(#42506a, #202836 60%, #151b25);
+  box-shadow: 0 14px 26px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.07) inset; }
+.ms-btn { position: absolute; top: 5px; width: 19px; height: 20px;
+  background: linear-gradient(#4d5c78, #303c4f); }
+.ms-l { left: 2px; border-radius: 12px 3px 4px 4px; }
+.ms-r { right: 2px; border-radius: 3px 12px 4px 4px; }
+.ms-wheel { position: absolute; left: 50%; top: 8px; transform: translateX(-50%);
+  width: 5px; height: 13px; border-radius: 3px;
+  background: linear-gradient(#8fa2c0, #43506a);
+  box-shadow: 0 0 6px rgba(140,170,220,.35); }
+.ms-cord { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+  width: 3px; height: 16px; border-radius: 0 0 3px 3px;
+  background: linear-gradient(#2b3546, #171d27); }
+
+.desk-exit { position: absolute; bottom: 16px; left: 20px; padding: 10px 18px; border-radius: 999px;
   cursor: pointer; font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
   text-transform: uppercase; color: #cfdbe8; background: rgba(255,255,255,.08);
   border: 1px solid rgba(255,255,255,.18); backdrop-filter: blur(10px);
@@ -1439,7 +1459,25 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 
 @media (max-width: 760px) {
   .desk-monitor { width: 96vw; padding: 7px 7px 0; }
-  .desk-keyboard { width: 78vw; height: 38px; margin-top: 10px; }
-  .desk-mouse { display: none; }
+  .desk-inputs { gap: 16px; margin-top: 10px; }
+  .desk-keyboard { width: 62vw; padding: 6px 7px 8px; }
+  .kb-key { height: 10px; }
+  .desk-mouse { width: 30px; padding-bottom: 12px; }
+  .ms-body { width: 30px; height: 48px; }
+  .ms-btn { width: 13px; height: 14px; }
+  .ms-wheel { height: 9px; width: 4px; }
+  .ms-cord { height: 12px; }
   .desk-desk { width: 100vw; }
 }
+
+/* the button under the poses that opens desktop mode */
+.desk-open { display: inline-flex; align-items: center; gap: 9px; margin-top: 14px;
+  padding: 11px 18px; border-radius: 12px; cursor: pointer;
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+  color: var(--ink); background: color-mix(in srgb, var(--card) 92%, transparent);
+  border: 1px solid var(--line); backdrop-filter: blur(12px);
+  transition: transform .15s, box-shadow .2s, border-color .2s; }
+.desk-open svg { width: 15px; height: 15px; flex: none; }
+.desk-open:hover { transform: translateY(-1px); border-color: var(--accent);
+  box-shadow: 0 12px 28px rgba(20,40,70,.18); }
+.desk-open:active { transform: scale(.97); }
