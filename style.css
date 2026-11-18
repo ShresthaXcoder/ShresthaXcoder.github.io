@@ -1505,7 +1505,7 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 [data-countup] { font-variant-numeric: tabular-nums; }
 
 /* ---------- the grove at the very end ---------- */
-.grove { position: relative; width: 100%; height: 380px; margin-top: 26px;
+.grove { position: relative; width: 100%; height: 190px; margin-top: 20px;
   overflow: hidden; background: linear-gradient(180deg, #f3f7fb 0%, #e8f1f8 100%); }
 .grove-ground { position: absolute; left: -2%; right: -2%; bottom: 0; height: 40%;
   background: linear-gradient(180deg, #7a5433 0%, #5e3d24 45%, #3d2617 100%);
@@ -1519,12 +1519,12 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 .gt-banyan { transform-origin: 50% 100%; animation: treeSway 9s ease-in-out infinite; }
 
 /* sizes and places, back row first so the near ones overlap */
-.gt-c1 { width: 16%; left: 10%; bottom: 34%; z-index: 2; animation-delay: -1.2s; }
-.gt-c2 { width: 20%; left: 30%; bottom: 33%; z-index: 3; animation-delay: -3.1s; }
-.gt-b1 { width: 24%; left: 50%; bottom: 31%; z-index: 2; animation-delay: -0.6s; }
-.gt-b2 { width: 18%; right: 7%; bottom: 32%; z-index: 2; animation-delay: -2.2s; }
-.gt-c3 { width: 13%; left: 2%; bottom: 33%; z-index: 4; animation-delay: -4.4s; }
-.gt-c4 { width: 14%; left: 74%; bottom: 34%; z-index: 4; animation-delay: -2.8s; }
+.gt-c1 { width: 8%; left: 10%; bottom: 34%; z-index: 2; animation-delay: -1.2s; }
+.gt-c2 { width: 10%; left: 30%; bottom: 33%; z-index: 3; animation-delay: -3.1s; }
+.gt-b1 { width: 12%; left: 50%; bottom: 31%; z-index: 2; animation-delay: -0.6s; }
+.gt-b2 { width: 9%; right: 7%; bottom: 32%; z-index: 2; animation-delay: -2.2s; }
+.gt-c3 { width: 6.5%; left: 2%; bottom: 33%; z-index: 4; animation-delay: -4.4s; }
+.gt-c4 { width: 7%; left: 74%; bottom: 34%; z-index: 4; animation-delay: -2.8s; }
 
 @keyframes treeSway {
   0%, 100% { transform: rotate(0deg); }
@@ -1553,7 +1553,7 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
   .petal { display: none; }
 }
 @media (max-width: 700px) {
-  .grove { height: 260px; }
+  .grove { height: 130px; }
   .gt-c1 { width: 20%; left: 6%; }
   .gt-c2 { width: 24%; left: 30%; }
   .gt-b1 { width: 32%; left: 50%; }
