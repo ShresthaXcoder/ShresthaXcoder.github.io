@@ -1485,7 +1485,7 @@ window.__PROJECTS = PROJECTS;
         setTimeout(function () {
           curtain.classList.remove('wipe');
           busy = false;
-        }, 740);
+        }, 980);
       }
 
       if ('IntersectionObserver' in window && sections.length) {

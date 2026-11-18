@@ -1501,17 +1501,43 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
   box-shadow: 0 0 12px rgba(255,110,60,.5); }
 @media (max-width: 900px) { .page-line { right: 5px; width: 2px; opacity: .75; } }
 
-/* ---------- the curtain between sections ---------- */
+/* ---------- the pink curtain between sections ---------- */
 .curtain { position: fixed; inset: 0; z-index: 9400; pointer-events: none; overflow: hidden; }
-.curtain b { position: absolute; inset: 0; display: block;
-  background: linear-gradient(135deg, #0e1b2e, #16324d 55%, #0e1b2e);
-  transform: translateY(100%); }
-.curtain.wipe b { animation: curtainWipe .72s cubic-bezier(.76,0,.24,1); }
-@keyframes curtainWipe {
-  0%   { transform: translateY(100%); }
-  42%  { transform: translateY(0); }
-  58%  { transform: translateY(0); }
-  100% { transform: translateY(-100%); }
+
+.curtain b { position: absolute; top: 0; bottom: 0; width: 52%; display: block;
+  background:
+    /* the sheen on each fold */
+    repeating-linear-gradient(90deg,
+      rgba(255,255,255,.16) 0 5px,
+      rgba(255,255,255,.04) 5px 13px,
+      rgba(0,0,0,.13) 13px 20px,
+      rgba(255,255,255,.10) 20px 27px),
+    /* the cloth itself */
+    linear-gradient(180deg, #f2a6bf 0%, #e07fa2 38%, #c95f88 72%, #a8456c 100%);
+  box-shadow: 0 0 60px rgba(180,60,100,.35) inset;
+  will-change: transform; }
+
+/* a soft, uneven hem so it reads as fabric, not a slab */
+.curtain b::after { content: ''; position: absolute; left: 0; right: 0; bottom: -14px; height: 22px;
+  background: inherit; border-radius: 0 0 50% 50% / 0 0 100% 100%; }
+
+.curtain .cl { left: 0; transform: translateX(-101%); }
+.curtain .cr { right: 0; transform: translateX(101%); }
+
+.curtain.wipe .cl { animation: curtainL .95s cubic-bezier(.65,0,.35,1); }
+.curtain.wipe .cr { animation: curtainR .95s cubic-bezier(.65,0,.35,1); }
+
+@keyframes curtainL {
+  0%   { transform: translateX(-101%); }
+  38%  { transform: translateX(0); }
+  55%  { transform: translateX(0); }
+  100% { transform: translateX(-101%); }
+}
+@keyframes curtainR {
+  0%   { transform: translateX(101%); }
+  38%  { transform: translateX(0); }
+  55%  { transform: translateX(0); }
+  100% { transform: translateX(101%); }
 }
 
 /* a number mid-count */
