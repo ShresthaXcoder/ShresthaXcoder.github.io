@@ -1505,20 +1505,58 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 [data-countup] { font-variant-numeric: tabular-nums; }
 
 /* ---------- the grove at the very end ---------- */
-.grove { position: relative; width: 100%; height: 280px; margin-top: 26px;
-  overflow: hidden; background: linear-gradient(180deg, transparent 0%, #f3f7fb 55%); }
-.grove-svg { display: block; width: 100%; height: 100%; }
-.tree { animation: treeSway 7s ease-in-out infinite; }
-.tree:nth-of-type(2n) { animation-duration: 8.5s; animation-delay: -1.4s; }
-.tree:nth-of-type(3n) { animation-duration: 9.5s; animation-delay: -2.6s; }
+.grove { position: relative; width: 100%; height: 380px; margin-top: 26px;
+  overflow: hidden; background: linear-gradient(180deg, #f3f7fb 0%, #e8f1f8 100%); }
+.grove-ground { position: absolute; left: -2%; right: -2%; bottom: 0; height: 40%;
+  background: linear-gradient(180deg, #7a5433 0%, #5e3d24 45%, #3d2617 100%);
+  border-radius: 50% 50% 0 0 / 16% 16% 0 0; }
+
+.gt { position: absolute; bottom: 30%; height: auto; user-select: none;
+  pointer-events: none; will-change: transform;
+  filter: drop-shadow(0 10px 14px rgba(40,30,20,.18)); }
+
+.gt-cherry { transform-origin: 50% 100%; animation: treeSway 7s ease-in-out infinite; }
+.gt-banyan { transform-origin: 50% 100%; animation: treeSway 9s ease-in-out infinite; }
+
+/* sizes and places, back row first so the near ones overlap */
+.gt-c1 { width: 16%; left: 10%; bottom: 34%; z-index: 2; animation-delay: -1.2s; }
+.gt-c2 { width: 20%; left: 30%; bottom: 33%; z-index: 3; animation-delay: -3.1s; }
+.gt-b1 { width: 24%; left: 50%; bottom: 31%; z-index: 2; animation-delay: -0.6s; }
+.gt-b2 { width: 18%; right: 7%; bottom: 32%; z-index: 2; animation-delay: -2.2s; }
+.gt-c3 { width: 13%; left: 2%; bottom: 33%; z-index: 4; animation-delay: -4.4s; }
+.gt-c4 { width: 14%; left: 74%; bottom: 34%; z-index: 4; animation-delay: -2.8s; }
+
 @keyframes treeSway {
   0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(0.8deg); }
+  50% { transform: rotate(0.7deg); }
 }
-.petals ellipse { opacity: .85; }
+
+/* petals drifting down over the grove */
+.petal { position: absolute; top: -20px; width: 9px; height: 6px; border-radius: 60% 40% 55% 45%;
+  background: radial-gradient(circle at 35% 35%, #ffe3ee, #f4a8c8 70%, #e083ab);
+  opacity: .9; z-index: 5; animation: petalFall linear infinite; }
+.p1 { left: 18%; animation-duration: 11s; animation-delay: 0s; }
+.p2 { left: 38%; animation-duration: 14s; animation-delay: -4s; }
+.p3 { left: 56%; animation-duration: 12s; animation-delay: -7s; }
+.p4 { left: 72%; animation-duration: 15s; animation-delay: -2s; }
+.p5 { left: 86%; animation-duration: 13s; animation-delay: -9s; }
+.p6 { left: 8%;  animation-duration: 16s; animation-delay: -6s; }
+@keyframes petalFall {
+  0%   { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10%  { opacity: .9; }
+  50%  { transform: translate(26px, 150px) rotate(180deg); }
+  100% { transform: translate(-14px, 320px) rotate(360deg); opacity: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .tree { animation: none; }
+  .gt, .petal { animation: none; }
+  .petal { display: none; }
 }
 @media (max-width: 700px) {
-  .grove { height: 200px; }
+  .grove { height: 260px; }
+  .gt-c1 { width: 20%; left: 6%; }
+  .gt-c2 { width: 24%; left: 30%; }
+  .gt-b1 { width: 32%; left: 50%; }
+  .gt-b2 { width: 28%; right: -4%; }
+  .gt-c3, .gt-c4 { display: none; }
 }
