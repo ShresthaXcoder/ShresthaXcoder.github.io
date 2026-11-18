@@ -1423,10 +1423,9 @@ window.__PROJECTS = PROJECTS;
     }
   })();
 
-  /* ---------- the line, the curtain, the numbers ---------- */
+  /* ---------- the line and the numbers ---------- */
   (function () {
     const line = document.querySelector('#pageLine i');
-    const curtain = document.getElementById('curtain');
 
     /* 1. a line that fills as you read */
     if (line) {
@@ -1472,36 +1471,6 @@ window.__PROJECTS = PROJECTS;
       nums.forEach(function (n) { io.observe(n); });
     }
 
-    /* 3. a curtain that sweeps when you cross into a new section */
-    if (curtain) {
-      const sections = [].slice.call(document.querySelectorAll('section[id], header[id], footer[id]'));
-      let current = null;
-      let busy = false;
-
-      function wipe() {
-        if (busy) { return; }
-        busy = true;
-        curtain.classList.add('wipe');
-        setTimeout(function () {
-          curtain.classList.remove('wipe');
-          busy = false;
-        }, 980);
-      }
-
-      if ('IntersectionObserver' in window && sections.length) {
-        const io = new IntersectionObserver(function (entries) {
-          entries.forEach(function (en) {
-            if (!en.isIntersecting) { return; }
-            if (current === null) { current = en.target; return; }
-            if (en.target !== current) {
-              current = en.target;
-              if (window.scrollY > 200) { wipe(); }
-            }
-          });
-        }, { threshold: 0, rootMargin: '-45% 0px -45% 0px' });
-        sections.forEach(function (s) { io.observe(s); });
-      }
-    }
   })();
 
   /* ---------- the Rubik's cube cursor ---------- */
