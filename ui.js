@@ -1474,7 +1474,7 @@ window.__PROJECTS = PROJECTS;
 
     /* 3. a curtain that sweeps when you cross into a new section */
     if (curtain) {
-      const sections = [].slice.call(document.querySelectorAll('main section[id]'));
+      const sections = [].slice.call(document.querySelectorAll('section[id], header[id], footer[id]'));
       let current = null;
       let busy = false;
 
@@ -1498,7 +1498,7 @@ window.__PROJECTS = PROJECTS;
               if (window.scrollY > 200) { wipe(); }
             }
           });
-        }, { threshold: 0.45 });
+        }, { threshold: 0, rootMargin: '-45% 0px -45% 0px' });
         sections.forEach(function (s) { io.observe(s); });
       }
     }
