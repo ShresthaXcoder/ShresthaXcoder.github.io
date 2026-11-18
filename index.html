@@ -85,7 +85,7 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="min/style.min.css?v=105" />
+<link rel="stylesheet" href="min/style.min.css?v=106" />
 </head>
 <body>
 
@@ -788,6 +788,128 @@ setTimeout(function () {
     </div>
   </div>
 
+  <div class="grove" aria-hidden="true">
+    <svg viewBox="0 0 1200 280" preserveAspectRatio="xMidYMax slice" class="grove-svg">
+      <defs>
+        <linearGradient id="gLand" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#7a5433"/>
+          <stop offset="0.45" stop-color="#5e3d24"/>
+          <stop offset="1" stop-color="#3d2617"/>
+        </linearGradient>
+        <linearGradient id="gBark" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#4a2f1c"/>
+          <stop offset="0.5" stop-color="#6b452a"/>
+          <stop offset="1" stop-color="#3a2415"/>
+        </linearGradient>
+        <radialGradient id="gPink1" cx="0.4" cy="0.35" r="0.75">
+          <stop offset="0" stop-color="#ffd9e6"/>
+          <stop offset="0.55" stop-color="#f7b3ce"/>
+          <stop offset="1" stop-color="#e08cb0"/>
+        </radialGradient>
+        <radialGradient id="gPink2" cx="0.45" cy="0.3" r="0.8">
+          <stop offset="0" stop-color="#ffe4ee"/>
+          <stop offset="0.5" stop-color="#f8bdd6"/>
+          <stop offset="1" stop-color="#dd85aa"/>
+        </radialGradient>
+        <radialGradient id="gLeaf1" cx="0.4" cy="0.3" r="0.8">
+          <stop offset="0" stop-color="#6fb872"/>
+          <stop offset="0.6" stop-color="#3f7d46"/>
+          <stop offset="1" stop-color="#25502d"/>
+        </radialGradient>
+        <radialGradient id="gLeaf2" cx="0.45" cy="0.3" r="0.8">
+          <stop offset="0" stop-color="#83c885"/>
+          <stop offset="0.6" stop-color="#4b8b52"/>
+          <stop offset="1" stop-color="#2b5a33"/>
+        </radialGradient>
+      </defs>
+
+      <!-- the land -->
+      <path d="M0,196 C180,176 340,206 520,190 C700,174 860,206 1040,188 C1120,180 1170,188 1200,186 L1200,280 L0,280 Z" fill="url(#gLand)"/>
+      <path d="M0,196 C180,176 340,206 520,190 C700,174 860,206 1040,188 C1120,180 1170,188 1200,186"
+            fill="none" stroke="#8a6038" stroke-width="3" opacity="0.55"/>
+
+      <!-- banyan, left -->
+      <g class="tree banyan" style="transform-origin:150px 210px">
+        <path d="M138,206 C142,180 144,168 150,158 C156,168 158,180 162,206 Z" fill="url(#gBark)"/>
+        <path d="M150,168 C140,160 132,158 124,158 M150,168 C160,160 168,158 176,158" stroke="#5b3a22" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="150" cy="140" rx="62" ry="34" fill="url(#gLeaf1)"/>
+        <ellipse cx="118" cy="148" rx="40" ry="24" fill="url(#gLeaf2)" opacity="0.92"/>
+        <ellipse cx="184" cy="148" rx="38" ry="22" fill="url(#gLeaf2)" opacity="0.92"/>
+        <ellipse cx="150" cy="120" rx="46" ry="26" fill="url(#gLeaf2)" opacity="0.85"/>
+        <g stroke="#4a3320" stroke-width="1.6" opacity="0.55">
+          <path d="M128,160 L126,200"/><path d="M142,164 L140,202"/><path d="M160,164 L162,202"/><path d="M174,160 L176,200"/>
+        </g>
+      </g>
+
+      <!-- cherry, centre-left -->
+      <g class="tree cherry" style="transform-origin:360px 212px">
+        <path d="M352,212 C354,186 356,172 360,160 C364,172 366,186 368,212 Z" fill="url(#gBark)"/>
+        <path d="M360,172 C348,162 340,158 330,154 M360,172 C372,162 380,158 390,154 M360,164 C356,152 352,146 346,140"
+              stroke="#5b3a22" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="330" cy="140" rx="34" ry="24" fill="url(#gPink2)"/>
+        <ellipse cx="392" cy="138" rx="36" ry="25" fill="url(#gPink1)"/>
+        <ellipse cx="360" cy="124" rx="40" ry="28" fill="url(#gPink1)"/>
+        <ellipse cx="346" cy="150" rx="24" ry="16" fill="url(#gPink2)" opacity="0.95"/>
+        <ellipse cx="376" cy="152" rx="22" ry="15" fill="url(#gPink2)" opacity="0.95"/>
+      </g>
+
+      <!-- cherry, tall right of centre -->
+      <g class="tree cherry" style="transform-origin:640px 214px">
+        <path d="M630,214 C633,180 636,158 642,140 C648,158 651,180 654,214 Z" fill="url(#gBark)"/>
+        <path d="M642,152 C624,138 612,132 598,128 M642,152 C660,138 672,132 686,128 M642,144 C636,128 630,120 622,112"
+              stroke="#5b3a22" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="596" cy="118" rx="44" ry="30" fill="url(#gPink1)"/>
+        <ellipse cx="688" cy="116" rx="46" ry="31" fill="url(#gPink2)"/>
+        <ellipse cx="642" cy="98" rx="52" ry="36" fill="url(#gPink1)"/>
+        <ellipse cx="620" cy="132" rx="30" ry="20" fill="url(#gPink2)" opacity="0.95"/>
+        <ellipse cx="666" cy="134" rx="28" ry="19" fill="url(#gPink2)" opacity="0.95"/>
+        <ellipse cx="642" cy="76" rx="30" ry="20" fill="url(#gPink2)" opacity="0.9"/>
+      </g>
+
+      <!-- banyan, right -->
+      <g class="tree banyan" style="transform-origin:960px 210px">
+        <path d="M948,208 C952,182 954,170 960,158 C966,170 968,182 972,208 Z" fill="url(#gBark)"/>
+        <path d="M960,170 C948,160 938,156 928,156 M960,170 C972,160 982,156 992,156" stroke="#5b3a22" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="960" cy="136" rx="66" ry="36" fill="url(#gLeaf2)"/>
+        <ellipse cx="922" cy="146" rx="42" ry="25" fill="url(#gLeaf1)" opacity="0.92"/>
+        <ellipse cx="998" cy="146" rx="40" ry="24" fill="url(#gLeaf1)" opacity="0.92"/>
+        <ellipse cx="960" cy="114" rx="48" ry="27" fill="url(#gLeaf1)" opacity="0.85"/>
+        <g stroke="#4a3320" stroke-width="1.6" opacity="0.55">
+          <path d="M936,156 L934,200"/><path d="M950,160 L948,204"/><path d="M970,160 L972,204"/><path d="M984,156 L986,200"/>
+        </g>
+      </g>
+
+      <!-- a small cherry far left and far right, for depth -->
+      <g class="tree cherry" style="transform-origin:60px 214px">
+        <path d="M56,214 C57,198 58,190 60,182 C62,190 63,198 64,214 Z" fill="url(#gBark)"/>
+        <ellipse cx="60" cy="172" rx="26" ry="18" fill="url(#gPink2)"/>
+        <ellipse cx="44" cy="178" rx="16" ry="11" fill="url(#gPink1)"/>
+        <ellipse cx="76" cy="178" rx="16" ry="11" fill="url(#gPink1)"/>
+      </g>
+      <g class="tree cherry" style="transform-origin:1120px 214px">
+        <path d="M1116,214 C1117,198 1118,190 1120,182 C1122,190 1123,198 1124,214 Z" fill="url(#gBark)"/>
+        <ellipse cx="1120" cy="172" rx="28" ry="19" fill="url(#gPink1)"/>
+        <ellipse cx="1102" cy="178" rx="17" ry="12" fill="url(#gPink2)"/>
+        <ellipse cx="1138" cy="178" rx="17" ry="12" fill="url(#gPink2)"/>
+      </g>
+
+      <!-- petals on the ground -->
+      <g fill="#f2a9c6" opacity="0.75">
+        <ellipse cx="300" cy="224" rx="5" ry="2.4"/><ellipse cx="380" cy="232" rx="4" ry="2"/>
+        <ellipse cx="560" cy="226" rx="5" ry="2.4"/><ellipse cx="700" cy="234" rx="4" ry="2"/>
+        <ellipse cx="880" cy="228" rx="5" ry="2.4"/><ellipse cx="1040" cy="236" rx="4" ry="2"/>
+      </g>
+
+      <!-- falling petals -->
+      <g class="petals" fill="#f7bcd4">
+        <ellipse cx="200" cy="40" rx="5" ry="3"><animate attributeName="cy" values="40;240" dur="9s" repeatCount="indefinite"/><animate attributeName="cx" values="200;230;200" dur="9s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="460" cy="90" rx="4" ry="2.4"><animate attributeName="cy" values="90;250" dur="11s" repeatCount="indefinite"/><animate attributeName="cx" values="460;430;460" dur="11s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="760" cy="60" rx="5" ry="3"><animate attributeName="cy" values="60;245" dur="10s" repeatCount="indefinite"/><animate attributeName="cx" values="760;790;760" dur="10s" repeatCount="indefinite"/></ellipse>
+        <ellipse cx="1010" cy="110" rx="4" ry="2.4"><animate attributeName="cy" values="110;250" dur="12s" repeatCount="indefinite"/><animate attributeName="cx" values="1010;980;1010" dur="12s" repeatCount="indefinite"/></ellipse>
+      </g>
+    </svg>
+  </div>
+
   <footer><div class="wrap foot">
     <span>&copy; 2026 Shrestha &middot; built by hand</span>
     <span>Darbhanga, India &middot; <span class="accent" data-hi="काम के लिए उपलब्ध">available for work</span></span>
@@ -1121,9 +1243,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="min/world.min.js?v=105"></script>
-<script type="module" src="min/intro.min.js?v=105"></script>
-<script type="module" src="min/me3d.min.js?v=105"></script>
+<script type="module" src="min/world.min.js?v=106"></script>
+<script type="module" src="min/intro.min.js?v=106"></script>
+<script type="module" src="min/me3d.min.js?v=106"></script>
 <script>
 (function () {
   var gate = document.getElementById('gate');
@@ -1159,9 +1281,9 @@ setTimeout(function () {
   });
 })();
 </script>
-<script type="module" src="min/pond.min.js?v=105"></script>
+<script type="module" src="min/pond.min.js?v=106"></script>
 
 
-<script src="min/ui.min.js?v=105"></script>
+<script src="min/ui.min.js?v=106"></script>
 </body>
 </html>

@@ -1503,3 +1503,22 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 
 /* a number mid-count */
 [data-countup] { font-variant-numeric: tabular-nums; }
+
+/* ---------- the grove at the very end ---------- */
+.grove { position: relative; width: 100%; height: 280px; margin-top: 26px;
+  overflow: hidden; background: linear-gradient(180deg, transparent 0%, #f3f7fb 55%); }
+.grove-svg { display: block; width: 100%; height: 100%; }
+.tree { animation: treeSway 7s ease-in-out infinite; }
+.tree:nth-of-type(2n) { animation-duration: 8.5s; animation-delay: -1.4s; }
+.tree:nth-of-type(3n) { animation-duration: 9.5s; animation-delay: -2.6s; }
+@keyframes treeSway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(0.8deg); }
+}
+.petals ellipse { opacity: .85; }
+@media (prefers-reduced-motion: reduce) {
+  .tree { animation: none; }
+}
+@media (max-width: 700px) {
+  .grove { height: 200px; }
+}
