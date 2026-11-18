@@ -1423,6 +1423,87 @@ window.__PROJECTS = PROJECTS;
     }
   })();
 
+  /* ---------- the line, the curtain, the numbers ---------- */
+  (function () {
+    const line = document.querySelector('#pageLine i');
+    const curtain = document.getElementById('curtain');
+
+    /* 1. a line that fills as you read */
+    if (line) {
+      let raf = 0;
+      function paint() {
+        raf = 0;
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - window.innerHeight;
+        const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+        line.style.transform = 'scaleY(' + p.toFixed(4) + ')';
+      }
+      addEventListener('scroll', function () {
+        if (!raf) { raf = requestAnimationFrame(paint); }
+      }, { passive: true });
+      addEventListener('resize', paint);
+      paint();
+    }
+
+    /* 2. numbers that count up when they come into view */
+    const nums = [].slice.call(document.querySelectorAll('[data-countup]'));
+    function countUp(el) {
+      if (el.dataset.done === '1') { return; }
+      el.dataset.done = '1';
+      const target = parseInt(el.textContent.replace(/[^0-9]/g, ''), 10) || 0;
+      if (target <= 0) { return; }
+      const dur = Math.min(1400, 420 + target * 8);
+      const start = performance.now();
+      function tick(now) {
+        const k = Math.min(1, (now - start) / dur);
+        const eased = 1 - Math.pow(1 - k, 3);
+        el.textContent = String(Math.round(target * eased));
+        if (k < 1) { requestAnimationFrame(tick); }
+      }
+      el.textContent = '0';
+      requestAnimationFrame(tick);
+    }
+    if ('IntersectionObserver' in window && nums.length) {
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { countUp(en.target); io.unobserve(en.target); }
+        });
+      }, { threshold: 0.6 });
+      nums.forEach(function (n) { io.observe(n); });
+    }
+
+    /* 3. a curtain that sweeps when you cross into a new section */
+    if (curtain) {
+      const sections = [].slice.call(document.querySelectorAll('main section[id]'));
+      let current = null;
+      let busy = false;
+
+      function wipe() {
+        if (busy) { return; }
+        busy = true;
+        curtain.classList.add('wipe');
+        setTimeout(function () {
+          curtain.classList.remove('wipe');
+          busy = false;
+        }, 740);
+      }
+
+      if ('IntersectionObserver' in window && sections.length) {
+        const io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (!en.isIntersecting) { return; }
+            if (current === null) { current = en.target; return; }
+            if (en.target !== current) {
+              current = en.target;
+              if (window.scrollY > 200) { wipe(); }
+            }
+          });
+        }, { threshold: 0.45 });
+        sections.forEach(function (s) { io.observe(s); });
+      }
+    }
+  })();
+
   /* ---------- the Rubik's cube cursor ---------- */
   const voxelCur = $('#voxelCursor');
   if (voxelCur && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {

@@ -85,9 +85,13 @@ html:not([data-unlocked="yes"]) body { overflow: hidden; background: #0e1b2e; }
 .lock-link:hover { background: #8f7bff; }
 </style>
 <link rel="preload" as="image" href="logo-art.png" />
-<link rel="stylesheet" href="min/style.min.css?v=101" />
+<link rel="stylesheet" href="min/style.min.css?v=102" />
 </head>
 <body>
+
+<div class="page-line" id="pageLine" aria-hidden="true"><i></i></div>
+<div class="curtain" id="curtain" aria-hidden="true"><b></b></div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -391,9 +395,9 @@ setTimeout(function () {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M12 20s-7-4.4-7-9.3A4 4 0 0 1 12 7a4 4 0 0 1 7 3.7C19 15.6 12 20 12 20z"/>
         </svg>
-        <span id="likeCount">0</span>
+        <span id="likeCount" data-countup>0</span>
       </button>
-      <span class="views"><span id="viewCount">0</span> views</span>
+      <span class="views"><span id="viewCount" data-countup>0</span> views</span>
     </div>
     <div class="cue"><span data-hi="स्क्रॉल">Scroll</span><span class="bar"></span></div>
   </div>
@@ -1118,9 +1122,9 @@ setTimeout(function () {
   "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
 }}
 </script>
-<script type="module" src="min/world.min.js?v=101"></script>
-<script type="module" src="min/intro.min.js?v=101"></script>
-<script type="module" src="min/me3d.min.js?v=101"></script>
+<script type="module" src="min/world.min.js?v=102"></script>
+<script type="module" src="min/intro.min.js?v=102"></script>
+<script type="module" src="min/me3d.min.js?v=102"></script>
 <script>
 (function () {
   var gate = document.getElementById('gate');
@@ -1156,9 +1160,9 @@ setTimeout(function () {
   });
 })();
 </script>
-<script type="module" src="min/pond.min.js?v=101"></script>
+<script type="module" src="min/pond.min.js?v=102"></script>
 
 
-<script src="min/ui.min.js?v=101"></script>
+<script src="min/ui.min.js?v=102"></script>
 </body>
 </html>

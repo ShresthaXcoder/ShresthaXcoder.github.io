@@ -1491,3 +1491,28 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 /* the mouse wants to be dragged, not hovered */
 .desk-mouse { cursor: grab; touch-action: none; }
 .desk-mouse:active { cursor: grabbing; }
+
+/* ---------- the line that draws itself down the page ---------- */
+.page-line { position: fixed; top: 0; right: 10px; width: 2px; height: 100vh; z-index: 88;
+  pointer-events: none; background: rgba(120,150,180,.14); border-radius: 2px; }
+.page-line i { display: block; width: 100%; height: 100%; border-radius: 2px;
+  transform-origin: top center; transform: scaleY(0);
+  background: linear-gradient(180deg, var(--accent), #ffb03a 55%, #ff5a3c);
+  box-shadow: 0 0 12px rgba(255,110,60,.5); }
+@media (max-width: 900px) { .page-line { right: 5px; width: 2px; opacity: .75; } }
+
+/* ---------- the curtain between sections ---------- */
+.curtain { position: fixed; inset: 0; z-index: 9400; pointer-events: none; overflow: hidden; }
+.curtain b { position: absolute; inset: 0; display: block;
+  background: linear-gradient(135deg, #0e1b2e, #16324d 55%, #0e1b2e);
+  transform: translateY(100%); }
+.curtain.wipe b { animation: curtainWipe .72s cubic-bezier(.76,0,.24,1); }
+@keyframes curtainWipe {
+  0%   { transform: translateY(100%); }
+  42%  { transform: translateY(0); }
+  58%  { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+/* a number mid-count */
+[data-countup] { font-variant-numeric: tabular-nums; }
