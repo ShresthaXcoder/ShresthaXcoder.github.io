@@ -1519,12 +1519,12 @@ html.gated, html.gated body { overflow: hidden; height: 100%; }
 .gt-banyan { transform-origin: 50% 100%; animation: treeSway 9s ease-in-out infinite; }
 
 /* sizes and places, back row first so the near ones overlap */
-.gt-c1 { width: 8%; left: 10%; bottom: 34%; z-index: 2; animation-delay: -1.2s; }
-.gt-c2 { width: 10%; left: 30%; bottom: 33%; z-index: 3; animation-delay: -3.1s; }
-.gt-b1 { width: 12%; left: 50%; bottom: 31%; z-index: 2; animation-delay: -0.6s; }
-.gt-b2 { width: 9%; right: 7%; bottom: 32%; z-index: 2; animation-delay: -2.2s; }
-.gt-c3 { width: 6.5%; left: 2%; bottom: 33%; z-index: 4; animation-delay: -4.4s; }
-.gt-c4 { width: 7%; left: 74%; bottom: 34%; z-index: 4; animation-delay: -2.8s; }
+.gt-c1 { width: 5.5%; left: 12%; bottom: 33%; z-index: 2; animation-delay: -1.2s; }
+.gt-c2 { width: 7%;   left: 31%; bottom: 32%; z-index: 3; animation-delay: -3.1s; }
+.gt-b1 { width: 8.5%; left: 50%; bottom: 30%; z-index: 2; animation-delay: -0.6s; }
+.gt-b2 { width: 6.5%; right: 9%; bottom: 31%; z-index: 2; animation-delay: -2.2s; }
+.gt-c3 { width: 4.5%; left: 4%; bottom: 32%; z-index: 4; animation-delay: -4.4s; }
+.gt-c4 { width: 5%;   left: 75%; bottom: 33%; z-index: 4; animation-delay: -2.8s; }
 
 @keyframes treeSway {
   0%, 100% { transform: rotate(0deg); }
